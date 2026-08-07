@@ -11,7 +11,7 @@
 .bar{height:9px;background:#2c303b;border-radius:99px;overflow:hidden;margin:4px 0 8px}.fill{height:100%}.hp{background:var(--r)}.xp{background:var(--b)}
 button{width:100%;border:0;border-radius:13px;padding:13px 7px;margin-top:7px;background:var(--g);font-weight:850;font-size:14px;color:#18130b;touch-action:manipulation}button.secondary{background:#292e3b;color:white}button.blue{background:#355e86;color:white}button.red{background:#71383c;color:white}button:disabled{opacity:.4}.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.item{border-top:1px solid #303542;padding-top:9px;margin-top:9px}.pill{font-size:10px;background:#2a2f3b;border-radius:99px;padding:4px 7px}.hidden{display:none!important}.log{height:170px;overflow:auto;font-size:12px;line-height:1.5;color:#d0d3da}.wheel{font-size:19px;font-weight:900;text-align:center;background:#242936;border-radius:14px;padding:14px;margin:8px 0}.good{color:#7dd79a}.bad{color:#e97980}.rare{color:#9aa8ff}.legend{color:#ffcc69}
 input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;border-radius:12px;background:#222733;color:#fff;font-size:15px}
-.choicegrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.creatorStep{margin-top:10px}.selectedChoice{outline:2px solid var(--g);background:#302a20!important}
+.choicegrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.creatorStep{margin-top:10px}.selectedChoice{outline:2px solid var(--g);background:#302a20!important}.forgeRow{display:grid;grid-template-columns:1fr 1fr;gap:7px}.shopQty{max-width:90px}.positive{color:#7dd79a}.negative{color:#e97980}
 .tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:max(env(safe-area-inset-bottom),7px);width:calc(100% - 20px);max-width:620px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:#10131bf2;padding:6px;border:1px solid #292e3a;border-radius:16px}.tabs button{margin:0;padding:10px 1px;font-size:10px;background:#262b37;color:white}.tabs button.active{background:var(--g);color:#18130b}
 </style></head>
 <body><div id="app">
@@ -48,6 +48,12 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 
 <section id="worldTab">
 <div class="card"><b>Current Area</b><div class="wheel" id="areaTitle"></div><div class="small" id="areaDesc"></div><div class="grid"><button data-a="explore">EXPLORE</button><button class="secondary" data-a="travel">TRAVEL</button></div><button class="blue" data-a="dungeon">SEARCH FOR DUNGEON</button></div>
+<div class="card" id="townServices">
+<b>Town Services</b>
+<div class="small">Jobs and merchants are only available while you are in a town.</div>
+<div class="grid"><button data-a="openJobs">JOB BOARD</button><button class="secondary" data-a="openMarket">MARKET</button></div>
+<div id="townPanel"></div>
+</div>
 <div class="card"><b>Wheel / Dice Result</b><div class="wheel" id="result">Nothing rolled yet.</div></div>
 <div class="card"><b>Adventure Log</b><div class="log" id="log"></div></div>
 
@@ -55,7 +61,15 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 <div class="card"><b>Combat Log</b><div class="log" id="combatLog"></div></div>
 </section>
 
-<section id="gearTab" class="hidden"><div class="card"><b>Equipped</b><div id="equipped"></div></div><div class="card"><b>Inventory</b><div id="inventory"></div></div><div class="card"><b>Forge</b><div class="small">Spend ore and gold to forge a random weapon or armor piece. Every forged item rolls a rarity, base stats, and one random attribute.</div><div class="grid"><button data-a="forgeWeapon">FORGE WEAPON</button><button data-a="forgeArmor">FORGE ARMOR</button></div></div></section>
+<section id="gearTab" class="hidden"><div class="card"><b>Equipped</b><div id="equipped"></div></div><div class="card"><b>Inventory</b><div id="inventory"></div></div><div class="card"><b>Custom Forge</b>
+<div class="small">Choose exactly what you want to forge. Materials alter the finished item, runes add special traits, and effort changes the quality roll and cost.</div>
+<div class="item"><div class="small">BLUEPRINT</div><select id="forgeBlueprint"></select></div>
+<div class="item"><div class="small">PRIMARY MATERIAL</div><select id="forgeMaterial"></select></div>
+<div class="item"><div class="small">RUNE / ENCHANTMENT</div><select id="forgeRune"></select></div>
+<div class="item"><div class="small">EFFORT</div><select id="forgeEffort"></select></div>
+<div class="item" id="forgePreview"></div>
+<button data-a="customForge">FORGE ITEM</button>
+</div></section>
 
 <section id="characterTab" class="hidden">
 <div class="card"><b>Character</b><div id="stats"></div></div>
@@ -260,10 +274,72 @@ const attrs=[
 {name:"Lucky",type:"luck",val:.07,desc:"Improves wheel outcomes"},{name:"Scholar's",type:"xp",val:.12,desc:"+12% XP"},{name:"Greedy",type:"gold",val:.15,desc:"+15% gold"}
 ];
 const weaponNames=["Iron Sword","War Axe","Spear","Longbow","Mace","Rapier","Greatsword","Twin Daggers","Runic Staff","Halberd"];
+
+const townJobs=[
+{name:"Stable Hand",min:1,pay:14,risk:0,desc:"Feed, groom, and clean up after animals with superior job security."},
+{name:"Courier",min:1,pay:20,risk:.08,desc:"Carry letters and parcels through the local roads."},
+{name:"Smith's Laborer",min:2,pay:24,risk:.04,ore:1,desc:"Haul ore and work the bellows. Earns a little forging material."},
+{name:"Town Guard",min:3,pay:30,risk:.18,desc:"Patrol the walls and respond when somebody inevitably starts something."},
+{name:"Caravan Escort",min:5,pay:42,risk:.28,desc:"Protect a merchant caravan from road attacks."},
+{name:"Bounty Hunter",min:7,pay:58,risk:.42,desc:"Track a wanted criminal or dangerous beast."},
+{name:"Monster Exterminator",min:10,pay:75,risk:.55,desc:"The town has something living beneath it. Naturally this is now your problem."}
+];
+
+const materialDefs={
+"Iron":{cost:12,stat:1,trait:"Reliable",desc:"Balanced and dependable."},
+"Steel":{cost:22,stat:1.15,trait:"Tempered",desc:"+15% base equipment stat."},
+"Silver":{cost:35,stat:1.08,trait:"Silvered",desc:"Slightly stronger and prized against supernatural creatures."},
+"Hardwood":{cost:18,stat:1.05,trait:"Flexible",desc:"Excellent for bows, staves and light equipment."},
+"Crystal":{cost:45,stat:1.18,trait:"Crystalline",desc:"High quality but difficult to work."},
+"Drake Scale":{cost:60,stat:1.30,trait:"Drakescale",desc:"Rare monster material with excellent strength."},
+"Sunstone":{cost:70,stat:1.28,trait:"Sunforged",desc:"Radiates heat and holds enchantments well."},
+"Frost Crystal":{cost:75,stat:1.30,trait:"Frostbound",desc:"Cold magical crystal from Frostgrave."},
+"Hellstone":{cost:90,stat:1.38,trait:"Hellforged",desc:"Dangerously powerful demonic material."}
+};
+
+const forgeBlueprints={
+"Iron Sword":{kind:"weapon",base:7,materials:["Iron","Steel","Silver","Crystal","Sunstone","Frost Crystal","Hellstone"]},
+"War Axe":{kind:"weapon",base:9,materials:["Iron","Steel","Silver","Drake Scale","Hellstone"]},
+"Spear":{kind:"weapon",base:7,materials:["Iron","Steel","Silver","Hardwood","Drake Scale"]},
+"Longbow":{kind:"weapon",base:8,materials:["Hardwood","Steel","Drake Scale","Sunstone"]},
+"Mace":{kind:"weapon",base:8,materials:["Iron","Steel","Silver","Crystal","Hellstone"]},
+"Rapier":{kind:"weapon",base:7,materials:["Iron","Steel","Silver","Crystal"]},
+"Greatsword":{kind:"weapon",base:12,materials:["Iron","Steel","Silver","Drake Scale","Hellstone"]},
+"Twin Daggers":{kind:"weapon",base:6,materials:["Iron","Steel","Silver","Crystal","Frost Crystal"]},
+"Runic Staff":{kind:"weapon",base:8,materials:["Hardwood","Crystal","Sunstone","Frost Crystal","Hellstone"]},
+"Halberd":{kind:"weapon",base:11,materials:["Iron","Steel","Silver","Hardwood","Drake Scale"]},
+"Leather Coat":{kind:"armor",base:5,materials:["Hardwood","Drake Scale"]},
+"Chainmail":{kind:"armor",base:7,materials:["Iron","Steel","Silver"]},
+"Iron Plate":{kind:"armor",base:9,materials:["Iron","Steel","Silver","Drake Scale","Hellstone"]},
+"Ranger Cloak":{kind:"armor",base:5,materials:["Hardwood","Drake Scale","Frost Crystal"]},
+"Scale Armor":{kind:"armor",base:8,materials:["Iron","Steel","Drake Scale","Sunstone"]},
+"Knight Plate":{kind:"armor",base:11,materials:["Steel","Silver","Drake Scale","Sunstone","Hellstone"]},
+"Runed Robes":{kind:"armor",base:6,materials:["Hardwood","Crystal","Sunstone","Frost Crystal"]},
+"Brigandine":{kind:"armor",base:8,materials:["Iron","Steel","Hardwood"]},
+"Warden Mail":{kind:"armor",base:10,materials:["Steel","Silver","Drake Scale","Frost Crystal"]},
+"Dragonhide":{kind:"armor",base:13,materials:["Drake Scale","Sunstone","Hellstone"]}
+};
+
+const forgeRunes={
+"None":{cost:0,desc:"No enchantment."},
+"Rune of Flame":{cost:45,attr:{name:"Flaming",type:"atk",val:4,desc:"+4 Attack"},desc:"Adds an offensive flame enchantment."},
+"Rune of Frost":{cost:50,attr:{name:"Frostbound",type:"def",val:3,desc:"+3 Defense"},desc:"Cold magic hardens the equipment."},
+"Rune of Blood":{cost:65,attr:{name:"Blooddrinker",type:"leech",val:.12,desc:"Heal 12% of damage dealt"},desc:"Powerful life-draining enchantment."},
+"Rune of Wind":{cost:55,attr:{name:"Windborne",type:"dodge",val:.08,desc:"+8% dodge"},desc:"Makes the wielder unnaturally quick."},
+"Rune of Fortune":{cost:70,attr:{name:"Fortune-Touched",type:"luck",val:.10,desc:"+10% Luck"},desc:"An expensive enchantment for people who distrust probability."},
+"Rune of Giants":{cost:75,attr:{name:"Giantforged",type:"hp",val:25,desc:"+25 Max HP"},desc:"Strengthens the bearer as much as the gear."}
+};
+
+const effortDefs={
+"Quick":{mult:.85,cost:.7,bonus:-12,desc:"Cheap and fast, but quality suffers."},
+"Standard":{mult:1,cost:1,bonus:0,desc:"Normal craftsmanship."},
+"Careful":{mult:1.12,cost:1.5,bonus:10,desc:"More time and money for a better quality roll."},
+"Masterwork":{mult:1.28,cost:2.5,bonus:22,desc:"Extremely expensive, with greatly improved quality odds."}
+};
 const armorNames=["Leather Coat","Chainmail","Iron Plate","Ranger Cloak","Scale Armor","Knight Plate","Runed Robes","Brigandine","Warden Mail","Dragonhide"];
-function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:100,baseHp:100,atk:8,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
+function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:100,baseHp:100,atk:8,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,materials:{Iron:3,Steel:0,Silver:0,Hardwood:0,Crystal:0,"Drake Scale":0,Sunstone:0,"Frost Crystal":0,Hellstone:0},townPanel:null,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
 dungeon:{active:false,name:null,roomsEntered:0,targetRooms:0,blocked:null,bossReady:false,bossDefeated:false,encounter:null,boss:null,clearedRooms:0}}}
-let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.flags=Object.assign({},x.flags||{});s.dungeon=Object.assign(base().dungeon,x.dungeon||{})}}catch(e){}
+let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.flags=Object.assign({},x.flags||{});s.dungeon=Object.assign(base().dungeon,x.dungeon||{})}}catch(e){}
 const $=id=>document.getElementById(id);const save=()=>localStorage.setItem(KEY,JSON.stringify(s));const rnd=n=>Math.floor(Math.random()*n);
 function log(t,combat=false){$(combat?"combatLog":"log").insertAdjacentHTML("afterbegin","<div>"+t+"</div>")}
 function attrsTotal(type){let n=0;[s.weapon,s.armor].forEach(i=>{if(i&&i.attr.type===type)n+=i.attr.val*(1+i.up*.25)});return n}
@@ -280,7 +356,11 @@ function loot(mult=1){let g=Math.floor((8+s.level*3)*mult*(1+attrsTotal("gold"))
 function win(){s.kills++;loot(s.enemy.elite?1.8:1);s.enemy=null;save();render()}
 function enemyTurn(){if(!s.enemy)return;if(Math.random()<.12+attrsTotal("dodge")+s.bonusDodge){log(s.enemy.name+" misses.",true);return}let hit=Math.max(1,s.enemy.atk-def()-(s.turnDefend?Math.floor(def()*.7):0)+rnd(5));s.turnDefend=false;s.hp-=hit;log(s.enemy.name+" deals "+hit+" damage.",true);if(s.hp<=0){s.hp=maxHp();s.gold=Math.floor(s.gold*.8);s.enemy=null;log("You are defeated and wake in "+areas[1].name+". You lose 20% of your gold.");s.location=1}}
 function explore(){let a=area();if(a.type==="town"){let r=spin(["inn","market","rumor","job"]);$("result").textContent="Town wheel: "+r.toUpperCase();if(r==="inn"){let c=10+s.level*2;if(s.gold>=c){s.gold-=c;s.hp=maxHp();log("You rest at the inn for "+c+" gold.")}else log("The innkeeper remains tragically committed to capitalism.")}else if(r==="market"){s.gold+=5+rnd(15);log("You make a small profit trading supplies.")}else if(r==="job"){s.gold+=12+s.level*2;log("You complete a local job.")}else log("Rumor: dungeons often hold better gear than the open road.");}
- else{let roll=Math.random(),l=luck();if(roll<.36+l){let m=spin(a.mats),n=1+rnd(3);s.ore+=m.includes("Ore")?n:0;s.gold+=m.includes("Gold")?n*5:0;$("result").textContent="Wheel: MATERIAL";log("You find "+n+" "+m+".")}else if(roll<.70){$("result").textContent="Wheel: ENCOUNTER";enemy();log("A "+s.enemy.name+" appears.",true);document.getElementById("combatCard").scrollIntoView({behavior:"smooth",block:"start"})}else if(roll<.84+l){let it=makeItem(Math.random()<.5?"weapon":"armor");s.inventory.push(it);$("result").textContent="Wheel: TREASURE";log("You discover a "+it.rarity+" "+it.name+" with "+it.attr.name+" ("+it.attr.desc+").")}else{$("result").textContent="Wheel: HAZARD";let d=rollDie(20),dc=9+Math.floor(s.level/5);if(d>=dc)log("Hazard save d20: "+d+" vs DC "+dc+". You avoid it.");else{let h=5+s.level*2;s.hp=Math.max(1,s.hp-h);log("Hazard save d20: "+d+" vs DC "+dc+". You take "+h+" damage.")}}}save();render()}
+ else{let roll=Math.random(),l=luck();if(roll<.36+l){let m=spin(a.mats),n=1+rnd(3);
+ let map={"Iron Ore":"Iron","Steel Ore":"Steel","Silver Ore":"Silver","Hardwood":"Hardwood","Crystal":"Crystal","Drake Scale":"Drake Scale","Sunstone":"Sunstone","Frost Crystal":"Frost Crystal","Hellstone":"Hellstone"};
+ if(map[m])s.materials[map[m]]=(s.materials[map[m]]||0)+n;
+ if(m.includes("Ore"))s.ore+=n;if(m.includes("Gold"))s.gold+=n*5;
+ $("result").textContent="Wheel: MATERIAL";log("You find "+n+" "+m+".")}else if(roll<.70){$("result").textContent="Wheel: ENCOUNTER";enemy();log("A "+s.enemy.name+" appears.",true);document.getElementById("combatCard").scrollIntoView({behavior:"smooth",block:"start"})}else if(roll<.84+l){let it=makeItem(Math.random()<.5?"weapon":"armor");s.inventory.push(it);$("result").textContent="Wheel: TREASURE";log("You discover a "+it.rarity+" "+it.name+" with "+it.attr.name+" ("+it.attr.desc+").")}else{$("result").textContent="Wheel: HAZARD";let d=rollDie(20),dc=9+Math.floor(s.level/5);if(d>=dc)log("Hazard save d20: "+d+" vs DC "+dc+". You avoid it.");else{let h=5+s.level*2;s.hp=Math.max(1,s.hp-h);log("Hazard save d20: "+d+" vs DC "+dc+". You take "+h+" damage.")}}}save();render()}
 function travel(){let unlocked=areas.filter(a=>a.min<=s.level),dest=spin(unlocked),old=area();s.location=areas.indexOf(dest);$("result").textContent="Travel wheel: "+dest.name;log("You leave "+old.name+" and travel to "+dest.name+".");save();render()}
 function dungeon(){
  if(area().type==="town"){log("You need to leave town before searching for a dungeon.");return}
@@ -337,16 +417,96 @@ function renderCreator(){
  const race=races[creatorState.race],cl=classes[creatorState.className],bg=backstories.find(x=>x.id===creatorState.backstory);
  $("creatorPreview").innerHTML='<div class="item"><b>'+creatorState.race+' '+creatorState.className+'</b><div class="small">'+race.desc+' '+cl.desc+'</div></div><div class="item"><b>'+bg.name+'</b><div class="small">Starts in '+bg.start+' • '+bg.perk+'</div></div><div class="item"><b>Wealth</b><div class="small">Rolled secretly on a d100 when the game begins. Possible classes: Destitute, Poor, Common, Comfortable, Wealthy, Noble.</div></div>';
 }
+
+function currentTown(){return area().type==="town"}
+function jobRoll(job){
+ if(!currentTown()){log("You need to be in a town to take a job.");return}
+ if(s.level<job.min){log(job.name+" requires level "+job.min+".");return}
+ let d=rollDie(20),risk=job.risk,dc=Math.floor(6+risk*18),total=d+Math.floor((atk()+def())/8);
+ $("result").textContent="Job d20: "+d;
+ if(total>=dc){
+   let pay=job.pay+Math.floor(s.level*1.5);s.gold+=pay;
+   if(job.ore){s.ore+=job.ore;s.materials.Iron=(s.materials.Iron||0)+job.ore}
+   log("Job complete: "+job.name+". You earn "+pay+" gold"+(job.ore?" and "+job.ore+" Iron.":"."));
+ }else{
+   let dmg=Math.max(1,Math.floor(maxHp()*(.05+job.risk*.18)));s.hp=Math.max(1,s.hp-dmg);
+   log(job.name+" goes badly. You take "+dmg+" damage and receive no pay.");
+ }
+ save();render();
+}
+function sellItem(id){
+ let idx=s.inventory.findIndex(x=>String(x.id)===String(id));if(idx<0)return;
+ let it=s.inventory[idx];if(s.weapon&&String(s.weapon.id)===String(id))s.weapon=null;if(s.armor&&String(s.armor.id)===String(id))s.armor=null;
+ let val=Math.max(5,Math.floor((it.stat*8+(it.up||0)*15)*({"Common":1,"Uncommon":1.25,"Rare":1.6,"Epic":2.2,"Legendary":3.2}[it.rarity]||1)));
+ s.gold+=val;s.inventory.splice(idx,1);log("Sold "+it.rarity+" "+it.name+" for "+val+" gold.");save();render();
+}
+function buyMaterial(name){
+ if(!currentTown())return;let d=materialDefs[name];if(!d)return;if(s.gold<d.cost){log("Not enough gold.");return}
+ s.gold-=d.cost;s.materials[name]=(s.materials[name]||0)+1;log("Bought 1 "+name+" for "+d.cost+" gold.");save();render();
+}
+function sellMaterial(name){
+ let d=materialDefs[name];if(!d||!s.materials[name])return;
+ let val=Math.max(1,Math.floor(d.cost*.55));s.materials[name]--;s.gold+=val;log("Sold 1 "+name+" for "+val+" gold.");save();render();
+}
+function forgeQualityRoll(effort){
+ let r=rollDie(100)+effort.bonus+Math.floor(luck()*25);
+ if(r>=105)return["Legendary",2.8];
+ if(r>=88)return["Epic",2];
+ if(r>=70)return["Rare",1.55];
+ if(r>=48)return["Uncommon",1.25];
+ return["Common",1];
+}
+function customForge(){
+ let bpName=$("forgeBlueprint").value,matName=$("forgeMaterial").value,runeName=$("forgeRune").value,effName=$("forgeEffort").value;
+ let bp=forgeBlueprints[bpName],mat=materialDefs[matName],rune=forgeRunes[runeName],eff=effortDefs[effName];
+ if(!bp||!mat||!eff)return;
+ let materialNeed=2+Math.floor(bp.base/4),goldCost=Math.floor((18+bp.base*4+mat.cost*.35+rune.cost)*eff.cost);
+ if((s.materials[matName]||0)<materialNeed){log("You need "+materialNeed+" "+matName+".");return}
+ if(s.gold<goldCost){log("You need "+goldCost+" gold.");return}
+ s.materials[matName]-=materialNeed;s.gold-=goldCost;
+ let q=forgeQualityRoll(eff),randomAttr=attrs[rnd(attrs.length)],finalAttr=rune.attr?{...rune.attr}:{...randomAttr};
+ let stat=Math.max(1,Math.floor(bp.base*mat.stat*eff.mult*q[1]*(.92+Math.random()*.17)));
+ let suffix=runeName==="None"?"":(" of "+runeName.replace("Rune of ",""));
+ let forged={id:Date.now()+Math.random(),kind:bp.kind,name:mat.trait+" "+bpName+suffix,blueprint:bpName,material:matName,rune:runeName,effort:effName,rarity:q[0],stat,attr:finalAttr,up:0};
+ s.inventory.push(forged);
+ $("result").textContent="Forge d100 quality: "+q[0];
+ log("Forged "+q[0]+" "+forged.name+" • "+(bp.kind==="weapon"?"ATK ":"DEF ")+stat+" • "+finalAttr.name+".");
+ save();render();
+}
+function renderTownPanel(){
+ let panel=$("townPanel");if(!panel)return;
+ $("townServices").style.display=currentTown()?"block":"none";
+ if(!currentTown()){panel.innerHTML="";return}
+ if(s.townPanel==="jobs"){
+   panel.innerHTML='<div class="item"><b>Job Board</b></div>'+townJobs.map((j,i)=>'<div class="item"><div class="row"><b>'+j.name+'</b><span class="pill">Lv '+j.min+'+</span></div><div class="small">'+j.desc+'</div><div class="small">Base pay: '+j.pay+'g • Risk: '+Math.round(j.risk*100)+'%</div><button data-job="'+i+'" '+(s.level<j.min?'disabled':'')+'>TAKE JOB</button></div>').join("");
+ }else if(s.townPanel==="market"){
+   panel.innerHTML='<div class="item"><b>Material Market</b><div class="small">Town prices are fixed for now; merchants remain committed to making a living.</div></div>'+
+   Object.entries(materialDefs).map(([n,d])=>'<div class="item"><div class="row"><b>'+n+'</b><span>x'+(s.materials[n]||0)+'</span></div><div class="small">'+d.desc+'</div><div class="grid"><button data-buymat="'+n+'">BUY '+d.cost+'g</button><button class="secondary" data-sellmat="'+n+'" '+(!(s.materials[n]>0)?'disabled':'')+'>SELL '+Math.floor(d.cost*.55)+'g</button></div></div>').join("")+
+   '<div class="item"><b>Sell Equipment</b></div>'+s.inventory.map(i=>{let val=Math.max(5,Math.floor((i.stat*8+(i.up||0)*15)*({"Common":1,"Uncommon":1.25,"Rare":1.6,"Epic":2.2,"Legendary":3.2}[i.rarity]||1)));return'<div class="item"><div class="row"><b>'+i.rarity+' '+i.name+'</b><span>'+val+'g</span></div><div class="small">'+(i.kind==="weapon"?"ATK ":"DEF ")+i.stat+' • '+i.attr.name+'</div><button class="secondary" data-sellitem="'+i.id+'">SELL EQUIPMENT</button></div>'}).join("");
+ }else panel.innerHTML="";
+}
+function renderForgeOptions(){
+ let bp=$("forgeBlueprint"),mat=$("forgeMaterial"),ru=$("forgeRune"),ef=$("forgeEffort");if(!bp)return;
+ let oldBP=bp.value,oldMat=mat.value,oldRune=ru.value,oldEff=ef.value;
+ bp.innerHTML=Object.keys(forgeBlueprints).map(n=>'<option>'+n+'</option>').join("");if(oldBP&&forgeBlueprints[oldBP])bp.value=oldBP;
+ let blueprint=forgeBlueprints[bp.value];
+ mat.innerHTML=blueprint.materials.map(n=>'<option>'+n+'</option>').join("");if(oldMat&&blueprint.materials.includes(oldMat))mat.value=oldMat;
+ ru.innerHTML=Object.keys(forgeRunes).map(n=>'<option>'+n+'</option>').join("");if(oldRune&&forgeRunes[oldRune])ru.value=oldRune;
+ ef.innerHTML=Object.keys(effortDefs).map(n=>'<option>'+n+'</option>').join("");if(oldEff&&effortDefs[oldEff])ef.value=oldEff;
+ let m=materialDefs[mat.value],r=forgeRunes[ru.value],e=effortDefs[ef.value],need=2+Math.floor(blueprint.base/4),cost=Math.floor((18+blueprint.base*4+m.cost*.35+r.cost)*e.cost);
+ $("forgePreview").innerHTML='<b>Forge Preview</b><div class="small">'+blueprint.kind+' • '+need+' '+mat.value+' • '+cost+' gold</div><div class="small">'+m.desc+'</div><div class="small">'+r.desc+'</div><div class="small">'+e.desc+'</div><div class="small">Available '+mat.value+': '+(s.materials[mat.value]||0)+'</div>';
+}
 function render(){
  $("setup").classList.toggle("hidden",s.started);$("game").classList.toggle("hidden",!s.started);$("tabs").classList.toggle("hidden",!s.started);if(!s.started){renderCreator();return;}
  $("level").textContent=s.level;$("gold").textContent=s.gold;$("power").textContent=power();$("hpText").textContent=Math.floor(s.hp)+" / "+maxHp();$("hpBar").style.width=Math.max(0,s.hp/maxHp()*100)+"%";$("xpText").textContent=s.xp+" / "+s.xpNeed;$("xpBar").style.width=s.xp/s.xpNeed*100+"%";$("location").textContent="Location: "+area().name+" • Ore: "+s.ore;$("modeText").textContent="Mode: "+(s.mode==="free"?"Free Roam":"Campaign");$("areaTitle").textContent=area().name;$("areaDesc").textContent=area().desc;
  $("enemyName").textContent=s.enemy?s.enemy.name:"No enemy";$("enemyStats").textContent=s.enemy?"Lv. "+s.enemy.lv+" • HP "+Math.max(0,s.enemy.hp)+"/"+s.enemy.max+" • DEF "+s.enemy.def:"Explore until you encounter something.";
  $("equipped").innerHTML="<div class='item'><b>Weapon:</b> "+(s.weapon?s.weapon.rarity+" "+s.weapon.name+" +"+s.weapon.up+" • "+s.weapon.attr.name:"None")+"</div><div class='item'><b>Armor:</b> "+(s.armor?s.armor.rarity+" "+s.armor.name+" +"+s.armor.up+" • "+s.armor.attr.name:"None")+"</div>";
- $("inventory").innerHTML=s.inventory.length?s.inventory.map(i=>"<div class='item'><div class='row'><b>"+i.rarity+" "+i.name+" +"+i.up+"</b><span class='pill'>"+i.kind+"</span></div><div class='small'>"+(i.kind==="weapon"?"ATK ":"DEF ")+i.stat+" • "+i.attr.name+": "+i.attr.desc+"</div><div class='grid'><button data-equip='"+i.id+"'>EQUIP</button><button class='secondary' data-upitem='"+i.id+"'>UPGRADE "+(20+(i.up+1)*20)+"g</button></div></div>").join(""):"<p class='small'>Your bag contains mostly optimism.</p>";
+ $("inventory").innerHTML=s.inventory.length?s.inventory.map(i=>"<div class='item'><div class='row'><b>"+i.rarity+" "+i.name+" +"+i.up+"</b><span class='pill'>"+i.kind+"</span></div><div class='small'>"+(i.kind==="weapon"?"ATK ":"DEF ")+i.stat+" • "+i.attr.name+": "+i.attr.desc+(i.material?" • "+i.material+(i.rune&&i.rune!=="None"?" • "+i.rune:"")+" • "+i.effort:"")+"</div><div class='grid'><button data-equip='"+i.id+"'>EQUIP</button><button class='secondary' data-upitem='"+i.id+"'>UPGRADE "+(20+(i.up+1)*20)+"g</button></div></div>").join(""):"<p class='small'>Your bag contains mostly optimism.</p>";
  $("stats").innerHTML="<div class='item'><b>"+s.name+"</b><div class='small'>"+s.race+" • "+s.className+" • "+(backstories.find(x=>x.id===s.backstory)?.name||"Unknown past")+"</div></div><div class='item'>Wealth Class: <b>"+s.wealthClass+"</b> <span class='small'>(d100: "+s.wealthRoll+")</span></div><div class='item'>Attack: <b>"+atk()+"</b></div><div class='item'>Defense: <b>"+def()+"</b></div><div class='item'>Max HP: <b>"+maxHp()+"</b></div><div class='item'>Luck: <b>"+Math.round(luck()*100)+"%</b></div><div class='item'>Kills: <b>"+s.kills+"</b></div><div class='item'>Dungeons: <b>"+s.dungeons+"</b></div>";
  let ups=[["atk","Strength","+2 base attack"],["hp","Vitality","+10 max HP"],["def","Guard","+2 defense"],["luck","Fortune","+2% luck"]];$("upgrades").innerHTML=ups.map(u=>{let c=30+s.upgrade[u[0]]*30;return"<div class='item'><div class='row'><b>"+u[1]+"</b><span>Lv. "+s.upgrade[u[0]]+"</span></div><div class='small'>"+u[2]+"</div><button data-stat='"+u[0]+"'>UPGRADE "+c+"g</button></div>"}).join("");
  if(s.mode==="campaign"){let chapters=["Prologue: Rumors of war","The King's Summons","The Broken Fort","The Three Seals","March of Valedorn","The Demon Lord"]; $("questTitle").textContent="Campaign Journal";$("quests").innerHTML=chapters.map((x,i)=>"<div class='item "+(i>s.story?"small":"")+"'><b>"+(i<=s.story?"✓ ":"🔒 ")+x+"</b>"+(i===s.story&&i<5?"<div class='small'>Grow stronger and explore the world. Next chapter unlocks through level progression and dungeon activity.</div>":"")+"</div>").join("")}else{$("questTitle").textContent="Free Roam Journal";$("quests").innerHTML="<p class='small'>No destiny, no king yelling about prophecy. Explore, forge, clear dungeons and build the strongest character you can.</p>"}
  $("worldList").innerHTML=areas.map((a,i)=>"<div class='item'><b>"+a.name+"</b><div class='small'>Recommended level "+a.min+" • "+a.type+"</div></div>").join("");
+ renderTownPanel();renderForgeOptions();
  $("dungeonTabBtn").disabled=!s.dungeon.active;
  $("dungeonState").textContent=!s.dungeon.active?"NO DUNGEON":s.dungeon.bossReady?"BOSS ROOM":"IN PROGRESS";
  $("dungeonName").textContent=s.dungeon.active?s.dungeon.name:"No dungeon discovered.";
@@ -368,13 +528,21 @@ function render(){
  }
 
 }
-document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)return;if(b.dataset.race){creatorState.race=b.dataset.race;renderCreator();return}
+document.addEventListener("change",e=>{if(["forgeBlueprint","forgeMaterial","forgeRune","forgeEffort"].includes(e.target.id))renderForgeOptions()});
+document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)return;if(b.dataset.job){jobRoll(townJobs[+b.dataset.job]);return}
+ if(b.dataset.buymat){buyMaterial(b.dataset.buymat);return}
+ if(b.dataset.sellmat){sellMaterial(b.dataset.sellmat);return}
+ if(b.dataset.sellitem){sellItem(b.dataset.sellitem);return}
+ if(b.dataset.race){creatorState.race=b.dataset.race;renderCreator();return}
  if(b.dataset.class){creatorState.className=b.dataset.class;renderCreator();return}
  if(b.dataset.bg){creatorState.backstory=b.dataset.bg;renderCreator();return}
  if(b.dataset.start){applyCharacterCreation(b.dataset.start);return}if(b.dataset.tab){showTab(b.dataset.tab);return}
  if(b.dataset.dir){moveDungeon(b.dataset.dir);return}
  if(b.dataset.equip){equip(b.dataset.equip);return}if(b.dataset.upitem){upgradeItem(b.dataset.upitem);return}if(b.dataset.stat){let k=b.dataset.stat,c=30+s.upgrade[k]*30;if(s.gold>=c){s.gold-=c;s.upgrade[k]++;s.hp=Math.min(maxHp(),s.hp+(k==="hp"?10:0));save();render()}return}
  switch(b.dataset.a){
+ case"openJobs":s.townPanel=s.townPanel==="jobs"?null:"jobs";save();render();break;
+ case"openMarket":s.townPanel=s.townPanel==="market"?null:"market";save();render();break;
+ case"customForge":customForge();break;
  case"resetData":
    if(confirm("Reset ALL Wayfarer data? This cannot be undone.")){
      localStorage.removeItem(KEY);
@@ -403,7 +571,7 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
    if(!s.dungeon.encounter||!s.dungeon.encounter.length)break;
    {let heal=Math.floor(maxHp()*.22);s.hp=Math.min(maxHp(),s.hp+heal);dlog("Second Wind restores "+heal+" HP.");dungeonEnemyTurn();save();render()}
    break;
- case"explore":explore();break;case"travel":travel();break;case"dungeon":dungeon();break;case"forgeWeapon":forge("weapon");break;case"forgeArmor":forge("armor");break;
+ case"explore":explore();break;case"travel":travel();break;case"dungeon":dungeon();break;
  case"attack":if(!s.enemy)return;{let d=rollDie(20),hit=d+Math.floor(atk()/5),dc=8+s.enemy.def;$("result").textContent="Attack d20: "+d;log("Attack roll "+hit+" vs DC "+dc+".",true);if(d===1||hit<dc)log("You miss.",true);else{let dmg=Math.max(1,atk()-s.enemy.def+rnd(5)),crit=d===20||Math.random()<attrsTotal("crit")+s.bonusCrit;if(crit)dmg*=2;s.enemy.hp-=dmg;let heal=Math.floor(dmg*attrsTotal("leech"));if(heal)s.hp=Math.min(maxHp(),s.hp+heal);log((crit?"CRITICAL! ":"")+"You deal "+dmg+".",true);if(s.enemy.hp<=0){win();break}}enemyTurn();save();render()}break;
  case"defend":if(!s.enemy)return;s.turnDefend=true;log("You brace for the next attack.",true);enemyTurn();save();render();break;
  case"skill":if(!s.enemy)return;{let d=rollDie(12),dmg=Math.floor(atk()*1.6+d);s.enemy.hp-=dmg;s.hp=Math.max(1,s.hp-3);log("Power Move d12 bonus "+d+": "+dmg+" damage. Costs 3 HP.",true);if(s.enemy.hp<=0)win();else{enemyTurn();save();render()}}break;
