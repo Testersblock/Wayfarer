@@ -3,21 +3,42 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG</title>
+<title>Wayfarer: Wheel & Dice RPG v1.3</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
 #app{max-width:620px;margin:auto;padding-bottom:92px}h1{font-size:25px;margin:8px 0 1px}.sub,.small{font-size:12px;color:var(--mu)}.card{background:linear-gradient(#1a1e28,#151821);border:1px solid #2d3341;border-radius:17px;padding:14px;margin:10px 0}.row{display:flex;justify-content:space-between;align-items:center;gap:8px}.big{font-size:25px;font-weight:900}.center{text-align:center}.right{text-align:right}
 .bar{height:9px;background:#2c303b;border-radius:99px;overflow:hidden;margin:4px 0 8px}.fill{height:100%}.hp{background:var(--r)}.xp{background:var(--b)}
-button{width:100%;border:0;border-radius:13px;padding:13px 7px;margin-top:7px;background:var(--g);font-weight:850;font-size:14px;color:#18130b;touch-action:manipulation}button.secondary{background:#292e3b;color:white}button.blue{background:#355e86;color:white}button.red{background:#71383c;color:white}button:disabled{opacity:.4}.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.item{border-top:1px solid #303542;padding-top:9px;margin-top:9px}.pill{font-size:10px;background:#2a2f3b;border-radius:99px;padding:4px 7px}.hidden{display:none!important}.log{height:170px;overflow:auto;font-size:12px;line-height:1.5;color:#d0d3da}.wheel{font-size:19px;font-weight:900;text-align:center;background:#242936;border-radius:14px;padding:14px;margin:8px 0}.good{color:#7dd79a}.bad{color:#e97980}.rare{color:#9aa8ff}.legend{color:#ffcc69}.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:max(env(safe-area-inset-bottom),7px);width:calc(100% - 20px);max-width:620px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:#10131bf2;padding:6px;border:1px solid #292e3a;border-radius:16px}.tabs button{margin:0;padding:10px 1px;font-size:10px;background:#262b37;color:white}.tabs button.active{background:var(--g);color:#18130b}
+button{width:100%;border:0;border-radius:13px;padding:13px 7px;margin-top:7px;background:var(--g);font-weight:850;font-size:14px;color:#18130b;touch-action:manipulation}button.secondary{background:#292e3b;color:white}button.blue{background:#355e86;color:white}button.red{background:#71383c;color:white}button:disabled{opacity:.4}.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.item{border-top:1px solid #303542;padding-top:9px;margin-top:9px}.pill{font-size:10px;background:#2a2f3b;border-radius:99px;padding:4px 7px}.hidden{display:none!important}.log{height:170px;overflow:auto;font-size:12px;line-height:1.5;color:#d0d3da}.wheel{font-size:19px;font-weight:900;text-align:center;background:#242936;border-radius:14px;padding:14px;margin:8px 0}.good{color:#7dd79a}.bad{color:#e97980}.rare{color:#9aa8ff}.legend{color:#ffcc69}
+input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;border-radius:12px;background:#222733;color:#fff;font-size:15px}
+.choicegrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.creatorStep{margin-top:10px}.selectedChoice{outline:2px solid var(--g);background:#302a20!important}
+.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:max(env(safe-area-inset-bottom),7px);width:calc(100% - 20px);max-width:620px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:#10131bf2;padding:6px;border:1px solid #292e3a;border-radius:16px}.tabs button{margin:0;padding:10px 1px;font-size:10px;background:#262b37;color:white}.tabs button.active{background:var(--g);color:#18130b}
 </style></head>
 <body><div id="app">
 <h1>Wayfarer</h1><div class="sub">An open-world text RPG driven by dice, wheels, shifting dungeons, questionable treasure, and your own bad decisions.</div>
 
-<div id="setup" class="card">
+<div id="setup">
+<div class="card" id="creatorCard">
+<b>Create Your Character</b>
+<div class="creatorStep"><div class="small">NAME</div><input id="charName" maxlength="20" placeholder="Wayfarer"></div>
+
+<div class="creatorStep"><b>Race</b><div class="small">Race gives a small permanent bonus.</div><div class="choicegrid" id="raceChoices"></div></div>
+
+<div class="creatorStep"><b>Class</b><div class="small">Class changes your starting stats and equipment.</div><div class="choicegrid" id="classChoices"></div></div>
+
+<div class="creatorStep"><b>Backstory</b><div class="small">Your past determines your starting location and one extra perk.</div><div id="backstoryChoices"></div></div>
+
+<div class="card" style="margin:12px 0 0">
+<div class="small">CHARACTER PREVIEW</div>
+<div id="creatorPreview"></div>
+</div>
+</div>
+
+<div class="card" id="modeCard">
 <b>Choose Your Mode</b>
 <div class="item"><b>Free Roam</b><div class="small">Explore freely, clear dungeons, forge equipment, hunt rare enemies and become absurdly powerful at your own pace.</div><button data-start="free">START FREE ROAM</button></div>
 <div class="item"><b>Campaign</b><div class="small">The Kingdom of Valedorn is slowly losing ground to the Demon Lord. Explore freely, but story chapters unlock as you grow stronger.</div><button data-start="campaign">START CAMPAIGN</button></div>
+</div>
 </div>
 
 <div id="game" class="hidden">
@@ -99,6 +120,44 @@ const areas=[
 {name:"Highwall",type:"town",min:8,desc:"A wealthy fortress city guarding the eastern road.",enemies:[],mats:[]},
 {name:"Frostgrave",type:"wild",min:16,desc:"Frozen ruins beyond the northern pass.",enemies:["Ice Revenant","Frost Troll","White Wyrm","Lost Knight"],mats:["Frost Crystal","Silver Ore","Wyrm Hide"]},
 {name:"Demon March",type:"wild",min:22,desc:"Blighted land near the Demon Lord's territory.",enemies:["Demon Hound","Hell Knight","Blood Mage","Lesser Demon"],mats:["Demon Horn","Hellstone","Blood Crystal"]}
+];
+const races={
+ Human:{desc:"Adaptable and ambitious.",bonus:"Gain +5% XP.",xp:.05},
+ Elf:{desc:"Keen-eyed and long-lived.",bonus:"+5% dodge.",dodge:.05},
+ Dwarf:{desc:"Stout folk of stone and forge.",bonus:"+3 Defense and +10 HP.",def:3,hp:10},
+ Orc:{desc:"Powerfully built and difficult to discourage.",bonus:"+3 Attack.",atk:3},
+ Halfling:{desc:"Small, quick, and absurdly fortunate.",bonus:"+8% Luck.",luck:.08},
+ Tiefling:{desc:"Touched by infernal ancestry.",bonus:"+2 Attack and +5% critical chance.",atk:2,crit:.05},
+ Beastkin:{desc:"Instinctive hunters with animal traits.",bonus:"+4% dodge and +2 Attack.",dodge:.04,atk:2}
+};
+const classes={
+ Warrior:{desc:"Balanced frontline fighter.",atk:4,def:3,hp:15,weapon:"Iron Sword",armor:"Chainmail"},
+ Ranger:{desc:"Mobile ranged hunter.",atk:3,def:1,hp:5,weapon:"Longbow",armor:"Ranger Cloak"},
+ Rogue:{desc:"Fast, lucky skirmisher.",atk:3,def:1,hp:0,weapon:"Twin Daggers",armor:"Leather Coat",luck:.05},
+ Mage:{desc:"Fragile but magically trained.",atk:5,def:0,hp:-10,weapon:"Runic Staff",armor:"Runed Robes",luck:.02},
+ Cleric:{desc:"Durable holy adventurer.",atk:2,def:3,hp:20,weapon:"Mace",armor:"Chainmail"},
+ Barbarian:{desc:"Huge health and brutal offense.",atk:6,def:0,hp:25,weapon:"War Axe",armor:"Leather Coat"},
+ Warden:{desc:"Defensive guardian and survivalist.",atk:2,def:5,hp:20,weapon:"Spear",armor:"Warden Mail"}
+};
+const backstories=[
+ {id:"farm",name:"Farmhand",start:"Greenreach",desc:"You left a quiet farm after raiders destroyed the harvest.",perk:"+15 HP",hp:15},
+ {id:"street",name:"Street Urchin",start:"Oakrest",desc:"You survived by stealing meals and sleeping wherever guards were not looking.",perk:"+10% Luck",luck:.10},
+ {id:"apprentice",name:"Smith's Apprentice",start:"Oakrest",desc:"Years beside a forge taught you the value of good steel.",perk:"+5 starting ore",ore:5},
+ {id:"hunter",name:"Forest Hunter",start:"Whispering Wood",desc:"You grew up tracking monsters through old woodland trails.",perk:"+3 Attack",atk:3},
+ {id:"soldier",name:"Disgraced Soldier",start:"Highwall",desc:"Once a kingdom soldier, now stripped of rank and looking for another purpose.",perk:"+4 Defense",def:4},
+ {id:"scholar",name:"Wandering Scholar",start:"Oakrest",desc:"You travel in search of old ruins, forbidden texts, and things sensible people leave buried.",perk:"+10% XP",xp:.10},
+ {id:"miner",name:"Mountain Miner",start:"Stonejaw Mountains",desc:"You spent years beneath the mountains before deciding monsters were somehow preferable.",perk:"+8 ore",ore:8},
+ {id:"pilgrim",name:"Temple Pilgrim",start:"Greenreach",desc:"Your journey began as a religious pilgrimage and became something considerably more violent.",perk:"+20 HP",hp:20},
+ {id:"deserter",name:"Border Deserter",start:"Demon March",desc:"You saw what was gathering beyond the border and decided dying for an officer was overrated.",perk:"+4 Attack, +2 Defense",atk:4,def:2},
+ {id:"noble",name:"Fallen Noble",start:"Highwall",desc:"Your family lost its title, estates, and nearly everything else. Nearly.",perk:"+30 starting gold",gold:30}
+];
+const wealthClasses=[
+ {max:12,name:"Destitute",gold:5,ore:0,desc:"You begin with almost nothing."},
+ {max:32,name:"Poor",gold:20,ore:1,desc:"A few coins and basic supplies."},
+ {max:67,name:"Common",gold:50,ore:3,desc:"A normal traveler's purse."},
+ {max:87,name:"Comfortable",gold:90,ore:4,desc:"You have enough money to breathe occasionally."},
+ {max:97,name:"Wealthy",gold:160,ore:6,desc:"A suspiciously healthy starting purse."},
+ {max:100,name:"Noble",gold:300,ore:8,desc:"Apparently somebody in your family understood compound wealth."}
 ];
 const dungeons=["Forgotten Crypt","Goblin Warrens","Sunken Temple","Abandoned Mine","Witch Catacombs","Ruined Keep","Crystal Cavern","Ancient Labyrinth","Dragon Barrow","Infernal Vault"];
 const dungeonCreatures=["Skeleton","Cultist","Giant Spider","Goblin","Wraith","Stone Guardian","Slime","Ghoul","Mimic","Hellhound","Cave Troll","Serpent"];
@@ -197,7 +256,7 @@ const attrs=[
 ];
 const weaponNames=["Iron Sword","War Axe","Spear","Longbow","Mace","Rapier","Greatsword","Twin Daggers","Runic Staff","Halberd"];
 const armorNames=["Leather Coat","Chainmail","Iron Plate","Ranger Cloak","Scale Armor","Knight Plate","Runed Robes","Brigandine","Warden Mail","Dragonhide"];
-function base(){return{started:false,mode:null,level:1,xp:0,xpNeed:35,gold:50,hp:100,baseHp:100,atk:8,def:3,luck:0,ore:3,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
+function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:100,baseHp:100,atk:8,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
 dungeon:{active:false,name:null,roomsEntered:0,targetRooms:0,blocked:null,bossReady:false,bossDefeated:false,encounter:null,boss:null,clearedRooms:0}}}
 let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.flags=Object.assign({},x.flags||{});s.dungeon=Object.assign(base().dungeon,x.dungeon||{})}}catch(e){}
 const $=id=>document.getElementById(id);const save=()=>localStorage.setItem(KEY,JSON.stringify(s));const rnd=n=>Math.floor(Math.random()*n);
@@ -212,9 +271,9 @@ function makeItem(kind,bonus=0){let ra=rarity(),a=attrs[rnd(attrs.length)],name=
 function area(){return areas[s.location]}
 function enemy(){let a=area(),name=spin(a.enemies),elite=Math.random()<.08+luck(),lv=Math.max(1,s.level+rnd(3)-1),hp=Math.floor((28+lv*9)*(elite?1.8:1));s.enemy={name:(elite?"Elite ":"")+name,lv,hp,max:hp,atk:5+lv*2,def:Math.floor(lv*.7),elite}}
 function levelUp(){while(s.xp>=s.xpNeed){s.xp-=s.xpNeed;s.level++;s.xpNeed=Math.floor(s.xpNeed*1.28);s.baseHp+=5;s.hp=maxHp();log("Level up! You are now level "+s.level+".")}}
-function loot(mult=1){let g=Math.floor((8+s.level*3)*mult*(1+attrsTotal("gold"))),xp=Math.floor((12+s.level*3)*mult*(1+attrsTotal("xp")));s.gold+=g;s.xp+=xp;if(Math.random()<.35){s.ore+=1+rnd(2);log("You recover forging ore.")}if(Math.random()<.16+luck()){let it=makeItem(Math.random()<.55?"weapon":"armor",2);s.inventory.push(it);log("Loot wheel: "+it.rarity+" "+it.name+" ["+it.attr.name+"].")}log("Reward: "+g+" gold, "+xp+" XP.");levelUp()}
+function loot(mult=1){let g=Math.floor((8+s.level*3)*mult*(1+attrsTotal("gold"))),xp=Math.floor((12+s.level*3)*mult*(1+attrsTotal("xp")+s.bonusXP));s.gold+=g;s.xp+=xp;if(Math.random()<.35){s.ore+=1+rnd(2);log("You recover forging ore.")}if(Math.random()<.16+luck()){let it=makeItem(Math.random()<.55?"weapon":"armor",2);s.inventory.push(it);log("Loot wheel: "+it.rarity+" "+it.name+" ["+it.attr.name+"].")}log("Reward: "+g+" gold, "+xp+" XP.");levelUp()}
 function win(){s.kills++;loot(s.enemy.elite?1.8:1);s.enemy=null;save();render()}
-function enemyTurn(){if(!s.enemy)return;if(Math.random()<.12+attrsTotal("dodge")){log(s.enemy.name+" misses.",true);return}let hit=Math.max(1,s.enemy.atk-def()-(s.turnDefend?Math.floor(def()*.7):0)+rnd(5));s.turnDefend=false;s.hp-=hit;log(s.enemy.name+" deals "+hit+" damage.",true);if(s.hp<=0){s.hp=maxHp();s.gold=Math.floor(s.gold*.8);s.enemy=null;log("You are defeated and wake in "+areas[1].name+". You lose 20% of your gold.");s.location=1}}
+function enemyTurn(){if(!s.enemy)return;if(Math.random()<.12+attrsTotal("dodge")+s.bonusDodge){log(s.enemy.name+" misses.",true);return}let hit=Math.max(1,s.enemy.atk-def()-(s.turnDefend?Math.floor(def()*.7):0)+rnd(5));s.turnDefend=false;s.hp-=hit;log(s.enemy.name+" deals "+hit+" damage.",true);if(s.hp<=0){s.hp=maxHp();s.gold=Math.floor(s.gold*.8);s.enemy=null;log("You are defeated and wake in "+areas[1].name+". You lose 20% of your gold.");s.location=1}}
 function explore(){let a=area();if(a.type==="town"){let r=spin(["inn","market","rumor","job"]);$("result").textContent="Town wheel: "+r.toUpperCase();if(r==="inn"){let c=10+s.level*2;if(s.gold>=c){s.gold-=c;s.hp=maxHp();log("You rest at the inn for "+c+" gold.")}else log("The innkeeper remains tragically committed to capitalism.")}else if(r==="market"){s.gold+=5+rnd(15);log("You make a small profit trading supplies.")}else if(r==="job"){s.gold+=12+s.level*2;log("You complete a local job.")}else log("Rumor: dungeons often hold better gear than the open road.");}
  else{let roll=Math.random(),l=luck();if(roll<.36+l){let m=spin(a.mats),n=1+rnd(3);s.ore+=m.includes("Ore")?n:0;s.gold+=m.includes("Gold")?n*5:0;$("result").textContent="Wheel: MATERIAL";log("You find "+n+" "+m+".")}else if(roll<.70){$("result").textContent="Wheel: ENCOUNTER";enemy();log("A "+s.enemy.name+" appears.",true);document.getElementById("combatCard").scrollIntoView({behavior:"smooth",block:"start"})}else if(roll<.84+l){let it=makeItem(Math.random()<.5?"weapon":"armor");s.inventory.push(it);$("result").textContent="Wheel: TREASURE";log("You discover a "+it.rarity+" "+it.name+" with "+it.attr.name+" ("+it.attr.desc+").")}else{$("result").textContent="Wheel: HAZARD";let d=rollDie(20),dc=9+Math.floor(s.level/5);if(d>=dc)log("Hazard save d20: "+d+" vs DC "+dc+". You avoid it.");else{let h=5+s.level*2;s.hp=Math.max(1,s.hp-h);log("Hazard save d20: "+d+" vs DC "+dc+". You take "+h+" damage.")}}}save();render()}
 function travel(){let unlocked=areas.filter(a=>a.min<=s.level),dest=spin(unlocked),old=area();s.location=areas.indexOf(dest);$("result").textContent="Travel wheel: "+dest.name;log("You leave "+old.name+" and travel to "+dest.name+".");save();render()}
@@ -233,13 +292,53 @@ function forge(kind){let cost=3+s.level/5|0,g=25+s.level*4;if(s.ore<cost||s.gold
 function upgradeItem(id){let it=s.inventory.find(x=>String(x.id)===String(id));if(!it)return;let c=20+(it.up+1)*20;if(s.gold<c)return;s.gold-=c;it.up++;it.stat=Math.floor(it.stat*1.12)+1;log(it.name+" upgraded to +"+it.up+". Its random attribute also grows stronger.");save();render()}
 function equip(id){let it=s.inventory.find(x=>String(x.id)===String(id));if(!it)return;s[it.kind]=it;save();render()}
 function showTab(id){document.querySelectorAll("section").forEach(x=>x.classList.add("hidden"));$(id).classList.remove("hidden");document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab===id))}
+
+let creatorState={race:"Human",className:"Warrior",backstory:"farm"};
+
+function wealthForRoll(r){
+ return wealthClasses.find(w=>r<=w.max)||wealthClasses[wealthClasses.length-1];
+}
+function startingItem(name,kind,stat){
+ let a=attrs[rnd(attrs.length)];
+ return {id:Date.now()+Math.random(),kind,name,rarity:"Common",stat,attr:{...a},up:0};
+}
+function applyCharacterCreation(mode){
+ const race=races[creatorState.race],cl=classes[creatorState.className],bg=backstories.find(x=>x.id===creatorState.backstory);
+ const roll=rollDie(100),wealth=wealthForRoll(roll),name=($("charName").value||"Wayfarer").trim().slice(0,20)||"Wayfarer";
+ s=base();s.started=true;s.mode=mode;s.name=name;s.race=creatorState.race;s.className=creatorState.className;s.backstory=bg.id;s.wealthRoll=roll;s.wealthClass=wealth.name;
+ s.gold=wealth.gold+(bg.gold||0);s.ore=wealth.ore+(bg.ore||0);
+ s.atk+=race.atk||0;s.atk+=cl.atk||0;s.atk+=bg.atk||0;
+ s.def+=race.def||0;s.def+=cl.def||0;s.def+=bg.def||0;
+ s.baseHp+=race.hp||0;s.baseHp+=cl.hp||0;s.baseHp+=bg.hp||0;
+ s.luck+=race.luck||0;s.luck+=cl.luck||0;s.luck+=bg.luck||0;
+ s.bonusXP=(race.xp||0)+(bg.xp||0);s.bonusCrit=race.crit||0;s.bonusDodge=race.dodge||0;
+ const startIndex=areas.findIndex(a=>a.name===bg.start);s.location=startIndex>=0?startIndex:0;
+ const wi=startingItem(cl.weapon,"weapon",Math.max(3,5+Math.floor((cl.atk||0)/2)));
+ const ai=startingItem(cl.armor,"armor",Math.max(2,4+Math.floor((cl.def||0)/2)));
+ s.inventory=[wi,ai];s.weapon=wi;s.armor=ai;s.hp=maxHp();
+ save();render();
+ log("Character created: "+s.name+", "+s.race+" "+s.className+".");
+ log("Backstory: "+bg.name+". You begin in "+bg.start+".");
+ log("Wealth roll d100: "+roll+" → "+wealth.name+". Starting gold: "+s.gold+".");
+ log(mode==="campaign"?"Valedorn's border forts are failing. Your story begins here.":"No prophecy controls you. The world is open.");
+}
+function renderCreator(){
+ if(s.started)return;
+ const raceBox=$("raceChoices"),classBox=$("classChoices"),bgBox=$("backstoryChoices");
+ if(!raceBox||!classBox||!bgBox)return;
+ raceBox.innerHTML=Object.entries(races).map(([n,r])=>'<button class="secondary '+(creatorState.race===n?'selectedChoice':'')+'" data-race="'+n+'"><b>'+n+'</b><div class="small">'+r.bonus+'</div></button>').join("");
+ classBox.innerHTML=Object.entries(classes).map(([n,c])=>'<button class="secondary '+(creatorState.className===n?'selectedChoice':'')+'" data-class="'+n+'"><b>'+n+'</b><div class="small">'+c.desc+'</div></button>').join("");
+ bgBox.innerHTML=backstories.map(b=>'<div class="item"><div class="row"><b>'+b.name+'</b><span class="pill">'+b.start+'</span></div><div class="small">'+b.desc+'</div><div class="small">Perk: '+b.perk+'</div><button class="secondary '+(creatorState.backstory===b.id?'selectedChoice':'')+'" data-bg="'+b.id+'">'+(creatorState.backstory===b.id?'SELECTED':'CHOOSE')+'</button></div>').join("");
+ const race=races[creatorState.race],cl=classes[creatorState.className],bg=backstories.find(x=>x.id===creatorState.backstory);
+ $("creatorPreview").innerHTML='<div class="item"><b>'+creatorState.race+' '+creatorState.className+'</b><div class="small">'+race.desc+' '+cl.desc+'</div></div><div class="item"><b>'+bg.name+'</b><div class="small">Starts in '+bg.start+' • '+bg.perk+'</div></div><div class="item"><b>Wealth</b><div class="small">Rolled secretly on a d100 when the game begins. Possible classes: Destitute, Poor, Common, Comfortable, Wealthy, Noble.</div></div>';
+}
 function render(){
- $("setup").classList.toggle("hidden",s.started);$("game").classList.toggle("hidden",!s.started);$("tabs").classList.toggle("hidden",!s.started);if(!s.started)return;
+ $("setup").classList.toggle("hidden",s.started);$("game").classList.toggle("hidden",!s.started);$("tabs").classList.toggle("hidden",!s.started);if(!s.started){renderCreator();return;}
  $("level").textContent=s.level;$("gold").textContent=s.gold;$("power").textContent=power();$("hpText").textContent=Math.floor(s.hp)+" / "+maxHp();$("hpBar").style.width=Math.max(0,s.hp/maxHp()*100)+"%";$("xpText").textContent=s.xp+" / "+s.xpNeed;$("xpBar").style.width=s.xp/s.xpNeed*100+"%";$("location").textContent="Location: "+area().name+" • Ore: "+s.ore;$("modeText").textContent="Mode: "+(s.mode==="free"?"Free Roam":"Campaign");$("areaTitle").textContent=area().name;$("areaDesc").textContent=area().desc;
  $("enemyName").textContent=s.enemy?s.enemy.name:"No enemy";$("enemyStats").textContent=s.enemy?"Lv. "+s.enemy.lv+" • HP "+Math.max(0,s.enemy.hp)+"/"+s.enemy.max+" • DEF "+s.enemy.def:"Explore until you encounter something.";
  $("equipped").innerHTML="<div class='item'><b>Weapon:</b> "+(s.weapon?s.weapon.rarity+" "+s.weapon.name+" +"+s.weapon.up+" • "+s.weapon.attr.name:"None")+"</div><div class='item'><b>Armor:</b> "+(s.armor?s.armor.rarity+" "+s.armor.name+" +"+s.armor.up+" • "+s.armor.attr.name:"None")+"</div>";
  $("inventory").innerHTML=s.inventory.length?s.inventory.map(i=>"<div class='item'><div class='row'><b>"+i.rarity+" "+i.name+" +"+i.up+"</b><span class='pill'>"+i.kind+"</span></div><div class='small'>"+(i.kind==="weapon"?"ATK ":"DEF ")+i.stat+" • "+i.attr.name+": "+i.attr.desc+"</div><div class='grid'><button data-equip='"+i.id+"'>EQUIP</button><button class='secondary' data-upitem='"+i.id+"'>UPGRADE "+(20+(i.up+1)*20)+"g</button></div></div>").join(""):"<p class='small'>Your bag contains mostly optimism.</p>";
- $("stats").innerHTML="<div class='item'>Attack: <b>"+atk()+"</b></div><div class='item'>Defense: <b>"+def()+"</b></div><div class='item'>Max HP: <b>"+maxHp()+"</b></div><div class='item'>Luck: <b>"+Math.round(luck()*100)+"%</b></div><div class='item'>Kills: <b>"+s.kills+"</b></div><div class='item'>Dungeons: <b>"+s.dungeons+"</b></div>";
+ $("stats").innerHTML="<div class='item'><b>"+s.name+"</b><div class='small'>"+s.race+" • "+s.className+" • "+(backstories.find(x=>x.id===s.backstory)?.name||"Unknown past")+"</div></div><div class='item'>Wealth Class: <b>"+s.wealthClass+"</b> <span class='small'>(d100: "+s.wealthRoll+")</span></div><div class='item'>Attack: <b>"+atk()+"</b></div><div class='item'>Defense: <b>"+def()+"</b></div><div class='item'>Max HP: <b>"+maxHp()+"</b></div><div class='item'>Luck: <b>"+Math.round(luck()*100)+"%</b></div><div class='item'>Kills: <b>"+s.kills+"</b></div><div class='item'>Dungeons: <b>"+s.dungeons+"</b></div>";
  let ups=[["atk","Strength","+2 base attack"],["hp","Vitality","+10 max HP"],["def","Guard","+2 defense"],["luck","Fortune","+2% luck"]];$("upgrades").innerHTML=ups.map(u=>{let c=30+s.upgrade[u[0]]*30;return"<div class='item'><div class='row'><b>"+u[1]+"</b><span>Lv. "+s.upgrade[u[0]]+"</span></div><div class='small'>"+u[2]+"</div><button data-stat='"+u[0]+"'>UPGRADE "+c+"g</button></div>"}).join("");
  if(s.mode==="campaign"){let chapters=["Prologue: Rumors of war","The King's Summons","The Broken Fort","The Three Seals","March of Valedorn","The Demon Lord"]; $("questTitle").textContent="Campaign Journal";$("quests").innerHTML=chapters.map((x,i)=>"<div class='item "+(i>s.story?"small":"")+"'><b>"+(i<=s.story?"✓ ":"🔒 ")+x+"</b>"+(i===s.story&&i<5?"<div class='small'>Grow stronger and explore the world. Next chapter unlocks through level progression and dungeon activity.</div>":"")+"</div>").join("")}else{$("questTitle").textContent="Free Roam Journal";$("quests").innerHTML="<p class='small'>No destiny, no king yelling about prophecy. Explore, forge, clear dungeons and build the strongest character you can.</p>"}
  $("worldList").innerHTML=areas.map((a,i)=>"<div class='item'><b>"+a.name+"</b><div class='small'>Recommended level "+a.min+" • "+a.type+"</div></div>").join("");
@@ -264,7 +363,10 @@ function render(){
  }
 
 }
-document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)return;if(b.dataset.start){s=base();s.started=true;s.mode=b.dataset.start;s.hp=maxHp();save();render();log(s.mode==="campaign"?"Valedorn's border forts are failing. For now, you are nobody.":"The world is open. Become whatever sort of problem you want.");return}if(b.dataset.tab){showTab(b.dataset.tab);return}
+document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)return;if(b.dataset.race){creatorState.race=b.dataset.race;renderCreator();return}
+ if(b.dataset.class){creatorState.className=b.dataset.class;renderCreator();return}
+ if(b.dataset.bg){creatorState.backstory=b.dataset.bg;renderCreator();return}
+ if(b.dataset.start){applyCharacterCreation(b.dataset.start);return}if(b.dataset.tab){showTab(b.dataset.tab);return}
  if(b.dataset.dir){moveDungeon(b.dataset.dir);return}
  if(b.dataset.equip){equip(b.dataset.equip);return}if(b.dataset.upitem){upgradeItem(b.dataset.upitem);return}if(b.dataset.stat){let k=b.dataset.stat,c=30+s.upgrade[k]*30;if(s.gold>=c){s.gold-=c;s.upgrade[k]++;s.hp=Math.min(maxHp(),s.hp+(k==="hp"?10:0));save();render()}return}
  switch(b.dataset.a){
@@ -272,7 +374,7 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  case"dungeonAttack":
    if(!s.dungeon.encounter||!s.dungeon.encounter.length)break;
    {let target=s.dungeon.encounter.find(x=>x.hp>0);if(!target)break;let d=rollDie(20),hit=d+Math.floor(atk()/5),dc=8+target.def;dlog("Attack roll "+hit+" vs DC "+dc+".");
-    if(d===1||hit<dc)dlog("You miss "+target.name+".");else{let dmg=Math.max(1,atk()-target.def+rnd(5)),crit=d===20||Math.random()<attrsTotal("crit");if(crit)dmg*=2;target.hp-=dmg;let heal=Math.floor(dmg*attrsTotal("leech"));if(heal)s.hp=Math.min(maxHp(),s.hp+heal);dlog((crit?"CRITICAL! ":"")+"You hit "+target.name+" for "+dmg+".")}
+    if(d===1||hit<dc)dlog("You miss "+target.name+".");else{let dmg=Math.max(1,atk()-target.def+rnd(5)),crit=d===20||Math.random()<attrsTotal("crit")+s.bonusCrit;if(crit)dmg*=2;target.hp-=dmg;let heal=Math.floor(dmg*attrsTotal("leech"));if(heal)s.hp=Math.min(maxHp(),s.hp+heal);dlog((crit?"CRITICAL! ":"")+"You hit "+target.name+" for "+dmg+".")}
     if(s.dungeon.encounter.every(x=>x.hp<=0))clearDungeonEncounter();else dungeonEnemyTurn();save();render()}
    break;
  case"dungeonDefend":
@@ -286,7 +388,7 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
    {let heal=Math.floor(maxHp()*.22);s.hp=Math.min(maxHp(),s.hp+heal);dlog("Second Wind restores "+heal+" HP.");dungeonEnemyTurn();save();render()}
    break;
  case"explore":explore();break;case"travel":travel();break;case"dungeon":dungeon();break;case"forgeWeapon":forge("weapon");break;case"forgeArmor":forge("armor");break;
- case"attack":if(!s.enemy)return;{let d=rollDie(20),hit=d+Math.floor(atk()/5),dc=8+s.enemy.def;$("result").textContent="Attack d20: "+d;log("Attack roll "+hit+" vs DC "+dc+".",true);if(d===1||hit<dc)log("You miss.",true);else{let dmg=Math.max(1,atk()-s.enemy.def+rnd(5)),crit=d===20||Math.random()<attrsTotal("crit");if(crit)dmg*=2;s.enemy.hp-=dmg;let heal=Math.floor(dmg*attrsTotal("leech"));if(heal)s.hp=Math.min(maxHp(),s.hp+heal);log((crit?"CRITICAL! ":"")+"You deal "+dmg+".",true);if(s.enemy.hp<=0){win();break}}enemyTurn();save();render()}break;
+ case"attack":if(!s.enemy)return;{let d=rollDie(20),hit=d+Math.floor(atk()/5),dc=8+s.enemy.def;$("result").textContent="Attack d20: "+d;log("Attack roll "+hit+" vs DC "+dc+".",true);if(d===1||hit<dc)log("You miss.",true);else{let dmg=Math.max(1,atk()-s.enemy.def+rnd(5)),crit=d===20||Math.random()<attrsTotal("crit")+s.bonusCrit;if(crit)dmg*=2;s.enemy.hp-=dmg;let heal=Math.floor(dmg*attrsTotal("leech"));if(heal)s.hp=Math.min(maxHp(),s.hp+heal);log((crit?"CRITICAL! ":"")+"You deal "+dmg+".",true);if(s.enemy.hp<=0){win();break}}enemyTurn();save();render()}break;
  case"defend":if(!s.enemy)return;s.turnDefend=true;log("You brace for the next attack.",true);enemyTurn();save();render();break;
  case"skill":if(!s.enemy)return;{let d=rollDie(12),dmg=Math.floor(atk()*1.6+d);s.enemy.hp-=dmg;s.hp=Math.max(1,s.hp-3);log("Power Move d12 bonus "+d+": "+dmg+" damage. Costs 3 HP.",true);if(s.enemy.hp<=0)win();else{enemyTurn();save();render()}}break;
  case"flee":if(!s.enemy)return;{let d=rollDie(20);log("Flee roll: "+d+".",true);if(d+Math.floor(luck()*10)>=10){s.enemy=null;log("You escape.",true)}else{log("You fail to escape.",true);enemyTurn()}save();render()}break}
