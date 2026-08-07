@@ -63,6 +63,11 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 
 <div class="card"><b id="questTitle">Journal</b><div id="quests"></div></div>
 <div class="card"><b>World</b><div id="worldList"></div></div>
+<div class="card">
+  <b>Save Data</b>
+  <div class="small">This permanently erases this character, inventory, dungeon progress, campaign progress, and all other Wayfarer save data on this device.</div>
+  <button class="red" data-a="resetData">RESET ALL DATA</button>
+</div>
 </section>
 
 <section id="dungeonTab" class="hidden">
@@ -370,6 +375,17 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.dir){moveDungeon(b.dataset.dir);return}
  if(b.dataset.equip){equip(b.dataset.equip);return}if(b.dataset.upitem){upgradeItem(b.dataset.upitem);return}if(b.dataset.stat){let k=b.dataset.stat,c=30+s.upgrade[k]*30;if(s.gold>=c){s.gold-=c;s.upgrade[k]++;s.hp=Math.min(maxHp(),s.hp+(k==="hp"?10:0));save();render()}return}
  switch(b.dataset.a){
+ case"resetData":
+   if(confirm("Reset ALL Wayfarer data? This cannot be undone.")){
+     localStorage.removeItem(KEY);
+     s=base();
+     creatorState={race:"Human",className:"Warrior",backstory:"farm"};
+     document.querySelectorAll("section").forEach(x=>x.classList.add("hidden"));
+     $("worldTab").classList.remove("hidden");
+     document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab==="worldTab"));
+     render();
+   }
+   break;
  case"dungeonExplore":makeDungeonEncounter();save();render();break;
  case"dungeonAttack":
    if(!s.dungeon.encounter||!s.dungeon.encounter.length)break;
