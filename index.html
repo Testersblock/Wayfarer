@@ -782,7 +782,7 @@ function renderSpellUI(){
    f.innerHTML=Object.keys(spellForms).map(x=>'<option>'+x+'</option>').join("");if(of&&spellForms[of])f.value=of;
    i.innerHTML=Object.keys(spellIntents).map(x=>'<option>'+x+'</option>').join("");if(oi&&spellIntents[oi])i.value=oi;
    const D=spellDisciplines[d.value],F=spellForms[f.value],I=spellIntents[i.value];
-   $("spellCreationPreview").innerHTML='<b>Creation Preview</b><div class="small">'+d.value+' '+f.value+' • '+I.tag+'</div><div class="small">Creation requires 1 Filled Soul Crystal. Final power, mana cost, magical mutation, and the captured soul's rarity all influence the result.</div><div class="small">Filled Soul Crystals: '+(s.materials["Soul Crystal (Filled)"]||0)+'</div>';
+   $("spellCreationPreview").innerHTML='<b>Creation Preview</b><div class="small">'+d.value+' '+f.value+' • '+I.tag+'</div><div class="small">Creation requires 1 Filled Soul Crystal. Final power, mana cost, magical mutation, and the captured soul rarity all influence the result.</div><div class="small">Filled Soul Crystals: '+(s.materials["Soul Crystal (Filled)"]||0)+'</div>';
    $("createSpellBtn").disabled=s.spellwork.level<10||!s.soulCrystals.some(c=>c.filled);
  }
 }
