@@ -9,10 +9,10 @@
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
 #app{max-width:620px;margin:auto;padding-bottom:92px}h1{font-size:25px;margin:8px 0 1px}.sub,.small{font-size:12px;color:var(--mu)}.card{background:linear-gradient(#1a1e28,#151821);border:1px solid #2d3341;border-radius:17px;padding:14px;margin:10px 0}.row{display:flex;justify-content:space-between;align-items:center;gap:8px}.big{font-size:25px;font-weight:900}.center{text-align:center}.right{text-align:right}
 .bar{height:9px;background:#2c303b;border-radius:99px;overflow:hidden;margin:4px 0 8px}.fill{height:100%}.hp{background:var(--r)}.xp{background:var(--b)}
-button{width:100%;border:0;border-radius:13px;padding:13px 7px;margin-top:7px;background:var(--g);font-weight:850;font-size:14px;color:#18130b;touch-action:manipulation}button.secondary{background:#292e3b;color:white}button.blue{background:#355e86;color:white}button.red{background:#71383c;color:white}button:disabled{opacity:.4}.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.item{border-top:1px solid #303542;padding-top:9px;margin-top:9px}.pill{font-size:10px;background:#2a2f3b;border-radius:99px;padding:4px 7px}.hidden{display:none!important}.log{height:170px;overflow:auto;font-size:12px;line-height:1.5;color:#d0d3da}.wheel{font-size:19px;font-weight:900;text-align:center;background:#242936;border-radius:14px;padding:14px;margin:8px 0}.good{color:#7dd79a}.bad{color:#e97980}.rare{color:#9aa8ff}.legend{color:#ffcc69}.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:max(env(safe-area-inset-bottom),7px);width:calc(100% - 20px);max-width:620px;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:#10131bf2;padding:6px;border:1px solid #292e3a;border-radius:16px}.tabs button{margin:0;padding:10px 1px;font-size:10px;background:#262b37;color:white}.tabs button.active{background:var(--g);color:#18130b}
+button{width:100%;border:0;border-radius:13px;padding:13px 7px;margin-top:7px;background:var(--g);font-weight:850;font-size:14px;color:#18130b;touch-action:manipulation}button.secondary{background:#292e3b;color:white}button.blue{background:#355e86;color:white}button.red{background:#71383c;color:white}button:disabled{opacity:.4}.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.item{border-top:1px solid #303542;padding-top:9px;margin-top:9px}.pill{font-size:10px;background:#2a2f3b;border-radius:99px;padding:4px 7px}.hidden{display:none!important}.log{height:170px;overflow:auto;font-size:12px;line-height:1.5;color:#d0d3da}.wheel{font-size:19px;font-weight:900;text-align:center;background:#242936;border-radius:14px;padding:14px;margin:8px 0}.good{color:#7dd79a}.bad{color:#e97980}.rare{color:#9aa8ff}.legend{color:#ffcc69}.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:max(env(safe-area-inset-bottom),7px);width:calc(100% - 20px);max-width:620px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:#10131bf2;padding:6px;border:1px solid #292e3a;border-radius:16px}.tabs button{margin:0;padding:10px 1px;font-size:10px;background:#262b37;color:white}.tabs button.active{background:var(--g);color:#18130b}
 </style></head>
 <body><div id="app">
-<h1>Wayfarer</h1><div class="sub">An open-world text RPG driven by dice, wheels, questionable treasure, and your own bad decisions.</div>
+<h1>Wayfarer</h1><div class="sub">An open-world text RPG driven by dice, wheels, shifting dungeons, questionable treasure, and your own bad decisions.</div>
 
 <div id="setup" class="card">
 <b>Choose Your Mode</b>
@@ -43,9 +43,48 @@ button{width:100%;border:0;border-radius:13px;padding:13px 7px;margin-top:7px;ba
 <div class="card"><b id="questTitle">Journal</b><div id="quests"></div></div>
 <div class="card"><b>World</b><div id="worldList"></div></div>
 </section>
+
+<section id="dungeonTab" class="hidden">
+<div class="card">
+  <div class="row"><b>Dungeon Expedition</b><span class="pill" id="dungeonState">NO DUNGEON</span></div>
+  <div class="wheel" id="dungeonName">No dungeon discovered.</div>
+  <div class="small" id="dungeonInfo">Search for a dungeon from Adventure first.</div>
+  <button class="blue" data-a="dungeonExplore" id="dungeonExploreBtn">EXPLORE ROOM</button>
+</div>
+
+<div class="card">
+  <b>Move</b>
+  <div class="small">Each room blocks a random direction. Enter enough rooms and the dungeon generates a boss chamber.</div>
+  <div style="max-width:230px;margin:10px auto">
+    <button class="secondary" data-dir="up" id="dirUp">↑ UP</button>
+    <div class="grid">
+      <button class="secondary" data-dir="left" id="dirLeft">← LEFT</button>
+      <button class="secondary" data-dir="right" id="dirRight">RIGHT →</button>
+    </div>
+    <button class="secondary" data-dir="down" id="dirDown">↓ DOWN</button>
+  </div>
+</div>
+
+<div class="card">
+  <b>Dungeon Combat</b>
+  <div class="wheel" id="dungeonEnemyTitle">No encounter</div>
+  <div class="small" id="dungeonEnemyStats"></div>
+  <div class="grid">
+    <button data-a="dungeonAttack">ATTACK (d20)</button>
+    <button class="secondary" data-a="dungeonDefend">DEFEND</button>
+  </div>
+  <div class="grid">
+    <button class="blue" data-a="dungeonSkill">POWER MOVE</button>
+    <button class="secondary" data-a="dungeonPotion">SECOND WIND</button>
+  </div>
+</div>
+
+<div class="card"><b>Dungeon Log</b><div class="log" id="dungeonLog"></div></div>
+</section>
+
 </div></div>
 
-<div id="tabs" class="tabs hidden"><button class="active" data-tab="worldTab">Adventure</button><button data-tab="gearTab">Gear</button><button data-tab="characterTab">Character</button></div>
+<div id="tabs" class="tabs hidden"><button class="active" data-tab="worldTab">Adventure</button><button data-tab="dungeonTab" id="dungeonTabBtn">Dungeon</button><button data-tab="gearTab">Gear</button><button data-tab="characterTab">Character</button></div>
 
 <script>
 (()=>{"use strict";
@@ -62,6 +101,94 @@ const areas=[
 {name:"Demon March",type:"wild",min:22,desc:"Blighted land near the Demon Lord's territory.",enemies:["Demon Hound","Hell Knight","Blood Mage","Lesser Demon"],mats:["Demon Horn","Hellstone","Blood Crystal"]}
 ];
 const dungeons=["Forgotten Crypt","Goblin Warrens","Sunken Temple","Abandoned Mine","Witch Catacombs","Ruined Keep","Crystal Cavern","Ancient Labyrinth","Dragon Barrow","Infernal Vault"];
+const dungeonCreatures=["Skeleton","Cultist","Giant Spider","Goblin","Wraith","Stone Guardian","Slime","Ghoul","Mimic","Hellhound","Cave Troll","Serpent"];
+const bossElements=["Frost","Flame","Storm","Void","Rot","Crystal","Blood","Shadow","Arcane","Poison","Sun","Iron"];
+const bossCreatures=["Hydra","Minotaur","Wyrm","Golem","Behemoth","Lich","Chimera","Manticore","Ogre King","Spider Queen","Dragon","Colossus"];
+
+function dlog(t){$("dungeonLog").insertAdjacentHTML("afterbegin","<div>"+t+"</div>")}
+function makeBlocked(){
+  const dirs=["up","down","left","right"];
+  return dirs[rnd(dirs.length)];
+}
+function generateDungeon(name){
+  s.dungeon={active:true,name,roomsEntered:1,targetRooms:4+rnd(7),blocked:makeBlocked(),bossReady:false,bossDefeated:false,encounter:null,boss:null,clearedRooms:0};
+  dlog("You enter "+name+". Somewhere deeper inside, something powerful is waiting.");
+}
+function makeDungeonEncounter(){
+  if(!s.dungeon.active||s.dungeon.encounter)return;
+  if(s.dungeon.bossReady){
+    if(!s.dungeon.boss){
+      const name=spin(bossElements)+" "+spin(bossCreatures);
+      const lv=Math.max(s.level+2,Math.floor(s.level*1.25));
+      const hp=Math.floor(95+lv*20+s.dungeon.targetRooms*8);
+      s.dungeon.boss={name,lv,hp,max:hp,atk:10+lv*3,def:3+Math.floor(lv*1.1),boss:true};
+    }
+    s.dungeon.encounter=[{...s.dungeon.boss}];
+    dlog("BOSS ROOM: "+s.dungeon.boss.name+" emerges.");
+    return;
+  }
+  const count=1+rnd(Math.min(3,1+Math.floor(s.level/6)));
+  let pack=[];
+  for(let i=0;i<count;i++){
+    const lv=Math.max(1,s.level+rnd(3)-1);
+    const name=spin(dungeonCreatures);
+    const hp=Math.floor(20+lv*7);
+    pack.push({name,lv,hp,max:hp,atk:4+lv*2,def:Math.floor(lv*.55),boss:false});
+  }
+  s.dungeon.encounter=pack;
+  dlog("Dungeon encounter: "+pack.map(x=>x.name).join(", ")+".");
+}
+function dungeonEnemyTurn(){
+  if(!s.dungeon.encounter||!s.dungeon.encounter.length)return;
+  for(const e of s.dungeon.encounter){
+    if(e.hp<=0)continue;
+    if(Math.random()<.10+attrsTotal("dodge")){dlog(e.name+" misses you.");continue}
+    let hit=Math.max(1,e.atk-def()-(s.turnDefend?Math.floor(def()*.7):0)+rnd(4));
+    s.hp-=hit;
+    dlog(e.name+" hits you for "+hit+".");
+    if(s.hp<=0)break;
+  }
+  s.turnDefend=false;
+  if(s.hp<=0){
+    s.hp=maxHp();s.gold=Math.floor(s.gold*.8);s.location=1;
+    dlog("You are defeated and dragged out of the dungeon. You lose 20% of your gold.");
+    s.dungeon=base().dungeon;
+  }
+}
+function clearDungeonEncounter(){
+  if(!s.dungeon.encounter)return;
+  const wasBoss=s.dungeon.encounter.some(x=>x.boss);
+  s.dungeon.encounter=null;
+  s.dungeon.clearedRooms++;
+  if(wasBoss){
+    s.dungeon.bossDefeated=true;
+    const reward=makeItem(Math.random()<.5?"weapon":"armor",8+s.dungeon.targetRooms);
+    s.inventory.push(reward);
+    const gold=80+s.dungeon.targetRooms*15+s.level*8;
+    s.gold+=gold;s.dungeons++;
+    dlog("Dungeon conquered! You claim "+reward.rarity+" "+reward.name+" ["+reward.attr.name+"] and "+gold+" gold.");
+    if(s.mode==="campaign")storyCheck();
+    s.dungeon.active=false;
+  } else dlog("The room falls silent. Choose a direction to continue.");
+}
+function moveDungeon(dir){
+  if(!s.dungeon.active){dlog("No active dungeon.");return}
+  if(s.dungeon.encounter){dlog("You cannot leave while enemies are still attacking.");return}
+  if(dir===s.dungeon.blocked){dlog("That route is blocked.");return}
+  if(s.dungeon.bossReady){dlog("The boss chamber is here. Explore the room.");return}
+  s.dungeon.roomsEntered++;
+  if(s.dungeon.roomsEntered>=s.dungeon.targetRooms){
+    s.dungeon.bossReady=true;
+    s.dungeon.blocked=null;
+    dlog("A massive door seals behind you. You have reached the boss chamber.");
+  } else {
+    s.dungeon.blocked=makeBlocked();
+    const flavor=spin(["You enter a torchlit chamber.","The corridor descends into damp stone.","You cross a room filled with broken statues.","The passage twists into an old burial hall.","You find a chamber carved with faded runes."]);
+    dlog(flavor+" Room "+s.dungeon.roomsEntered+" of roughly "+s.dungeon.targetRooms+".");
+  }
+  save();render();
+}
+
 const rarities=[["Common",55,1],["Uncommon",25,1.25],["Rare",12,1.55],["Epic",6,2],["Legendary",2,2.8]];
 const attrs=[
 {name:"Brutal",type:"atk",val:3,desc:"+3 Attack"},{name:"Stalwart",type:"hp",val:12,desc:"+12 Max HP"},{name:"Keen",type:"crit",val:.05,desc:"+5% critical chance"},
@@ -70,8 +197,9 @@ const attrs=[
 ];
 const weaponNames=["Iron Sword","War Axe","Spear","Longbow","Mace","Rapier","Greatsword","Twin Daggers","Runic Staff","Halberd"];
 const armorNames=["Leather Coat","Chainmail","Iron Plate","Ranger Cloak","Scale Armor","Knight Plate","Runed Robes","Brigandine","Warden Mail","Dragonhide"];
-function base(){return{started:false,mode:null,level:1,xp:0,xpNeed:35,gold:50,hp:100,baseHp:100,atk:8,def:3,luck:0,ore:3,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false}}
-let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x)s=Object.assign(base(),x)}catch(e){}
+function base(){return{started:false,mode:null,level:1,xp:0,xpNeed:35,gold:50,hp:100,baseHp:100,atk:8,def:3,luck:0,ore:3,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
+dungeon:{active:false,name:null,roomsEntered:0,targetRooms:0,blocked:null,bossReady:false,bossDefeated:false,encounter:null,boss:null,clearedRooms:0}}}
+let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.flags=Object.assign({},x.flags||{});s.dungeon=Object.assign(base().dungeon,x.dungeon||{})}}catch(e){}
 const $=id=>document.getElementById(id);const save=()=>localStorage.setItem(KEY,JSON.stringify(s));const rnd=n=>Math.floor(Math.random()*n);
 function log(t,combat=false){$(combat?"combatLog":"log").insertAdjacentHTML("afterbegin","<div>"+t+"</div>")}
 function attrsTotal(type){let n=0;[s.weapon,s.armor].forEach(i=>{if(i&&i.attr.type===type)n+=i.attr.val*(1+i.up*.25)});return n}
@@ -90,7 +218,16 @@ function enemyTurn(){if(!s.enemy)return;if(Math.random()<.12+attrsTotal("dodge")
 function explore(){let a=area();if(a.type==="town"){let r=spin(["inn","market","rumor","job"]);$("result").textContent="Town wheel: "+r.toUpperCase();if(r==="inn"){let c=10+s.level*2;if(s.gold>=c){s.gold-=c;s.hp=maxHp();log("You rest at the inn for "+c+" gold.")}else log("The innkeeper remains tragically committed to capitalism.")}else if(r==="market"){s.gold+=5+rnd(15);log("You make a small profit trading supplies.")}else if(r==="job"){s.gold+=12+s.level*2;log("You complete a local job.")}else log("Rumor: dungeons often hold better gear than the open road.");}
  else{let roll=Math.random(),l=luck();if(roll<.36+l){let m=spin(a.mats),n=1+rnd(3);s.ore+=m.includes("Ore")?n:0;s.gold+=m.includes("Gold")?n*5:0;$("result").textContent="Wheel: MATERIAL";log("You find "+n+" "+m+".")}else if(roll<.70){$("result").textContent="Wheel: ENCOUNTER";enemy();log("A "+s.enemy.name+" appears.",true);document.getElementById("combatCard").scrollIntoView({behavior:"smooth",block:"start"})}else if(roll<.84+l){let it=makeItem(Math.random()<.5?"weapon":"armor");s.inventory.push(it);$("result").textContent="Wheel: TREASURE";log("You discover a "+it.rarity+" "+it.name+" with "+it.attr.name+" ("+it.attr.desc+").")}else{$("result").textContent="Wheel: HAZARD";let d=rollDie(20),dc=9+Math.floor(s.level/5);if(d>=dc)log("Hazard save d20: "+d+" vs DC "+dc+". You avoid it.");else{let h=5+s.level*2;s.hp=Math.max(1,s.hp-h);log("Hazard save d20: "+d+" vs DC "+dc+". You take "+h+" damage.")}}}save();render()}
 function travel(){let unlocked=areas.filter(a=>a.min<=s.level),dest=spin(unlocked),old=area();s.location=areas.indexOf(dest);$("result").textContent="Travel wheel: "+dest.name;log("You leave "+old.name+" and travel to "+dest.name+".");save();render()}
-function dungeon(){if(area().type==="town"){log("You need to leave town before searching for a dungeon.");return}let d=rollDie(20),dc=11-Math.floor(luck()*10);$("result").textContent="Dungeon search d20: "+d;if(d<dc){log("You find nothing but old stones and several aggressively ordinary bushes.");return}let name=spin(dungeons),rooms=2+rnd(4);log("You discover "+name+" with "+rooms+" chambers.");let danger=rollDie(20);if(danger<7){let hit=8+s.level*2;s.hp=Math.max(1,s.hp-hit);log("A dungeon trap hits you for "+hit+".")}let reward=makeItem(Math.random()<.5?"weapon":"armor",rooms);s.inventory.push(reward);s.gold+=rooms*12;s.dungeons++;log("Dungeon cleared: "+reward.rarity+" "+reward.name+" ["+reward.attr.name+"] and "+rooms*12+" gold.");if(s.mode==="campaign")storyCheck();save();render()}
+function dungeon(){
+ if(area().type==="town"){log("You need to leave town before searching for a dungeon.");return}
+ if(s.dungeon.active){log("You already have an active dungeon expedition.");showTab("dungeonTab");return}
+ let d=rollDie(20),dc=11-Math.floor(luck()*10);$("result").textContent="Dungeon search d20: "+d;
+ if(d<dc){log("You find nothing but old stones and several aggressively ordinary bushes.");return}
+ let name=spin(dungeons);
+ generateDungeon(name);
+ log("Dungeon discovered: "+name+". The Dungeon tab is now active.");
+ save();render();showTab("dungeonTab");
+}
 function storyCheck(){let gates=[0,3,7,12,18,25];while(s.story<gates.length-1&&s.level>=gates[s.story+1]){s.story++;log("Campaign chapter "+s.story+" unlocked: "+["","The King's Summons","The Broken Fort","The Three Seals","March of Valedorn","The Demon Lord"][s.story]+".")}}
 function forge(kind){let cost=3+s.level/5|0,g=25+s.level*4;if(s.ore<cost||s.gold<g){log("Forging requires "+cost+" ore and "+g+" gold.");return}s.ore-=cost;s.gold-=g;let it=makeItem(kind,3);s.inventory.push(it);log("Forged "+it.rarity+" "+it.name+" with "+it.attr.name+".");save();render()}
 function upgradeItem(id){let it=s.inventory.find(x=>String(x.id)===String(id));if(!it)return;let c=20+(it.up+1)*20;if(s.gold<c)return;s.gold-=c;it.up++;it.stat=Math.floor(it.stat*1.12)+1;log(it.name+" upgraded to +"+it.up+". Its random attribute also grows stronger.");save();render()}
@@ -106,9 +243,49 @@ function render(){
  let ups=[["atk","Strength","+2 base attack"],["hp","Vitality","+10 max HP"],["def","Guard","+2 defense"],["luck","Fortune","+2% luck"]];$("upgrades").innerHTML=ups.map(u=>{let c=30+s.upgrade[u[0]]*30;return"<div class='item'><div class='row'><b>"+u[1]+"</b><span>Lv. "+s.upgrade[u[0]]+"</span></div><div class='small'>"+u[2]+"</div><button data-stat='"+u[0]+"'>UPGRADE "+c+"g</button></div>"}).join("");
  if(s.mode==="campaign"){let chapters=["Prologue: Rumors of war","The King's Summons","The Broken Fort","The Three Seals","March of Valedorn","The Demon Lord"]; $("questTitle").textContent="Campaign Journal";$("quests").innerHTML=chapters.map((x,i)=>"<div class='item "+(i>s.story?"small":"")+"'><b>"+(i<=s.story?"✓ ":"🔒 ")+x+"</b>"+(i===s.story&&i<5?"<div class='small'>Grow stronger and explore the world. Next chapter unlocks through level progression and dungeon activity.</div>":"")+"</div>").join("")}else{$("questTitle").textContent="Free Roam Journal";$("quests").innerHTML="<p class='small'>No destiny, no king yelling about prophecy. Explore, forge, clear dungeons and build the strongest character you can.</p>"}
  $("worldList").innerHTML=areas.map((a,i)=>"<div class='item'><b>"+a.name+"</b><div class='small'>Recommended level "+a.min+" • "+a.type+"</div></div>").join("");
+ $("dungeonTabBtn").disabled=!s.dungeon.active;
+ $("dungeonState").textContent=!s.dungeon.active?"NO DUNGEON":s.dungeon.bossReady?"BOSS ROOM":"IN PROGRESS";
+ $("dungeonName").textContent=s.dungeon.active?s.dungeon.name:"No dungeon discovered.";
+ $("dungeonInfo").textContent=s.dungeon.active?("Rooms entered: "+s.dungeon.roomsEntered+" / "+s.dungeon.targetRooms+" • Cleared encounters: "+s.dungeon.clearedRooms):"Search for a dungeon from Adventure first.";
+ $("dungeonExploreBtn").disabled=!s.dungeon.active||!!s.dungeon.encounter;
+ ["up","down","left","right"].forEach(dir=>{
+   const map={up:"dirUp",down:"dirDown",left:"dirLeft",right:"dirRight"};
+   const b=$(map[dir]);
+   b.disabled=!s.dungeon.active||!!s.dungeon.encounter||dir===s.dungeon.blocked||s.dungeon.bossReady;
+ });
+ if(s.dungeon.active&&s.dungeon.bossReady&&!s.dungeon.encounter)$("dungeonExploreBtn").textContent="ENTER BOSS CHAMBER";
+ else $("dungeonExploreBtn").textContent="EXPLORE ROOM";
+ if(s.dungeon.encounter&&s.dungeon.encounter.length){
+   $("dungeonEnemyTitle").textContent=s.dungeon.encounter.map(x=>(x.boss?"BOSS: ":"")+x.name).join(" + ");
+   $("dungeonEnemyStats").textContent=s.dungeon.encounter.map(x=>x.name+" Lv."+x.lv+" HP "+Math.max(0,x.hp)+"/"+x.max).join(" • ");
+ }else{
+   $("dungeonEnemyTitle").textContent="No encounter";
+   $("dungeonEnemyStats").textContent=s.dungeon.active?(s.dungeon.bossReady?"The boss chamber waits.":"Explore the room or move onward."):"";
+ }
+
 }
-document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)return;if(b.dataset.start){s=base();s.started=true;s.mode=b.dataset.start;s.hp=maxHp();save();render();log(s.mode==="campaign"?"Valedorn's border forts are failing. For now, you are nobody.":"The world is open. Become whatever sort of problem you want.");return}if(b.dataset.tab){showTab(b.dataset.tab);return}if(b.dataset.equip){equip(b.dataset.equip);return}if(b.dataset.upitem){upgradeItem(b.dataset.upitem);return}if(b.dataset.stat){let k=b.dataset.stat,c=30+s.upgrade[k]*30;if(s.gold>=c){s.gold-=c;s.upgrade[k]++;s.hp=Math.min(maxHp(),s.hp+(k==="hp"?10:0));save();render()}return}
- switch(b.dataset.a){case"explore":explore();break;case"travel":travel();break;case"dungeon":dungeon();break;case"forgeWeapon":forge("weapon");break;case"forgeArmor":forge("armor");break;
+document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)return;if(b.dataset.start){s=base();s.started=true;s.mode=b.dataset.start;s.hp=maxHp();save();render();log(s.mode==="campaign"?"Valedorn's border forts are failing. For now, you are nobody.":"The world is open. Become whatever sort of problem you want.");return}if(b.dataset.tab){showTab(b.dataset.tab);return}
+ if(b.dataset.dir){moveDungeon(b.dataset.dir);return}
+ if(b.dataset.equip){equip(b.dataset.equip);return}if(b.dataset.upitem){upgradeItem(b.dataset.upitem);return}if(b.dataset.stat){let k=b.dataset.stat,c=30+s.upgrade[k]*30;if(s.gold>=c){s.gold-=c;s.upgrade[k]++;s.hp=Math.min(maxHp(),s.hp+(k==="hp"?10:0));save();render()}return}
+ switch(b.dataset.a){
+ case"dungeonExplore":makeDungeonEncounter();save();render();break;
+ case"dungeonAttack":
+   if(!s.dungeon.encounter||!s.dungeon.encounter.length)break;
+   {let target=s.dungeon.encounter.find(x=>x.hp>0);if(!target)break;let d=rollDie(20),hit=d+Math.floor(atk()/5),dc=8+target.def;dlog("Attack roll "+hit+" vs DC "+dc+".");
+    if(d===1||hit<dc)dlog("You miss "+target.name+".");else{let dmg=Math.max(1,atk()-target.def+rnd(5)),crit=d===20||Math.random()<attrsTotal("crit");if(crit)dmg*=2;target.hp-=dmg;let heal=Math.floor(dmg*attrsTotal("leech"));if(heal)s.hp=Math.min(maxHp(),s.hp+heal);dlog((crit?"CRITICAL! ":"")+"You hit "+target.name+" for "+dmg+".")}
+    if(s.dungeon.encounter.every(x=>x.hp<=0))clearDungeonEncounter();else dungeonEnemyTurn();save();render()}
+   break;
+ case"dungeonDefend":
+   if(!s.dungeon.encounter||!s.dungeon.encounter.length)break;s.turnDefend=true;dlog("You brace against the whole enemy group.");dungeonEnemyTurn();save();render();break;
+ case"dungeonSkill":
+   if(!s.dungeon.encounter||!s.dungeon.encounter.length)break;
+   {let living=s.dungeon.encounter.filter(x=>x.hp>0),roll=rollDie(12);for(const target of living){let dmg=Math.max(1,Math.floor(atk()*1.15+roll-target.def));target.hp-=dmg;dlog("Power Move hits "+target.name+" for "+dmg+".")}s.hp=Math.max(1,s.hp-3);if(s.dungeon.encounter.every(x=>x.hp<=0))clearDungeonEncounter();else dungeonEnemyTurn();save();render()}
+   break;
+ case"dungeonPotion":
+   if(!s.dungeon.encounter||!s.dungeon.encounter.length)break;
+   {let heal=Math.floor(maxHp()*.22);s.hp=Math.min(maxHp(),s.hp+heal);dlog("Second Wind restores "+heal+" HP.");dungeonEnemyTurn();save();render()}
+   break;
+ case"explore":explore();break;case"travel":travel();break;case"dungeon":dungeon();break;case"forgeWeapon":forge("weapon");break;case"forgeArmor":forge("armor");break;
  case"attack":if(!s.enemy)return;{let d=rollDie(20),hit=d+Math.floor(atk()/5),dc=8+s.enemy.def;$("result").textContent="Attack d20: "+d;log("Attack roll "+hit+" vs DC "+dc+".",true);if(d===1||hit<dc)log("You miss.",true);else{let dmg=Math.max(1,atk()-s.enemy.def+rnd(5)),crit=d===20||Math.random()<attrsTotal("crit");if(crit)dmg*=2;s.enemy.hp-=dmg;let heal=Math.floor(dmg*attrsTotal("leech"));if(heal)s.hp=Math.min(maxHp(),s.hp+heal);log((crit?"CRITICAL! ":"")+"You deal "+dmg+".",true);if(s.enemy.hp<=0){win();break}}enemyTurn();save();render()}break;
  case"defend":if(!s.enemy)return;s.turnDefend=true;log("You brace for the next attack.",true);enemyTurn();save();render();break;
  case"skill":if(!s.enemy)return;{let d=rollDie(12),dmg=Math.floor(atk()*1.6+d);s.enemy.hp-=dmg;s.hp=Math.max(1,s.hp-3);log("Power Move d12 bonus "+d+": "+dmg+" damage. Costs 3 HP.",true);if(s.enemy.hp<=0)win();else{enemyTurn();save();render()}}break;
