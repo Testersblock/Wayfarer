@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG v1.3</title>
+<title>Wayfarer: Wheel & Dice RPG v1.5</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
@@ -11,8 +11,8 @@
 .bar{height:9px;background:#2c303b;border-radius:99px;overflow:hidden;margin:4px 0 8px}.fill{height:100%}.hp{background:var(--r)}.xp{background:var(--b)}
 button{width:100%;border:0;border-radius:13px;padding:13px 7px;margin-top:7px;background:var(--g);font-weight:850;font-size:14px;color:#18130b;touch-action:manipulation}button.secondary{background:#292e3b;color:white}button.blue{background:#355e86;color:white}button.red{background:#71383c;color:white}button:disabled{opacity:.4}.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.item{border-top:1px solid #303542;padding-top:9px;margin-top:9px}.pill{font-size:10px;background:#2a2f3b;border-radius:99px;padding:4px 7px}.hidden{display:none!important}.log{height:170px;overflow:auto;font-size:12px;line-height:1.5;color:#d0d3da}.wheel{font-size:19px;font-weight:900;text-align:center;background:#242936;border-radius:14px;padding:14px;margin:8px 0}.good{color:#7dd79a}.bad{color:#e97980}.rare{color:#9aa8ff}.legend{color:#ffcc69}
 input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;border-radius:12px;background:#222733;color:#fff;font-size:15px}
-.choicegrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.creatorStep{margin-top:10px}.selectedChoice{outline:2px solid var(--g);background:#302a20!important}.forgeRow{display:grid;grid-template-columns:1fr 1fr;gap:7px}.shopQty{max-width:90px}.positive{color:#7dd79a}.negative{color:#e97980}
-.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:max(env(safe-area-inset-bottom),7px);width:calc(100% - 20px);max-width:620px;display:grid;grid-template-columns:repeat(4,1fr);gap:4px;background:#10131bf2;padding:6px;border:1px solid #292e3a;border-radius:16px}.tabs button{margin:0;padding:10px 1px;font-size:10px;background:#262b37;color:white}.tabs button.active{background:var(--g);color:#18130b}
+.choicegrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.creatorStep{margin-top:10px}.selectedChoice{outline:2px solid var(--g);background:#302a20!important}.forgeRow{display:grid;grid-template-columns:1fr 1fr;gap:7px}.shopQty{max-width:90px}.positive{color:#7dd79a}.negative{color:#e97980}.mapNode{border-left:3px solid #6d7890;padding-left:8px}.mapCurrent{border-color:var(--g);background:#25251f}.spellCard{border-left:3px solid #596fbd;padding-left:8px}.customSpell{border-color:#a76bd4}.soul{border-left:3px solid #9a547e;padding-left:8px}
+.tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:max(env(safe-area-inset-bottom),7px);width:calc(100% - 20px);max-width:620px;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;background:#10131bf2;padding:6px;border:1px solid #292e3a;border-radius:16px}.tabs button{margin:0;padding:9px 1px;font-size:8px;background:#262b37;color:white}.tabs button.active{background:var(--g);color:#18130b}
 </style></head>
 <body><div id="app">
 <h1>Wayfarer</h1><div class="sub">An open-world text RPG driven by dice, wheels, shifting dungeons, questionable treasure, and your own bad decisions.</div>
@@ -71,6 +71,34 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 <button data-a="customForge">FORGE ITEM</button>
 </div></section>
 
+
+<section id="mapTab" class="hidden">
+<div class="card"><b>World Map</b><div class="small">Every known region, town, and major route in Valedorn.</div><div id="worldMap"></div></div>
+</section>
+
+<section id="materialsTab" class="hidden">
+<div class="card"><b>Material Inventory</b><div class="small">All crafting resources, soul crystals, and rare components.</div><div id="materialInventory"></div></div>
+</section>
+
+<section id="spellsTab" class="hidden">
+<div class="card">
+<div class="row"><b>Spellwork</b><span class="pill" id="spellworkLevel"></span></div>
+<div class="small" id="spellworkXP"></div>
+<div class="bar"><div class="fill xp" id="spellworkBar"></div></div>
+</div>
+<div class="card"><b>Known Spells</b><div id="knownSpells"></div></div>
+<div class="card"><b>Spell Tomes</b><div class="small">Unique tomes can be found in dungeons. Studying them permanently teaches their spell and trains Spellwork.</div><div id="spellTomes"></div></div>
+<div class="card"><b>Spell Creation</b>
+<div class="small">Requires Spellwork 10 and one Soul Crystal filled with a soul. Creating a spell consumes the filled crystal.</div>
+<div class="item"><div class="small">SPELL NAME</div><input id="customSpellName" maxlength="24" placeholder="Name your spell"></div>
+<div class="item"><div class="small">MAGICAL DISCIPLINE</div><select id="spellDiscipline"></select></div>
+<div class="item"><div class="small">FORM</div><select id="spellForm"></select></div>
+<div class="item"><div class="small">INTENT</div><select id="spellIntent"></select></div>
+<div class="item" id="spellCreationPreview"></div>
+<button data-a="createSpell" id="createSpellBtn">CREATE UNIQUE SPELL</button>
+</div>
+</section>
+
 <section id="characterTab" class="hidden">
 <div class="card"><b>Character</b><div id="stats"></div></div>
 <div class="card"><b>Upgrades</b><div id="upgrades"></div></div>
@@ -124,7 +152,15 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 
 </div></div>
 
-<div id="tabs" class="tabs hidden"><button class="active" data-tab="worldTab">Adventure</button><button data-tab="dungeonTab" id="dungeonTabBtn">Dungeon</button><button data-tab="gearTab">Gear</button><button data-tab="characterTab">Character</button></div>
+<div id="tabs" class="tabs hidden">
+<button class="active" data-tab="worldTab">Adventure</button>
+<button data-tab="dungeonTab" id="dungeonTabBtn">Dungeon</button>
+<button data-tab="mapTab">Map</button>
+<button data-tab="materialsTab">Inventory</button>
+<button data-tab="spellsTab">Spells</button>
+<button data-tab="gearTab">Gear</button>
+<button data-tab="characterTab">Character</button>
+</div>
 
 <script>
 (()=>{"use strict";
@@ -179,6 +215,60 @@ const wealthClasses=[
  {max:100,name:"Noble",gold:300,ore:8,desc:"Apparently somebody in your family understood compound wealth."}
 ];
 const dungeons=["Forgotten Crypt","Goblin Warrens","Sunken Temple","Abandoned Mine","Witch Catacombs","Ruined Keep","Crystal Cavern","Ancient Labyrinth","Dragon Barrow","Infernal Vault"];
+const worldConnections={
+"Greenreach":["Oakrest","Whispering Wood"],
+"Oakrest":["Greenreach","Highwall","Stonejaw Mountains"],
+"Whispering Wood":["Greenreach","Mire of Bells"],
+"Stonejaw Mountains":["Oakrest","Highwall","Frostgrave"],
+"Mire of Bells":["Whispering Wood","Sunscar Desert"],
+"Sunscar Desert":["Mire of Bells","Highwall","Demon March"],
+"Highwall":["Oakrest","Stonejaw Mountains","Sunscar Desert","Demon March"],
+"Frostgrave":["Stonejaw Mountains"],
+"Demon March":["Highwall","Sunscar Desert"]
+};
+
+const tomeSpellPool=[
+{id:"ember_lance",name:"Ember Lance",school:"Pyromancy",power:1.8,cost:9,effect:"Piercing flame bolt",desc:"A narrow lance of fire that favors raw damage."},
+{id:"winter_lock",name:"Winter Lock",school:"Cryomancy",power:1.25,cost:11,effect:"Freeze",desc:"Cold chains that may prevent the enemy's next action."},
+{id:"grave_touch",name:"Grave Touch",school:"Necromancy",power:1.35,cost:12,effect:"Drain",desc:"Steals vitality from the target."},
+{id:"storm_step",name:"Storm Step",school:"Aeromancy",power:1.1,cost:10,effect:"Dodge",desc:"A lightning-fast strike that briefly improves evasion."},
+{id:"stone_fist",name:"Stone Fist",school:"Geomancy",power:1.55,cost:10,effect:"Break",desc:"Heavy earth magic that weakens armor."},
+{id:"mirror_shard",name:"Mirror Shard",school:"Arcane",power:1.5,cost:13,effect:"Reflect",desc:"Arcane glass that damages and partially reflects the next hit."},
+{id:"blood_mark",name:"Blood Mark",school:"Hemomancy",power:1.65,cost:14,effect:"Leech",desc:"Marks a target and restores some health."},
+{id:"sun_burst",name:"Sun Burst",school:"Radiance",power:2.0,cost:16,effect:"Burn",desc:"A violent burst of radiant flame."},
+{id:"void_hook",name:"Void Hook",school:"Void",power:2.2,cost:18,effect:"Risk",desc:"Extremely strong, but can injure the caster."},
+{id:"thorn_prison",name:"Thorn Prison",school:"Verdancy",power:1.2,cost:12,effect:"Root",desc:"Living thorns restrain the target."},
+{id:"spirit_arrow",name:"Spirit Arrow",school:"Spirit",power:1.6,cost:11,effect:"Pierce",desc:"Ignores part of enemy defense."},
+{id:"echo_bolt",name:"Echo Bolt",school:"Resonance",power:1.4,cost:10,effect:"Echo",desc:"Has a chance to strike a second time."}
+];
+
+const spellDisciplines={
+"Flame":{power:1.20,cost:1.05,flavor:"burning"},
+"Frost":{power:1.00,cost:1.00,flavor:"freezing"},
+"Storm":{power:1.10,cost:1.10,flavor:"electrical"},
+"Void":{power:1.35,cost:1.30,flavor:"unstable"},
+"Blood":{power:1.15,cost:1.15,flavor:"life-draining"},
+"Spirit":{power:1.05,cost:.95,flavor:"ethereal"},
+"Earth":{power:1.15,cost:1.05,flavor:"crushing"},
+"Radiance":{power:1.22,cost:1.20,flavor:"radiant"}
+};
+const spellForms={
+"Bolt":{power:1.0,cost:1.0,targets:1},
+"Wave":{power:.82,cost:1.15,targets:3},
+"Orb":{power:1.22,cost:1.20,targets:1},
+"Beam":{power:1.35,cost:1.30,targets:1},
+"Sigil":{power:.75,cost:.85,targets:1},
+"Nova":{power:.90,cost:1.35,targets:4}
+};
+const spellIntents={
+"Destruction":{power:1.35,tag:"Damage"},
+"Binding":{power:.85,tag:"Control"},
+"Draining":{power:1.0,tag:"Leech"},
+"Warding":{power:.70,tag:"Shield"},
+"Shattering":{power:1.15,tag:"Armor Break"},
+"Echoing":{power:1.05,tag:"Multi-hit"}
+};
+
 const dungeonCreatures=["Skeleton","Cultist","Giant Spider","Goblin","Wraith","Stone Guardian","Slime","Ghoul","Mimic","Hellhound","Cave Troll","Serpent"];
 const bossElements=["Frost","Flame","Storm","Void","Rot","Crystal","Blood","Shadow","Arcane","Poison","Sun","Iron"];
 const bossCreatures=["Hydra","Minotaur","Wyrm","Golem","Behemoth","Lich","Chimera","Manticore","Ogre King","Spider Queen","Dragon","Colossus"];
@@ -213,6 +303,10 @@ function makeDungeonEncounter(){
     const hp=Math.floor(20+lv*7);
     pack.push({name,lv,hp,max:hp,atk:4+lv*2,def:Math.floor(lv*.55),boss:false});
   }
+  if(Math.random()<.12){
+    const choices=tomeSpellPool.filter(sp=>!s.knownSpells.some(k=>k.id===sp.id)&&!s.spellTomes.some(t=>t.id===sp.id));
+    if(choices.length){const tome={...spin(choices)};s.spellTomes.push(tome);dlog("Among the debris you find the "+tome.name+" Tome.");}
+  }
   s.dungeon.encounter=pack;
   dlog("Dungeon encounter: "+pack.map(x=>x.name).join(", ")+".");
 }
@@ -239,11 +333,28 @@ function clearDungeonEncounter(){
   s.dungeon.encounter=null;
   s.dungeon.clearedRooms++;
   if(wasBoss){
+    if((s.materials["Soul Crystal (Empty)"]||0)>0 && Math.random()<.55){
+      s.materials["Soul Crystal (Empty)"]--;
+      s.materials["Soul Crystal (Filled)"]=(s.materials["Soul Crystal (Filled)"]||0)+1;
+      dlog("A Soul Crystal captures the defeated boss's soul.");
+    }
     s.dungeon.bossDefeated=true;
     const reward=makeItem(Math.random()<.5?"weapon":"armor",8+s.dungeon.targetRooms);
     s.inventory.push(reward);
     const gold=80+s.dungeon.targetRooms*15+s.level*8;
     s.gold+=gold;s.dungeons++;
+    if(Math.random()<.72){
+      const choices=tomeSpellPool.filter(sp=>!s.knownSpells.some(k=>k.id===sp.id)&&!s.spellTomes.some(t=>t.id===sp.id));
+      if(choices.length){
+        const tome={...spin(choices)};
+        s.spellTomes.push(tome);
+        dlog("You recover the unique spell tome: "+tome.name+".");
+      }
+    }
+    if(Math.random()<.28){
+      s.materials["Soul Crystal (Empty)"]=(s.materials["Soul Crystal (Empty)"]||0)+1;
+      dlog("You find an empty Soul Crystal.");
+    }
     dlog("Dungeon conquered! You claim "+reward.rarity+" "+reward.name+" ["+reward.attr.name+"] and "+gold+" gold.");
     if(s.mode==="campaign")storyCheck();
     s.dungeon.active=false;
@@ -337,9 +448,9 @@ const effortDefs={
 "Masterwork":{mult:1.28,cost:2.5,bonus:22,desc:"Extremely expensive, with greatly improved quality odds."}
 };
 const armorNames=["Leather Coat","Chainmail","Iron Plate","Ranger Cloak","Scale Armor","Knight Plate","Runed Robes","Brigandine","Warden Mail","Dragonhide"];
-function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:100,baseHp:100,atk:8,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,materials:{Iron:3,Steel:0,Silver:0,Hardwood:0,Crystal:0,"Drake Scale":0,Sunstone:0,"Frost Crystal":0,Hellstone:0},townPanel:null,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
+function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:100,baseHp:100,atk:8,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,materials:{Iron:3,Steel:0,Silver:0,Hardwood:0,Crystal:0,"Drake Scale":0,Sunstone:0,"Frost Crystal":0,Hellstone:0,"Soul Crystal (Empty)":0,"Soul Crystal (Filled)":0,"Ancient Parchment":0,"Arcane Dust":0},townPanel:null,spellwork:{level:1,xp:0,xpNeed:30},knownSpells:[],spellTomes:[],customSpells:[],location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
 dungeon:{active:false,name:null,roomsEntered:0,targetRooms:0,blocked:null,bossReady:false,bossDefeated:false,encounter:null,boss:null,clearedRooms:0}}}
-let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.flags=Object.assign({},x.flags||{});s.dungeon=Object.assign(base().dungeon,x.dungeon||{})}}catch(e){}
+let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.flags=Object.assign({},x.flags||{});s.dungeon=Object.assign(base().dungeon,x.dungeon||{})}}catch(e){}
 const $=id=>document.getElementById(id);const save=()=>localStorage.setItem(KEY,JSON.stringify(s));const rnd=n=>Math.floor(Math.random()*n);
 function log(t,combat=false){$(combat?"combatLog":"log").insertAdjacentHTML("afterbegin","<div>"+t+"</div>")}
 function attrsTotal(type){let n=0;[s.weapon,s.armor].forEach(i=>{if(i&&i.attr.type===type)n+=i.attr.val*(1+i.up*.25)});return n}
@@ -496,6 +607,99 @@ function renderForgeOptions(){
  let m=materialDefs[mat.value],r=forgeRunes[ru.value],e=effortDefs[ef.value],need=2+Math.floor(blueprint.base/4),cost=Math.floor((18+blueprint.base*4+m.cost*.35+r.cost)*e.cost);
  $("forgePreview").innerHTML='<b>Forge Preview</b><div class="small">'+blueprint.kind+' • '+need+' '+mat.value+' • '+cost+' gold</div><div class="small">'+m.desc+'</div><div class="small">'+r.desc+'</div><div class="small">'+e.desc+'</div><div class="small">Available '+mat.value+': '+(s.materials[mat.value]||0)+'</div>';
 }
+
+function gainSpellworkXP(n){
+ s.spellwork.xp+=n;
+ while(s.spellwork.xp>=s.spellwork.xpNeed){
+   s.spellwork.xp-=s.spellwork.xpNeed;s.spellwork.level++;s.spellwork.xpNeed=Math.floor(s.spellwork.xpNeed*1.32);
+   log("Spellwork increased to level "+s.spellwork.level+".");
+ }
+}
+function studyTome(id){
+ const idx=s.spellTomes.findIndex(t=>t.id===id);if(idx<0)return;
+ const tome=s.spellTomes[idx];
+ if(!s.knownSpells.some(k=>k.id===id)){
+   s.knownSpells.push({...tome,custom:false});
+   gainSpellworkXP(18+Math.floor(tome.cost/2));
+   log("You study "+tome.name+" and permanently learn the spell.");
+ }
+ s.spellTomes.splice(idx,1);save();render();
+}
+function createUniqueSpell(){
+ if(s.spellwork.level<10){log("Spellwork 10 is required to create spells.");return}
+ if((s.materials["Soul Crystal (Filled)"]||0)<1){log("You need a Soul Crystal filled with a soul.");return}
+ const d=$("spellDiscipline").value,f=$("spellForm").value,i=$("spellIntent").value;
+ const D=spellDisciplines[d],F=spellForms[f],I=spellIntents[i];
+ const name=($("customSpellName").value||"Unnamed Spell").trim().slice(0,24)||"Unnamed Spell";
+ const variance=.88+Math.random()*.25;
+ const power=+(1.45*D.power*F.power*I.power*variance).toFixed(2);
+ const cost=Math.max(5,Math.floor((10+power*5)*D.cost*F.cost));
+ const mutations=[
+   ["Unstable",1.18,"15% backlash chance"],["Efficient",.92,"Reduced casting cost"],["Hungry",1.12,"Restores a little HP"],["Lingering",1.05,"May strike twice"],
+   ["Piercing",1.08,"Partially ignores defense"],["Volatile",1.22,"Higher damage variance"],["Precise",1.04,"Improved reliability"],["Ancient",1.15,"Exceptional magical resonance"]
+ ];
+ const m=spin(mutations);
+ const sp={id:"custom_"+Date.now(),name,school:d,form:f,intent:i,power:+(power*m[1]).toFixed(2),cost:m[0]==="Efficient"?Math.floor(cost*.72):cost,effect:I.tag,desc:d+" "+f+" focused on "+i.toLowerCase()+". "+m[0]+": "+m[2]+".",custom:true,mutation:m[0]};
+ s.customSpells.push(sp);s.knownSpells.push(sp);s.materials["Soul Crystal (Filled)"]--;gainSpellworkXP(40);
+ log("You consume a captured soul and create the unique spell "+name+".");
+ save();render();
+}
+function castKnownSpell(id, dungeonMode=false){
+ const sp=s.knownSpells.find(x=>x.id===id);if(!sp)return;
+ const target=dungeonMode?(s.dungeon.encounter&&s.dungeon.encounter.find(x=>x.hp>0)):s.enemy;
+ if(!target){log("There is nothing to cast at.");return}
+ const manaCost=sp.cost||10;
+ if(s.gold<0)return;
+ let damage=Math.max(1,Math.floor(atk()*sp.power*(.88+Math.random()*.24)));
+ if(sp.effect==="Pierce"||sp.effect==="Armor Break")damage+=Math.floor(target.def*.6);
+ target.hp-=damage;
+ gainSpellworkXP(3);
+ const lg=dungeonMode?dlog:log;
+ lg(sp.name+" hits "+target.name+" for "+damage+" magical damage.");
+ if(sp.effect==="Leech"||sp.mutation==="Hungry")s.hp=Math.min(maxHp(),s.hp+Math.floor(damage*.16));
+ if(sp.effect==="Freeze"||sp.effect==="Root"||sp.effect==="Control"){
+   if(Math.random()<.5){lg(target.name+" is restrained and loses its next action.");save();render();return}
+ }
+ if(sp.effect==="Echo"||sp.mutation==="Lingering"){
+   if(Math.random()<.35){let q=Math.floor(damage*.65);target.hp-=q;lg("The spell echoes for "+q+" more damage.");}
+ }
+ if(sp.effect==="Risk"||sp.mutation==="Unstable"){
+   if(Math.random()<.15){let q=Math.max(1,Math.floor(maxHp()*.08));s.hp-=q;lg("Magical backlash deals "+q+" to you.");}
+ }
+ if(dungeonMode){
+   if(s.dungeon.encounter.every(x=>x.hp<=0))clearDungeonEncounter();else dungeonEnemyTurn();
+ }else{
+   if(s.enemy&&s.enemy.hp<=0)win();else enemyTurn();
+ }
+ save();render();
+}
+function renderWorldMap(){
+ $("worldMap").innerHTML=areas.map(a=>{
+   const cons=worldConnections[a.name]||[];
+   return '<div class="item mapNode '+(a.name===area().name?'mapCurrent':'')+'"><div class="row"><b>'+a.name+'</b><span class="pill">'+a.type+'</span></div><div class="small">Recommended Lv '+a.min+'</div><div class="small">'+a.desc+'</div><div class="small">Routes: '+(cons.length?cons.join(", "):"None")+'</div></div>';
+ }).join("");
+}
+function renderMaterialsTab(){
+ const all=Object.entries(s.materials);
+ $("materialInventory").innerHTML=all.map(([k,v])=>'<div class="item"><div class="row"><b>'+k+'</b><span class="pill">x'+v+'</span></div></div>').join("");
+}
+function renderSpellUI(){
+ $("spellworkLevel").textContent="Lv "+s.spellwork.level;
+ $("spellworkXP").textContent=s.spellwork.xp+" / "+s.spellwork.xpNeed+" XP";
+ $("spellworkBar").style.width=Math.min(100,s.spellwork.xp/s.spellwork.xpNeed*100)+"%";
+ $("knownSpells").innerHTML=s.knownSpells.length?s.knownSpells.map(sp=>'<div class="item spellCard '+(sp.custom?'customSpell':'')+'"><div class="row"><b>'+sp.name+'</b><span class="pill">'+sp.school+'</span></div><div class="small">'+sp.desc+'</div><div class="small">Power '+sp.power+' • Cost '+sp.cost+(sp.custom?' • CREATED SPELL':'')+'</div><div class="grid"><button data-castspell="'+sp.id+'">CAST IN WORLD</button><button class="secondary" data-castdungeon="'+sp.id+'" '+(!(s.dungeon&&s.dungeon.encounter)?'disabled':'')+'>CAST IN DUNGEON</button></div></div>').join(""):'<p class="small">You know no spells yet. Dungeon tomes are the usual way humans fix that problem.</p>';
+ $("spellTomes").innerHTML=s.spellTomes.length?s.spellTomes.map(t=>'<div class="item spellCard"><div class="row"><b>'+t.name+' Tome</b><span class="pill">'+t.school+'</span></div><div class="small">'+t.desc+'</div><button data-study="'+t.id+'">STUDY TOME</button></div>').join(""):'<p class="small">No unread tomes.</p>';
+ let d=$("spellDiscipline"),f=$("spellForm"),i=$("spellIntent");
+ if(d){
+   let od=d.value,of=f.value,oi=i.value;
+   d.innerHTML=Object.keys(spellDisciplines).map(x=>'<option>'+x+'</option>').join("");if(od&&spellDisciplines[od])d.value=od;
+   f.innerHTML=Object.keys(spellForms).map(x=>'<option>'+x+'</option>').join("");if(of&&spellForms[of])f.value=of;
+   i.innerHTML=Object.keys(spellIntents).map(x=>'<option>'+x+'</option>').join("");if(oi&&spellIntents[oi])i.value=oi;
+   const D=spellDisciplines[d.value],F=spellForms[f.value],I=spellIntents[i.value];
+   $("spellCreationPreview").innerHTML='<b>Creation Preview</b><div class="small">'+d.value+' '+f.value+' • '+I.tag+'</div><div class="small">Creation requires 1 Filled Soul Crystal. Final power, mana cost, and magical mutation are randomized.</div><div class="small">Filled Soul Crystals: '+(s.materials["Soul Crystal (Filled)"]||0)+'</div>';
+   $("createSpellBtn").disabled=s.spellwork.level<10||(s.materials["Soul Crystal (Filled)"]||0)<1;
+ }
+}
 function render(){
  $("setup").classList.toggle("hidden",s.started);$("game").classList.toggle("hidden",!s.started);$("tabs").classList.toggle("hidden",!s.started);if(!s.started){renderCreator();return;}
  $("level").textContent=s.level;$("gold").textContent=s.gold;$("power").textContent=power();$("hpText").textContent=Math.floor(s.hp)+" / "+maxHp();$("hpBar").style.width=Math.max(0,s.hp/maxHp()*100)+"%";$("xpText").textContent=s.xp+" / "+s.xpNeed;$("xpBar").style.width=s.xp/s.xpNeed*100+"%";$("location").textContent="Location: "+area().name+" • Ore: "+s.ore;$("modeText").textContent="Mode: "+(s.mode==="free"?"Free Roam":"Campaign");$("areaTitle").textContent=area().name;$("areaDesc").textContent=area().desc;
@@ -506,7 +710,7 @@ function render(){
  let ups=[["atk","Strength","+2 base attack"],["hp","Vitality","+10 max HP"],["def","Guard","+2 defense"],["luck","Fortune","+2% luck"]];$("upgrades").innerHTML=ups.map(u=>{let c=30+s.upgrade[u[0]]*30;return"<div class='item'><div class='row'><b>"+u[1]+"</b><span>Lv. "+s.upgrade[u[0]]+"</span></div><div class='small'>"+u[2]+"</div><button data-stat='"+u[0]+"'>UPGRADE "+c+"g</button></div>"}).join("");
  if(s.mode==="campaign"){let chapters=["Prologue: Rumors of war","The King's Summons","The Broken Fort","The Three Seals","March of Valedorn","The Demon Lord"]; $("questTitle").textContent="Campaign Journal";$("quests").innerHTML=chapters.map((x,i)=>"<div class='item "+(i>s.story?"small":"")+"'><b>"+(i<=s.story?"✓ ":"🔒 ")+x+"</b>"+(i===s.story&&i<5?"<div class='small'>Grow stronger and explore the world. Next chapter unlocks through level progression and dungeon activity.</div>":"")+"</div>").join("")}else{$("questTitle").textContent="Free Roam Journal";$("quests").innerHTML="<p class='small'>No destiny, no king yelling about prophecy. Explore, forge, clear dungeons and build the strongest character you can.</p>"}
  $("worldList").innerHTML=areas.map((a,i)=>"<div class='item'><b>"+a.name+"</b><div class='small'>Recommended level "+a.min+" • "+a.type+"</div></div>").join("");
- renderTownPanel();renderForgeOptions();
+ renderTownPanel();renderForgeOptions();renderWorldMap();renderMaterialsTab();renderSpellUI();
  $("dungeonTabBtn").disabled=!s.dungeon.active;
  $("dungeonState").textContent=!s.dungeon.active?"NO DUNGEON":s.dungeon.bossReady?"BOSS ROOM":"IN PROGRESS";
  $("dungeonName").textContent=s.dungeon.active?s.dungeon.name:"No dungeon discovered.";
@@ -528,8 +732,11 @@ function render(){
  }
 
 }
-document.addEventListener("change",e=>{if(["forgeBlueprint","forgeMaterial","forgeRune","forgeEffort"].includes(e.target.id))renderForgeOptions()});
-document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)return;if(b.dataset.job){jobRoll(townJobs[+b.dataset.job]);return}
+document.addEventListener("change",e=>{if(["forgeBlueprint","forgeMaterial","forgeRune","forgeEffort"].includes(e.target.id))renderForgeOptions();if(["spellDiscipline","spellForm","spellIntent"].includes(e.target.id))renderSpellUI()});
+document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)return;if(b.dataset.study){studyTome(b.dataset.study);return}
+ if(b.dataset.castspell){castKnownSpell(b.dataset.castspell,false);return}
+ if(b.dataset.castdungeon){castKnownSpell(b.dataset.castdungeon,true);return}
+ if(b.dataset.job){jobRoll(townJobs[+b.dataset.job]);return}
  if(b.dataset.buymat){buyMaterial(b.dataset.buymat);return}
  if(b.dataset.sellmat){sellMaterial(b.dataset.sellmat);return}
  if(b.dataset.sellitem){sellItem(b.dataset.sellitem);return}
@@ -543,6 +750,7 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  case"openJobs":s.townPanel=s.townPanel==="jobs"?null:"jobs";save();render();break;
  case"openMarket":s.townPanel=s.townPanel==="market"?null:"market";save();render();break;
  case"customForge":customForge();break;
+ case"createSpell":createUniqueSpell();break;
  case"resetData":
    if(confirm("Reset ALL Wayfarer data? This cannot be undone.")){
      localStorage.removeItem(KEY);
