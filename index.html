@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG v2.5</title>
+<title>Wayfarer: Wheel & Dice RPG v2.6</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
@@ -59,8 +59,19 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 @media(max-width:420px){.monsterStatGrid{grid-template-columns:repeat(2,1fr)}}
 
 .statusPill{display:inline-block;padding:3px 7px;border:1px solid var(--line);border-radius:999px;font-size:10px;margin:2px}
+
+.campModal{display:none;position:fixed;inset:0;background:#000a;z-index:100;align-items:center;justify-content:center;padding:20px}
+.campModal.open{display:flex}.campModalCard{width:min(430px,100%);background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.combatDuel{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:stretch;margin-top:8px}
+.combatSlot{background:#1b202a;border:1px solid var(--line);border-radius:14px;padding:10px;min-height:86px}
+.combatSlot.empty{opacity:.45}.timeBadge{display:inline-block;padding:4px 8px;border:1px solid var(--line);border-radius:999px;font-size:10px}
+.achievementPop{position:fixed;top:14px;left:50%;transform:translateX(-50%) translateY(-140%);z-index:120;background:var(--card);border:1px solid var(--g);padding:10px 14px;border-radius:14px;transition:.25s}
+.achievementPop.show{transform:translateX(-50%) translateY(0)}
+@media(max-width:480px){.combatDuel{grid-template-columns:1fr}}
 </style></head>
-<body><div id="app">
+<body><div id="campModal" class="campModal"><div class="campModalCard"><b id="campModalTitle">Camp Result</b><div class="small" id="campModalText" style="margin:10px 0"></div><button data-a="closeCampModal">CONTINUE</button></div></div>
+<div id="achievementPop" class="achievementPop"></div>
+<div id="app">
 <h1>Wayfarer</h1><div class="sub">An open-world text RPG driven by dice, wheels, shifting dungeons, questionable treasure, and your own bad decisions.</div><button class="secondary topCharacterBtn" data-tab="characterTab">CHARACTER</button>
 
 <div id="setup">
@@ -106,7 +117,10 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 <div class="card"><b>Adventure Log</b><div class="log" id="log"></div></div>
 
 <div class="card" id="combatCard"><b>Combat</b>
-<div class="wheel" id="enemyName">No enemy</div>
+<div class="combatDuel">
+<div class="combatSlot"><div class="small">ENEMY</div><div class="wheel" id="enemyName">No enemy</div><div id="enemySlotMini" class="small"></div></div>
+<div class="combatSlot empty" id="summonSlot"><div class="small">SUMMON</div><div class="wheel" id="summonName">No summon</div><div id="summonMini" class="small">Summon a creature to fill this slot.</div></div>
+</div>
 <div class="monsterStatsBox"><div class="small" id="enemySummary">Explore until you encounter something.</div><div class="monsterStatGrid" id="enemyStatGrid"></div></div>
 <div class="grid"><button data-a="attack">ATTACK (d20)</button><button class="secondary" data-a="defend">DEFEND</button></div>
 <div class="grid"><button class="blue" data-a="skill">POWER MOVE</button><button class="secondary" data-a="flee">FLEE (d20)</button></div>
@@ -114,6 +128,8 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 <div class="combatSpellPicker" id="worldSpellPicker"></div>
 <div class="combatSpellRow"><button data-a="worldClassSkill" id="worldClassSkillBtn">USE SKILL</button><button class="secondary" data-a="toggleWorldSkillPicker" id="worldSkillSelectBtn">SELECT SKILL</button></div>
 <div class="combatSpellPicker" id="worldSkillPicker"></div>
+<div class="combatSpellRow"><button class="secondary" data-a="useQuickPotion" id="worldQuickPotionBtn">USE POTION</button><button class="secondary" data-a="toggleQuickPotionPicker" id="worldQuickPotionSelectBtn">SELECT POTION</button></div>
+<div class="combatSpellPicker" id="quickPotionPicker"></div>
 </div>
 <div class="card"><b>Combat Log</b><div class="log" id="combatLog"></div></div>
 </section>
@@ -172,7 +188,7 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 <div class="row"><span>Class Level</span><span class="pill" id="classLevelLabel">1</span></div>
 <div id="classSkills"></div></div>
 
-<div class="card"><b>Bestiary</b><div class="small">Identified monsters are recorded permanently.</div><div id="bestiaryList"></div></div><div class="card"><b id="questTitle">Journal</b><div id="quests"></div></div>
+<div class="card"><b>Bestiary</b><div class="small">Identified monsters are recorded permanently.</div><div id="bestiaryList"></div></div><div class="card"><b>Achievements & Title</b><div class="small">Current title: <b id="titleLabel"></b></div><div id="achievementList"></div></div><div class="card"><b id="questTitle">Journal</b><div id="quests"></div></div>
 <div class="card"><b>World</b><div id="worldList"></div></div>
 <div class="card">
   <b>Save Data</b>
@@ -204,15 +220,19 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 
 <div class="card">
   <b>Dungeon Combat</b>
-  <div class="wheel" id="dungeonEnemyTitle">No encounter</div>
-  <div class="small" id="dungeonEnemyStats"></div>
-  <div class="monsterStatsBox"><div class="small" id="dungeonTargetSummary">No active dungeon target.</div><div class="monsterStatGrid" id="dungeonTargetStatGrid"></div></div>
+  <div class="combatDuel">
+<div class="combatSlot"><div class="small">ENEMY GROUP</div><div class="wheel" id="dungeonEnemyTitle">No encounter</div><div class="small" id="dungeonEnemyStats"></div></div>
+<div class="combatSlot empty" id="dungeonSummonSlot"><div class="small">SUMMON</div><div class="wheel" id="dungeonSummonName">No summon</div><div id="dungeonSummonMini" class="small">Summon a creature to fill this slot.</div></div>
+</div>
+<div class="monsterStatsBox"><div class="small" id="dungeonTargetSummary">No active dungeon target.</div><div class="monsterStatGrid" id="dungeonTargetStatGrid"></div></div>
   <div class="grid"><button data-a="dungeonAttack">ATTACK (d20)</button><button class="secondary" data-a="dungeonDefend">DEFEND</button></div>
   <div class="grid"><button class="blue" data-a="dungeonSkill">POWER MOVE</button><button class="secondary" data-a="dungeonPotion">SECOND WIND</button></div>
   <div class="combatSpellRow"><button class="blue" data-a="dungeonSpell" id="dungeonSpellBtn">CAST SPELL</button><button class="secondary" data-a="toggleDungeonSpellPicker" id="dungeonSpellSelectBtn">SELECT SPELL</button></div>
   <div class="combatSpellPicker" id="dungeonSpellPicker"></div>
   <div class="combatSpellRow"><button data-a="dungeonClassSkill" id="dungeonClassSkillBtn">USE SKILL</button><button class="secondary" data-a="toggleDungeonSkillPicker" id="dungeonSkillSelectBtn">SELECT SKILL</button></div>
   <div class="combatSpellPicker" id="dungeonSkillPicker"></div>
+<div class="combatSpellRow"><button class="secondary" data-a="useQuickPotionDungeon" id="dungeonQuickPotionBtn">USE POTION</button><button class="secondary" data-a="toggleQuickPotionPickerDungeon" id="dungeonQuickPotionSelectBtn">SELECT POTION</button></div>
+<div class="combatSpellPicker" id="quickPotionPickerDungeon"></div>
 </div>
 
 <div class="card"><b>Dungeon Log</b><div class="log" id="dungeonLog"></div></div>
@@ -359,6 +379,10 @@ const wealthClasses=[
  {max:100,name:"Noble",gold:300,ore:8,desc:"Apparently somebody in your family understood compound wealth."}
 ];
 const dungeons=["Forgotten Crypt","Goblin Warrens","Sunken Temple","Abandoned Mine","Witch Catacombs","Ruined Keep","Crystal Cavern","Ancient Labyrinth","Dragon Barrow","Infernal Vault"];
+const landmarks={
+"Greenreach":["Old Watchtower","Abandoned Mill"],"Whispering Wood":["Moonwell","Hollow Oak"],"Blackpine Hollow":["Hunter Shrine","Mist Cairn"],"Stonejaw Mountains":["Titan Stair","Collapsed Forge"],"Mire of Bells":["Sunken Belfry","Witch Causeway"],"Crystal Coast":["Glass Lighthouse","Drowned Chapel"],"Sunscar Desert":["Buried Observatory","Red Obelisk"],"Skyreach Plateau":["Giant Sundial","Cloud Arch"],"Frostgrave":["Frozen Cathedral","White Beacon"],"Ashen Catacombs":["Ash Throne","Nameless Mausoleum"],"Demon March":["Broken War Gate","Cinder Shrine"],"Demon Citadel":["Black Spire Courtyard","Soul Furnace"]
+};
+function discoverLandmark(){let list=landmarks[area().name]||[],unseen=list.filter(x=>!s.landmarksFound[area().name+"|"+x]);if(!unseen.length||Math.random()>.12)return false;let lm=spin(unseen);s.landmarksFound[area().name+"|"+lm]=true;let xp=18+s.level*4,g=10+s.level*3;s.xp+=xp;s.gold+=g;levelUp();log("Landmark discovered: "+lm+". You gain "+xp+" XP and "+g+" gold.");return true}
 const worldConnections={
 "Greenreach":["Oakrest","Rivergate","Whispering Wood"],"Oakrest":["Greenreach","Rivergate","Highwall","Stonejaw Mountains"],
 "Rivergate":["Oakrest","Greenreach","Whispering Wood","Crystal Coast"],"Whispering Wood":["Greenreach","Rivergate","Blackpine Hollow","Mire of Bells"],
@@ -454,6 +478,10 @@ const summonTypes=["Skeleton","Wolf Spirit","Arcane Construct","Shadow Hound","F
 const spellElements=["Arcane","Flame","Frost","Storm","Void","Blood","Spirit","Earth","Radiance"];
 
 
+const enemyAffixes=[
+{name:"Frenzied",atk:1.25,hp:1,def:1,loot:1.25},{name:"Armored",atk:1,hp:1.1,def:1.45,loot:1.3},{name:"Vampiric",atk:1.1,hp:1.15,def:1,loot:1.35},{name:"Swift",atk:1.12,hp:.95,def:1,loot:1.25},{name:"Ancient",atk:1.2,hp:1.35,def:1.2,loot:1.55}
+];
+function rollEnemyAffix(e){if(!e||e.boss||e.finalBoss||Math.random()>.16)return e;let a=spin(enemyAffixes);e.name=a.name+" "+e.name;e.affix=a.name;e.atk=Math.floor(e.atk*a.atk);e.hp=Math.floor(e.hp*a.hp);e.max=e.hp;e.def=Math.floor(e.def*a.def);e.lootMult=a.loot;return e}
 const dungeonCreatures=["Skeleton","Cultist","Giant Spider","Goblin","Wraith","Stone Guardian","Slime","Ghoul","Mimic","Hellhound","Cave Troll","Serpent","Bone Knight","Carrion Bat","Rune Construct","Dungeon Ooze","Crypt Archer","Fungal Brute","Shadow Hound","Ancient Sentinel","Corpse Mage","Deep Stalker","Armored Beetle","Possessed Armor"];
 const bossElements=["Frost","Flame","Storm","Void","Rot","Crystal","Blood","Shadow","Arcane","Poison","Sun","Iron"];
 const bossCreatures=["Hydra","Minotaur","Wyrm","Golem","Behemoth","Lich","Chimera","Manticore","Ogre King","Spider Queen","Dragon","Colossus"];
@@ -492,7 +520,7 @@ function makeDungeonEncounter(){
     const choices=tomeSpellPool.filter(sp=>!s.knownSpells.some(k=>k.id===sp.id)&&!s.spellTomes.some(t=>t.id===sp.id));
     if(choices.length){const tome={...spin(choices)};s.spellTomes.push(tome);dlog("Among the debris you find the "+tome.name+" Tome.");}
   }
-  s.dungeon.encounter=pack;
+  pack.forEach(e=>rollEnemyAffix(e));s.dungeon.encounter=pack;
   dlog("Dungeon encounter: "+pack.map(x=>x.name).join(", ")+".");
 }
 function dungeonEnemyTurn(){tickStatuses();summonTurn(true);if(s.dungeon.encounter&&s.dungeon.encounter.every(x=>x.hp<=0)){clearDungeonEncounter();return}
@@ -556,7 +584,7 @@ function clearDungeonEncounter(){
     s.dungeon.active=false;
   } else dlog("The room falls silent. Choose a direction to continue.");
 }
-function moveDungeon(dir){
+function moveDungeon(dir){advanceTime(.5);
   if(!s.dungeon.active){dlog("No active dungeon.");return}
   if(s.dungeon.encounter){dlog("You cannot leave while enemies are still attacking.");return}
   if(dir===s.dungeon.blocked){dlog("That route is blocked.");return}
@@ -664,9 +692,9 @@ const effortDefs={
 };
 const armorNames=["Leather Coat","Chainmail","Iron Plate","Ranger Cloak","Scale Armor","Knight Plate","Runed Robes","Brigandine","Warden Mail","Dragonhide"];
 function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:55,baseHp:55,mana:60,baseMana:60,atk:4,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,materials:{Iron:3,Steel:0,Silver:0,Hardwood:0,Crystal:0,"Drake Scale":0,Sunstone:0,"Frost Crystal":0,Hellstone:0,Leather:0,Herb:0,Flax:0,Clay:0,"Wild Honey":0,Silk:0,Moonleaf:0,Resin:0,"Living Bark":0,Coal:0,"Adamant Shard":0,Quartz:0,Sulfur:0,"Venom Sac":0,"Black Herb":0,"Spirit Water":0,"Bog Iron":0,Rotroot:0,"Ghost Reed":0,"Hydra Scale":0,"Glass Shard":0,"Gold Ore":0,"Desert Rose":0,"Scorpion Chitin":0,"Star Sand":0,Obsidian:0,"Wyrm Hide":0,Iceglass:0,"White Fur":0,"Frozen Core":0,"Blue Quartz":0,"Demon Horn":0,"Blood Crystal":0,"Infernal Iron":0,"Ash Pearl":0,"Soul Ash":0,Demonhide:0,"Ancient Parchment":0,"Arcane Dust":0,"Beast Fang":0,"Glowcap":0,"Dryad Sap":0,"Black Timber":0,"Shadow Moss":0,"Wolf Pelt":0,"Mist Pearl":0,"Dark Resin":0,"Ironwood":0,"Mithril Flake":0,"Swamp Amber":0,"Sea Crystal":0,"Pearl":0,"Saltstone":0,"Coral":0,"Siren Scale":0,"Tideglass":0,"Djinn Ash":0,"Stormglass":0,"Cloud Feather":0,"Sky Iron":0,"Giant Bone":0,"Lightning Core":0,"Wind Silk":0,"Everfrost":0,"Bone Dust":0,"Grave Wax":0,"Black Iron":0,"Crypt Amber":0,"Death Silk":0,"Hellglass":0,"Cursed Steel":0,"Abyssal Alloy":0,"Demon Heart":0,"Black Crystal":0,"Royal Hellstone":0,"Soulsteel":0,"Infernal Ruby":0},
-soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,randomNPCs:{},sideQuests:[],renown:0,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,selectedClassSkill:null,activeSummon:null,tempAttackBuff:0,tempDefenseBuff:0,tempHaste:0,skipEnemyTurn:false,potions:{},statuses:[],bestiary:{},reputation:{},activeWorldEvent:null,campCooldown:0,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
+soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,randomNPCs:{},sideQuests:[],renown:0,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,selectedClassSkill:null,activeSummon:null,tempAttackBuff:0,tempDefenseBuff:0,tempHaste:0,skipEnemyTurn:false,potions:{},statuses:[],bestiary:{},reputation:{},activeWorldEvent:null,campCooldown:0,timeOfDay:8,daysPassed:1,landmarksFound:{},achievements:{},title:"Wayfarer",selectedQuickPotion:null,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
 dungeon:{active:false,name:null,roomsEntered:0,targetRooms:0,blocked:null,bossReady:false,bossDefeated:false,encounter:null,boss:null,clearedRooms:0}}}
-let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.potions=Object.assign({},x.potions||{});s.bestiary=Object.assign({},x.bestiary||{});s.reputation=Object.assign({},x.reputation||{});s.statuses=Array.isArray(x.statuses)?x.statuses:[];s.questProgress=Object.assign({},x.questProgress||{});s.randomNPCs=Object.assign({},x.randomNPCs||{});s.sideQuests=Array.isArray(x.sideQuests)?x.sideQuests:[];if(typeof x.renown==="number")s.renown=x.renown;s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
+let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.potions=Object.assign({},x.potions||{});s.bestiary=Object.assign({},x.bestiary||{});s.reputation=Object.assign({},x.reputation||{});s.statuses=Array.isArray(x.statuses)?x.statuses:[];s.landmarksFound=Object.assign({},x.landmarksFound||{});s.achievements=Object.assign({},x.achievements||{});if(typeof x.timeOfDay==="number")s.timeOfDay=x.timeOfDay;if(typeof x.daysPassed==="number")s.daysPassed=x.daysPassed;if(typeof x.title==="string")s.title=x.title;if(typeof x.selectedQuickPotion==="string")s.selectedQuickPotion=x.selectedQuickPotion;s.questProgress=Object.assign({},x.questProgress||{});s.randomNPCs=Object.assign({},x.randomNPCs||{});s.sideQuests=Array.isArray(x.sideQuests)?x.sideQuests:[];if(typeof x.renown==="number")s.renown=x.renown;s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
 if(!s.flags.soulCrystalObjectMigration){
   let legacyFilled=Number((x.materials||{})["Soul Crystal (Filled)"]||0);
   let legacyEmpty=Number((x.materials||{})["Soul Crystal (Empty)"]||0);
@@ -694,20 +722,25 @@ function levelUp(){while(s.xp>=s.xpNeed){s.xp-=s.xpNeed;s.level++;s.xpNeed=Math.
 function loot(mult=1){let g=Math.floor((8+s.level*3)*mult*(1+attrsTotal("gold"))),xp=Math.floor((12+s.level*3)*mult*(1+attrsTotal("xp")+s.bonusXP));s.gold+=g;s.xp+=xp;if(Math.random()<.35){s.ore+=1+rnd(2);log("You recover forging ore.")}if(Math.random()<.16){let it=makeItem(Math.random()<.55?"weapon":"armor",2);s.inventory.push(it);log("Loot wheel: "+it.rarity+" "+it.name+" ["+it.attr.name+"].")}log("Reward: "+g+" gold, "+xp+" XP.");levelUp()}
 function win(){let dead={...s.enemy};s.kills++;s.questProgress["kills_"+area().name]=Number(s.questProgress["kills_"+area().name]||0)+1;
  if(s.mode==="campaign"){if(dead.finalBoss){s.finalBossDefeated=true;log("Demon Lord Malachar is defeated. Valedorn survives.");}}
- captureSoul(dead,false);if(dead.elite&&/(Wandering Champion|Ancient Beast|Monster Nest)/.test(dead.name)){s.gold+=25+s.level*4;s.renown++;s.activeWorldEvent=null;log("Elite hunt complete. Bonus gold and Renown +1.")}loot(s.enemy.elite?1.8:1);s.enemy=null;if(dead.finalBoss)advanceCampaign();save();render()}
+ captureSoul(dead,false);if(dead.elite&&/(Wandering Champion|Ancient Beast|Monster Nest)/.test(dead.name)){s.gold+=25+s.level*4;s.renown++;s.activeWorldEvent=null;log("Elite hunt complete. Bonus gold and Renown +1.")}loot((s.enemy.elite?1.8:1)*(dead.lootMult||1));s.enemy=null;if(dead.finalBoss)advanceCampaign();save();render()}
 function enemyTurn(){tickStatuses();summonTurn(false);if(s.enemy&&s.enemy.hp<=0){win();return}if(!s.enemy)return;if(Math.random()<.12+attrsTotal("dodge")+s.bonusDodge){log(s.enemy.name+" misses.",true);return}let hit=Math.max(1,s.enemy.atk-def()-(s.turnDefend?Math.floor(def()*.7):0)+rnd(5));s.turnDefend=false;s.hp-=hit;log(s.enemy.name+" deals "+hit+" damage.",true);if(s.hp<=0){s.hp=maxHp();s.gold=Math.floor(s.gold*.8);s.enemy=null;log("You are defeated and wake in "+areas[1].name+". You lose 20% of your gold.");s.location=1}}
 function rollWorldEvent(){if(area().type==="town"||s.activeWorldEvent||Math.random()>.10)return false;let type=spin(["Wandering Champion","Ancient Beast","Lost Treasure Caravan","Arcane Storm","Monster Nest"]);s.activeWorldEvent={type,area:area().name};if(type==="Lost Treasure Caravan"){let g=35+s.level*6;s.gold+=g;log("Rare event: lost caravan. You recover "+g+" gold.");s.activeWorldEvent=null}else if(type==="Arcane Storm"){let mm=Math.floor(maxMana()*.5);s.mana=Math.min(maxMana(),s.mana+mm);s.materials["Arcane Dust"]=(s.materials["Arcane Dust"]||0)+1;log("Rare event: Arcane Storm restores mana and leaves Arcane Dust.");s.activeWorldEvent=null}else{log("Rare event: "+type+" appears.");spawnEnemy(true);if(s.enemy){s.enemy.name=type+" "+s.enemy.name;s.enemy.elite=true;s.enemy.hp=Math.floor(s.enemy.hp*1.5);s.enemy.max=s.enemy.hp;s.enemy.atk=Math.floor(s.enemy.atk*1.25)}}save();return true}
-function explore(){s.campCooldown=0;if(rollWorldEvent()){render();return}let a=area();if(a.type==="town"){let r=spin(["inn","market","rumor"]);$("result").textContent="Town wheel: "+r.toUpperCase();if(r==="inn"){let c=10+s.level*2;if(s.gold>=c){s.gold-=c;s.hp=maxHp();s.mana=maxMana();log("You rest at the inn for "+c+" gold. HP and mana fully restored.")}else log("The innkeeper remains tragically committed to capitalism.")}else if(r==="market"){s.gold+=5+rnd(15);log("You make a small profit trading supplies.")}else log("Rumor: dungeons often hold better gear than the open road.");}
+function explore(){advanceTime(1);s.campCooldown=0;if(rollWorldEvent()){render();return}if(discoverLandmark()){save();render();return}let a=area();if(a.type==="town"){let r=spin(["inn","market","rumor"]);$("result").textContent="Town wheel: "+r.toUpperCase();if(r==="inn"){let c=10+s.level*2;if(s.gold>=c){s.gold-=c;s.hp=maxHp();s.mana=maxMana();log("You rest at the inn for "+c+" gold. HP and mana fully restored.")}else log("The innkeeper remains tragically committed to capitalism.")}else if(r==="market"){s.gold+=5+rnd(15);log("You make a small profit trading supplies.")}else log("Rumor: dungeons often hold better gear than the open road.");}
  else{let roll=Math.random();if(roll<.36){let m=spin(a.mats),n=1+rnd(3);
  let map={"Iron Ore":"Iron","Steel Ore":"Steel","Silver Ore":"Silver","Hardwood":"Hardwood","Crystal":"Crystal","Drake Scale":"Drake Scale","Sunstone":"Sunstone","Frost Crystal":"Frost Crystal","Hellstone":"Hellstone","Leather":"Leather","Herb":"Herb","Flax":"Flax","Clay":"Clay","Wild Honey":"Wild Honey","Silk":"Silk","Moonleaf":"Moonleaf","Resin":"Resin","Living Bark":"Living Bark","Coal":"Coal","Adamant Shard":"Adamant Shard","Quartz":"Quartz","Sulfur":"Sulfur","Venom Sac":"Venom Sac","Black Herb":"Black Herb","Spirit Water":"Spirit Water","Bog Iron":"Bog Iron","Rotroot":"Rotroot","Ghost Reed":"Ghost Reed","Hydra Scale":"Hydra Scale","Glass Shard":"Glass Shard","Gold Ore":"Gold Ore","Desert Rose":"Desert Rose","Scorpion Chitin":"Scorpion Chitin","Star Sand":"Star Sand","Obsidian":"Obsidian","Wyrm Hide":"Wyrm Hide","Iceglass":"Iceglass","White Fur":"White Fur","Frozen Core":"Frozen Core","Blue Quartz":"Blue Quartz","Demon Horn":"Demon Horn","Blood Crystal":"Blood Crystal","Infernal Iron":"Infernal Iron","Ash Pearl":"Ash Pearl","Soul Ash":"Soul Ash","Demonhide":"Demonhide"};
  if(map[m])s.materials[map[m]]=(s.materials[map[m]]||0)+n;
  if(m.includes("Ore"))s.ore+=n;if(m.includes("Gold"))s.gold+=n*5;
  $("result").textContent="Wheel: MATERIAL";log("You find "+n+" "+m+".")}else if(roll<.70){$("result").textContent="Wheel: ENCOUNTER";enemy();log("A "+s.enemy.name+" appears.",true);document.getElementById("combatCard").scrollIntoView({behavior:"smooth",block:"start"})}else if(roll<.84){let it=makeItem(Math.random()<.5?"weapon":"armor");s.inventory.push(it);$("result").textContent="Wheel: TREASURE";log("You discover a "+it.rarity+" "+it.name+" with "+it.attr.name+" ("+it.attr.desc+").")}else{$("result").textContent="Wheel: HAZARD";let d=rollDie(20),dc=9+Math.floor(s.level/5);if(d>=dc)log("Hazard save d20: "+d+" vs DC "+dc+". You avoid it.");else{let h=5+s.level*2;s.hp=Math.max(1,s.hp-h);log("Hazard save d20: "+d+" vs DC "+dc+". You take "+h+" damage.")}}}save();render()}
-function camp(){if(area().type==="town"){log("Use an inn in town.");return}if(s.enemy||(s.dungeon&&s.dungeon.encounter)){log("You cannot camp during combat.");return}if(s.campCooldown>0){log("Explore or travel before camping again.");return}if(Math.random()<.22){log("Your camp attracts trouble.");spawnEnemy(false);s.campCooldown=1;save();render();return}let h=Math.floor(maxHp()*.35),mm=Math.floor(maxMana()*.35);s.hp=Math.min(maxHp(),s.hp+h);s.mana=Math.min(maxMana(),s.mana+mm);s.campCooldown=1;log("You rest and recover "+h+" HP and "+mm+" mana.");save();render()}
-function travel(){s.campCooldown=0;
- let unlocked=areas.filter(a=>a.min<=s.level),choices=unlocked.filter(a=>areas.indexOf(a)!==s.location);if(!choices.length)choices=unlocked;
- let dest=spin(choices),old=area(),wasTown=old.type==="town";s.location=areas.indexOf(dest);if(!s.visited.includes(s.location))s.visited.push(s.location);if(area().type==="town"&&!wasTown){s.jobShifts=3;s.jobChallenge=null;}
- $("result").textContent="Travel wheel: "+dest.name;log("You leave "+old.name+" and travel to "+dest.name+".");save();render();
+function timeLabel(){let h=Math.floor(s.timeOfDay)%24;if(h>=5&&h<8)return"Dawn";if(h>=8&&h<18)return"Day";if(h>=18&&h<21)return"Dusk";return"Night"}
+function advanceTime(hours){s.timeOfDay+=hours;while(s.timeOfDay>=24){s.timeOfDay-=24;s.daysPassed++}}
+function showCampPopup(title,text){$("campModalTitle").textContent=title;$("campModalText").textContent=text;$("campModal").classList.add("open")}
+function camp(){
+ if(area().type==="town"){showCampPopup("Camp Failed","You are already in town. Use an inn instead.");return}
+ if(s.enemy||(s.dungeon&&s.dungeon.encounter)){showCampPopup("Camp Failed","You cannot make camp during combat.");return}
+ if(s.campCooldown>0){showCampPopup("Camp Failed","You need to explore or travel before camping again.");return}
+ advanceTime(8);
+ if(Math.random()<.22){showCampPopup("Ambushed!","Something found your camp. Prepare for combat.");log("Your camp attracts trouble.");spawnEnemy(false);s.campCooldown=1;save();render();return}
+ let h=Math.floor(maxHp()*.35),mm=Math.floor(maxMana()*.35);s.hp=Math.min(maxHp(),s.hp+h);s.mana=Math.min(maxMana(),s.mana+mm);s.campCooldown=1;let text="You rest until "+timeLabel()+". Restored "+h+" HP and "+mm+" mana.";showCampPopup("Camp Rest",text);log(text);save();render();
 }
 function dungeon(){
  if(area().type==="town"){log("You need to leave town before searching for a dungeon.");return}
@@ -1387,6 +1420,8 @@ function renderClassSkillUI(){
  if($("dungeonSkillSelectBtn"))$("dungeonSkillSelectBtn").textContent=sk?"SELECT: "+sk.name.toUpperCase():"SELECT SKILL";
  if($("dungeonSkillPicker"))$("dungeonSkillPicker").innerHTML=classSkillPickerHTML("dungeon");
 }
+function quickPotionHTML(mode){let a=Object.entries(s.potions).filter(([k,v])=>v>0);return a.length?a.map(([n,v])=>'<button class="'+(s.selectedQuickPotion===n?'blue':'secondary')+'" data-selectquickpotion="'+n+'" data-quickmode="'+mode+'">'+(s.selectedQuickPotion===n?'✓ ':'')+n+' • x'+v+'</button>').join(""):'<div class="small">No potions available.</div>'}
+function renderQuickPotion(){let n=s.selectedQuickPotion,ok=n&&(s.potions[n]||0)>0;if(!ok)s.selectedQuickPotion=null;if($("worldQuickPotionBtn")){$("worldQuickPotionBtn").textContent=ok?"USE "+n.toUpperCase():"USE POTION";$("worldQuickPotionBtn").disabled=!ok}if($("dungeonQuickPotionBtn")){$("dungeonQuickPotionBtn").textContent=ok?"USE "+n.toUpperCase():"USE POTION";$("dungeonQuickPotionBtn").disabled=!ok}if($("worldQuickPotionSelectBtn"))$("worldQuickPotionSelectBtn").textContent=ok?"SELECT: "+n.toUpperCase():"SELECT POTION";if($("dungeonQuickPotionSelectBtn"))$("dungeonQuickPotionSelectBtn").textContent=ok?"SELECT: "+n.toUpperCase():"SELECT POTION";if($("quickPotionPicker"))$("quickPotionPicker").innerHTML=quickPotionHTML("world");if($("quickPotionPickerDungeon"))$("quickPotionPickerDungeon").innerHTML=quickPotionHTML("dungeon")}
 function renderCombatSpellPickers(){
  let sp=getSelectedSpell(),wp=$("worldSpellBtn"),ws=$("worldSpellSelectBtn"),wpk=$("worldSpellPicker");
  if(wp){wp.textContent=sp?"CAST "+sp.name.toUpperCase():"CAST SPELL";wp.disabled=!s.enemy||!sp}
@@ -1397,6 +1432,7 @@ function renderCombatSpellPickers(){
  if(ds)ds.textContent=sp?"SELECT: "+sp.name.toUpperCase():"SELECT SPELL";
  if(dpk)dpk.innerHTML=spellPickerHTML("dungeon");
 }
+function renderSummonSlots(){let a=s.activeSummon&&s.activeSummon.hp>0?s.activeSummon:null;for(const ids of [["summonSlot","summonName","summonMini"],["dungeonSummonSlot","dungeonSummonName","dungeonSummonMini"]]){let box=$(ids[0]),name=$(ids[1]),mini=$(ids[2]);if(!box||!name||!mini)continue;box.classList.toggle("empty",!a);name.textContent=a?a.name:"No summon";mini.textContent=a?("HP "+Math.max(0,a.hp)+"/"+a.max+" • ATK "+a.atk+" • "+(a.element||"Arcane")):"Summon a creature to fill this slot."}}
 function renderMonsterCombatStats(){
  let grid=$("enemyStatGrid"),summary=$("enemySummary");
  if(grid&&summary){
@@ -1421,11 +1457,17 @@ function renderMonsterCombatStats(){
    }
  }
 }
+const achievementDefs=[
+{id:"firstblood",name:"First Blood",title:"Hunter",test:()=>s.kills>=1},{id:"dungeoneer",name:"Dungeoneer",title:"Delver",test:()=>s.dungeons>=3},{id:"renowned",name:"Known Name",title:"Renowned",test:()=>s.renown>=5},{id:"collector",name:"Collector",title:"Relic Seeker",test:()=>Object.keys(s.bestiary).length>=10},{id:"explorer",name:"Cartographer",title:"Pathfinder",test:()=>Object.keys(s.landmarksFound).length>=6},{id:"rich",name:"Deep Pockets",title:"Goldhand",test:()=>s.gold>=500}
+];
+function achievementToast(t){let p=$("achievementPop");if(!p)return;p.textContent=t;p.classList.add("show");setTimeout(()=>p.classList.remove("show"),2200)}
+function checkAchievements(){for(const a of achievementDefs){if(!s.achievements[a.id]&&a.test()){s.achievements[a.id]=true;s.title=a.title;s.gold+=20;achievementToast("Achievement: "+a.name+" • Title: "+a.title)}}}
+function renderAchievements(){if($("titleLabel"))$("titleLabel").textContent=s.title;if($("achievementList"))$("achievementList").innerHTML=achievementDefs.map(a=>'<div class="item"><b>'+(s.achievements[a.id]?'✓ ':'🔒 ')+a.name+'</b><div class="small">Title: '+a.title+'</div></div>').join("")}
 function render(){
  s.mana=Math.min(maxMana(),Math.max(0,s.mana));
  $("setup").classList.toggle("hidden",s.started);$("game").classList.toggle("hidden",!s.started);$("tabs").classList.toggle("hidden",!s.started);if(!s.started){renderCreator();return;}
  $("level").textContent=s.level;$("gold").textContent=s.gold;$("power").textContent=power();$("hpText").textContent=Math.floor(s.hp)+" / "+maxHp();$("hpBar").style.width=Math.max(0,s.hp/maxHp()*100)+"%";$("manaText").textContent=Math.floor(s.mana)+" / "+maxMana();$("manaBar").style.width=Math.max(0,Math.min(100,s.mana/maxMana()*100))+"%";$("xpText").textContent=s.xp+" / "+s.xpNeed;$("xpBar").style.width=s.xp/s.xpNeed*100+"%";$("location").textContent="Location: "+area().name+" • Ore: "+s.ore;$("modeText").textContent="Mode: "+(s.mode==="free"?"Free Roam":"Campaign");$("areaTitle").textContent=area().name;$("areaDesc").textContent=area().desc;
- $("enemyName").textContent=s.enemy?s.enemy.name:"No enemy";
+ $("enemyName").textContent=s.enemy?s.enemy.name:"No enemy";if($("enemySlotMini"))$("enemySlotMini").textContent=s.enemy?("HP "+Math.max(0,s.enemy.hp)+"/"+s.enemy.max+" • Lv "+s.enemy.lv):"";
  $("equipped").innerHTML="<div class='item'><b>Weapon:</b> "+(s.weapon?s.weapon.rarity+" "+s.weapon.name+" +"+s.weapon.up+" • "+s.weapon.attr.name:"None")+"</div><div class='item'><b>Armor:</b> "+(s.armor?s.armor.rarity+" "+s.armor.name+" +"+s.armor.up+" • "+s.armor.attr.name:"None")+"</div>";
  $("inventory").innerHTML=s.inventory.length?s.inventory.map(i=>"<div class='item'><div class='row'><b>"+i.rarity+" "+i.name+" +"+i.up+"</b><span class='pill'>"+i.kind+"</span></div><div class='small'>"+(i.kind==="weapon"?"ATK ":"DEF ")+i.stat+" • "+i.attr.name+": "+i.attr.desc+(i.material?" • "+i.material+(i.rune&&i.rune!=="None"?" • "+i.rune:"")+" • "+i.effort:"")+"</div><div class='grid'><button data-equip='"+i.id+"'>EQUIP</button><button class='secondary' data-upitem='"+i.id+"'>UPGRADE "+(20+(i.up+1)*20)+"g</button></div></div>").join(""):"<p class='small'>Your bag contains mostly optimism.</p>";
  $("stats").innerHTML="<div class='item'><b>"+s.name+"</b><div class='small'>"+s.race+" • "+s.className+" • "+(backstories.find(x=>x.id===s.backstory)?.name||"Unknown past")+"</div></div><div class='item'>Wealth Class: <b>"+s.wealthClass+"</b> <span class='small'>(d100: "+s.wealthRoll+")</span></div><div class='item'>Attack: <b>"+atk()+"</b></div><div class='item'>Defense: <b>"+def()+"</b></div><div class='item'>Max HP: <b>"+maxHp()+"</b></div><div class='item'>Max Mana: <b>"+maxMana()+"</b></div><div class='item'>Spellwork: <b>Lv "+s.spellwork.level+"</b></div><div class='item'>Class Level: <b>"+classLevel()+"</b></div><div class='item'>Item Quality Luck: <b>"+Math.round(luck()*100)+"%</b></div><div class='item'>Kills: <b>"+s.kills+"</b></div><div class='item'>Dungeons: <b>"+s.dungeons+"</b></div><div class='item'>Renown: <b>"+s.renown+"</b></div>";if($("activeEffects"))$("activeEffects").innerHTML=s.statuses.length?s.statuses.map(x=>'<span class="statusPill">'+x.name+' '+x.turns+'</span>').join(""):'<span class="small">None</span>';
@@ -1451,7 +1493,7 @@ function render(){
 }
 if($("bestiaryList")){let bs=Object.values(s.bestiary);$("bestiaryList").innerHTML=bs.length?bs.map(x=>'<div class="item"><b>'+x.name+'</b><div class="small">Weak: '+x.affinity.weak.join(", ")+' • Resists: '+x.affinity.strong.join(", ")+'</div></div>').join(""):'<p class="small">No monsters identified yet.</p>';}
  $("worldList").innerHTML=areas.map((a,i)=>"<div class='item'><b>"+a.name+"</b><div class='small'>Recommended level "+a.min+" • "+a.type+"</div></div>").join("");
- renderTownPanel();renderForgeOptions();renderWorldMap();renderMaterialsTab();renderSpellUI();renderQuestDrop();renderMonsterCombatStats();renderCombatSpellPickers();renderClassSkillUI();
+ renderTownPanel();renderForgeOptions();renderWorldMap();renderMaterialsTab();renderSpellUI();renderQuestDrop();renderMonsterCombatStats();renderSummonSlots();renderCombatSpellPickers();renderClassSkillUI();renderQuickPotion();renderAchievements();checkAchievements();
  $("dungeonTabBtn").disabled=!s.dungeon.active;
  $("dungeonState").textContent=!s.dungeon.active?"NO DUNGEON":s.dungeon.bossReady?"BOSS ROOM":"IN PROGRESS";
  $("dungeonName").textContent=s.dungeon.active?s.dungeon.name:"No dungeon discovered.";
@@ -1488,6 +1530,7 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.study){studyTome(b.dataset.study);return}
  if(b.dataset.castspell){castKnownSpell(b.dataset.castspell,false);return}
  if(b.dataset.castdungeon){castKnownSpell(b.dataset.castdungeon,true);return}
+ if(b.dataset.selectquickpotion){s.selectedQuickPotion=b.dataset.selectquickpotion;let p=$(b.dataset.quickmode==="dungeon"?"quickPotionPickerDungeon":"quickPotionPicker");if(p)p.classList.remove("open");save();render();return}
  if(b.dataset.brew){brewPotion(b.dataset.brew);return}
  if(b.dataset.usepotion){usePotion(b.dataset.usepotion);return}
  if(b.dataset.talkrandom){talkRandomNPC(b.dataset.talkrandom);return}
@@ -1511,6 +1554,11 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.dir){moveDungeon(b.dataset.dir);return}
  if(b.dataset.equip){equip(b.dataset.equip);return}if(b.dataset.upitem){upgradeItem(b.dataset.upitem);return}if(b.dataset.stat){let k=b.dataset.stat,c=30+s.upgrade[k]*30;if(s.gold>=c){s.gold-=c;s.upgrade[k]++;s.hp=Math.min(maxHp(),s.hp+(k==="hp"?10:0));save();render()}return}
  switch(b.dataset.a){
+ case"closeCampModal":$("campModal").classList.remove("open");break;
+ case"toggleQuickPotionPicker":$("quickPotionPicker").classList.toggle("open");break;
+ case"toggleQuickPotionPickerDungeon":$("quickPotionPickerDungeon").classList.toggle("open");break;
+ case"useQuickPotion":if(s.selectedQuickPotion)usePotion(s.selectedQuickPotion);break;
+ case"useQuickPotionDungeon":if(s.selectedQuickPotion)usePotion(s.selectedQuickPotion);break;
  case"camp":camp();break;
  case"toggleWorldSkillPicker":$("worldSkillPicker").classList.toggle("open");break;
  case"toggleDungeonSkillPicker":$("dungeonSkillPicker").classList.toggle("open");break;
