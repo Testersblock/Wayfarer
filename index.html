@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG v2.6</title>
+<title>Wayfarer: Wheel & Dice RPG v2.6.1</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
@@ -692,9 +692,9 @@ const effortDefs={
 };
 const armorNames=["Leather Coat","Chainmail","Iron Plate","Ranger Cloak","Scale Armor","Knight Plate","Runed Robes","Brigandine","Warden Mail","Dragonhide"];
 function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:55,baseHp:55,mana:60,baseMana:60,atk:4,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,materials:{Iron:3,Steel:0,Silver:0,Hardwood:0,Crystal:0,"Drake Scale":0,Sunstone:0,"Frost Crystal":0,Hellstone:0,Leather:0,Herb:0,Flax:0,Clay:0,"Wild Honey":0,Silk:0,Moonleaf:0,Resin:0,"Living Bark":0,Coal:0,"Adamant Shard":0,Quartz:0,Sulfur:0,"Venom Sac":0,"Black Herb":0,"Spirit Water":0,"Bog Iron":0,Rotroot:0,"Ghost Reed":0,"Hydra Scale":0,"Glass Shard":0,"Gold Ore":0,"Desert Rose":0,"Scorpion Chitin":0,"Star Sand":0,Obsidian:0,"Wyrm Hide":0,Iceglass:0,"White Fur":0,"Frozen Core":0,"Blue Quartz":0,"Demon Horn":0,"Blood Crystal":0,"Infernal Iron":0,"Ash Pearl":0,"Soul Ash":0,Demonhide:0,"Ancient Parchment":0,"Arcane Dust":0,"Beast Fang":0,"Glowcap":0,"Dryad Sap":0,"Black Timber":0,"Shadow Moss":0,"Wolf Pelt":0,"Mist Pearl":0,"Dark Resin":0,"Ironwood":0,"Mithril Flake":0,"Swamp Amber":0,"Sea Crystal":0,"Pearl":0,"Saltstone":0,"Coral":0,"Siren Scale":0,"Tideglass":0,"Djinn Ash":0,"Stormglass":0,"Cloud Feather":0,"Sky Iron":0,"Giant Bone":0,"Lightning Core":0,"Wind Silk":0,"Everfrost":0,"Bone Dust":0,"Grave Wax":0,"Black Iron":0,"Crypt Amber":0,"Death Silk":0,"Hellglass":0,"Cursed Steel":0,"Abyssal Alloy":0,"Demon Heart":0,"Black Crystal":0,"Royal Hellstone":0,"Soulsteel":0,"Infernal Ruby":0},
-soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,randomNPCs:{},sideQuests:[],renown:0,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,selectedClassSkill:null,activeSummon:null,tempAttackBuff:0,tempDefenseBuff:0,tempHaste:0,skipEnemyTurn:false,potions:{},statuses:[],bestiary:{},reputation:{},activeWorldEvent:null,campCooldown:0,timeOfDay:8,daysPassed:1,landmarksFound:{},achievements:{},title:"Wayfarer",selectedQuickPotion:null,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
+soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,randomNPCs:{},sideQuests:[],renown:0,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,selectedClassSkill:null,activeSummon:null,tempAttackBuff:0,tempDefenseBuff:0,tempHaste:0,skipEnemyTurn:false,potions:{},statuses:[],bestiary:{},reputation:{},activeWorldEvent:null,campCooldown:0,timeOfDay:8,daysPassed:1,landmarksFound:{},achievements:{},title:"Wayfarer",selectedQuickPotion:null,discoveredLocations:[0,1,2,3],location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
 dungeon:{active:false,name:null,roomsEntered:0,targetRooms:0,blocked:null,bossReady:false,bossDefeated:false,encounter:null,boss:null,clearedRooms:0}}}
-let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.potions=Object.assign({},x.potions||{});s.bestiary=Object.assign({},x.bestiary||{});s.reputation=Object.assign({},x.reputation||{});s.statuses=Array.isArray(x.statuses)?x.statuses:[];s.landmarksFound=Object.assign({},x.landmarksFound||{});s.achievements=Object.assign({},x.achievements||{});if(typeof x.timeOfDay==="number")s.timeOfDay=x.timeOfDay;if(typeof x.daysPassed==="number")s.daysPassed=x.daysPassed;if(typeof x.title==="string")s.title=x.title;if(typeof x.selectedQuickPotion==="string")s.selectedQuickPotion=x.selectedQuickPotion;s.questProgress=Object.assign({},x.questProgress||{});s.randomNPCs=Object.assign({},x.randomNPCs||{});s.sideQuests=Array.isArray(x.sideQuests)?x.sideQuests:[];if(typeof x.renown==="number")s.renown=x.renown;s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
+let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.potions=Object.assign({},x.potions||{});s.bestiary=Object.assign({},x.bestiary||{});s.reputation=Object.assign({},x.reputation||{});s.statuses=Array.isArray(x.statuses)?x.statuses:[];s.landmarksFound=Object.assign({},x.landmarksFound||{});s.achievements=Object.assign({},x.achievements||{});if(typeof x.timeOfDay==="number")s.timeOfDay=x.timeOfDay;if(typeof x.daysPassed==="number")s.daysPassed=x.daysPassed;if(typeof x.title==="string")s.title=x.title;if(typeof x.selectedQuickPotion==="string")s.selectedQuickPotion=x.selectedQuickPotion;s.discoveredLocations=Array.isArray(x.discoveredLocations)&&x.discoveredLocations.length?x.discoveredLocations:[0,1,2,3];s.questProgress=Object.assign({},x.questProgress||{});s.randomNPCs=Object.assign({},x.randomNPCs||{});s.sideQuests=Array.isArray(x.sideQuests)?x.sideQuests:[];if(typeof x.renown==="number")s.renown=x.renown;s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
 if(!s.flags.soulCrystalObjectMigration){
   let legacyFilled=Number((x.materials||{})["Soul Crystal (Filled)"]||0);
   let legacyEmpty=Number((x.materials||{})["Soul Crystal (Empty)"]||0);
@@ -717,20 +717,94 @@ function spin(options){return options[rnd(options.length)]}
 function rarity(){let r=Math.random()*100,acc=0;for(let x of rarities){acc+=x[1]+luck()*5;if(r<=acc)return x}return rarities[0]}
 function makeItem(kind,bonus=0){let ra=rarity(),a=attrs[rnd(attrs.length)],name=spin(kind==="weapon"?weaponNames:armorNames),stat=Math.max(1,Math.floor((3+s.level*.7+bonus)*ra[2]));return{id:Date.now()+Math.random(),kind,name,rarity:ra[0],stat,attr:{...a},up:0}}
 function area(){return areas[s.location]}
-function enemy(){let a=area(),name=spin(a.enemies),elite=Math.random()<.08+luck(),lv=Math.max(1,s.level+rnd(3)-1),hp=Math.floor((28+lv*9)*(elite?1.8:1));s.enemy={name:(elite?"Elite ":"")+name,lv,hp,max:hp,atk:5+lv*2,def:Math.floor(lv*.7),elite}}
+function enemy(){
+ let a=area();
+ if(!a.enemies||!a.enemies.length){s.enemy=null;return}
+ let name=spin(a.enemies),elite=Math.random()<.08;
+ let lv=Math.max(a.min||1,s.level+rnd(3)-1);
+ let hp=Math.floor((20+lv*7)*(elite?1.65:1));
+ if(typeof timeLabel==="function"&&timeLabel()==="Night"){
+   hp=Math.floor(hp*1.12);
+   elite=elite||Math.random()<.05;
+ }
+ s.enemy={name:(elite?"Elite ":"")+name,lv,hp,max:hp,atk:4+Math.floor(lv*1.65),def:Math.floor(lv*.65),elite,identified:false};
+ if(typeof rollEnemyAffix==="function")rollEnemyAffix(s.enemy);
+}
 function levelUp(){while(s.xp>=s.xpNeed){s.xp-=s.xpNeed;s.level++;s.xpNeed=Math.floor(s.xpNeed*1.28);s.baseHp+=3;s.hp=maxHp();s.mana=maxMana();log("Level up! You are now level "+s.level+". HP and mana restored.")}}
 function loot(mult=1){let g=Math.floor((8+s.level*3)*mult*(1+attrsTotal("gold"))),xp=Math.floor((12+s.level*3)*mult*(1+attrsTotal("xp")+s.bonusXP));s.gold+=g;s.xp+=xp;if(Math.random()<.35){s.ore+=1+rnd(2);log("You recover forging ore.")}if(Math.random()<.16){let it=makeItem(Math.random()<.55?"weapon":"armor",2);s.inventory.push(it);log("Loot wheel: "+it.rarity+" "+it.name+" ["+it.attr.name+"].")}log("Reward: "+g+" gold, "+xp+" XP.");levelUp()}
-function win(){let dead={...s.enemy};s.kills++;s.questProgress["kills_"+area().name]=Number(s.questProgress["kills_"+area().name]||0)+1;
+function win(){let dead={...s.enemy};let roadDestination=dead.roadAmbush?dead.pendingDestination:null;s.kills++;s.questProgress["kills_"+area().name]=Number(s.questProgress["kills_"+area().name]||0)+1;
  if(s.mode==="campaign"){if(dead.finalBoss){s.finalBossDefeated=true;log("Demon Lord Malachar is defeated. Valedorn survives.");}}
- captureSoul(dead,false);if(dead.elite&&/(Wandering Champion|Ancient Beast|Monster Nest)/.test(dead.name)){s.gold+=25+s.level*4;s.renown++;s.activeWorldEvent=null;log("Elite hunt complete. Bonus gold and Renown +1.")}loot((s.enemy.elite?1.8:1)*(dead.lootMult||1));s.enemy=null;if(dead.finalBoss)advanceCampaign();save();render()}
+ captureSoul(dead,false);if(dead.elite&&/(Wandering Champion|Ancient Beast|Monster Nest)/.test(dead.name)){s.gold+=25+s.level*4;s.renown++;s.activeWorldEvent=null;log("Elite hunt complete. Bonus gold and Renown +1.")}loot((s.enemy.elite?1.8:1)*(dead.lootMult||1));s.enemy=null;
+ if(roadDestination!==null&&areas[roadDestination]){
+   let old=area();
+   s.location=roadDestination;
+   unlockLocation(roadDestination);
+   if(!s.visited.includes(roadDestination))s.visited.push(roadDestination);
+   if(area().type==="town"&&old.type!=="town"){s.jobShifts=3;s.jobChallenge=null;}
+   log("The road is clear. You continue onward to "+area().name+".");
+ }if(dead.finalBoss)advanceCampaign();save();render()}
 function enemyTurn(){tickStatuses();summonTurn(false);if(s.enemy&&s.enemy.hp<=0){win();return}if(!s.enemy)return;if(Math.random()<.12+attrsTotal("dodge")+s.bonusDodge){log(s.enemy.name+" misses.",true);return}let hit=Math.max(1,s.enemy.atk-def()-(s.turnDefend?Math.floor(def()*.7):0)+rnd(5));s.turnDefend=false;s.hp-=hit;log(s.enemy.name+" deals "+hit+" damage.",true);if(s.hp<=0){s.hp=maxHp();s.gold=Math.floor(s.gold*.8);s.enemy=null;log("You are defeated and wake in "+areas[1].name+". You lose 20% of your gold.");s.location=1}}
-function rollWorldEvent(){if(area().type==="town"||s.activeWorldEvent||Math.random()>.10)return false;let type=spin(["Wandering Champion","Ancient Beast","Lost Treasure Caravan","Arcane Storm","Monster Nest"]);s.activeWorldEvent={type,area:area().name};if(type==="Lost Treasure Caravan"){let g=35+s.level*6;s.gold+=g;log("Rare event: lost caravan. You recover "+g+" gold.");s.activeWorldEvent=null}else if(type==="Arcane Storm"){let mm=Math.floor(maxMana()*.5);s.mana=Math.min(maxMana(),s.mana+mm);s.materials["Arcane Dust"]=(s.materials["Arcane Dust"]||0)+1;log("Rare event: Arcane Storm restores mana and leaves Arcane Dust.");s.activeWorldEvent=null}else{log("Rare event: "+type+" appears.");spawnEnemy(true);if(s.enemy){s.enemy.name=type+" "+s.enemy.name;s.enemy.elite=true;s.enemy.hp=Math.floor(s.enemy.hp*1.5);s.enemy.max=s.enemy.hp;s.enemy.atk=Math.floor(s.enemy.atk*1.25)}}save();return true}
-function explore(){advanceTime(1);s.campCooldown=0;if(rollWorldEvent()){render();return}if(discoverLandmark()){save();render();return}let a=area();if(a.type==="town"){let r=spin(["inn","market","rumor"]);$("result").textContent="Town wheel: "+r.toUpperCase();if(r==="inn"){let c=10+s.level*2;if(s.gold>=c){s.gold-=c;s.hp=maxHp();s.mana=maxMana();log("You rest at the inn for "+c+" gold. HP and mana fully restored.")}else log("The innkeeper remains tragically committed to capitalism.")}else if(r==="market"){s.gold+=5+rnd(15);log("You make a small profit trading supplies.")}else log("Rumor: dungeons often hold better gear than the open road.");}
- else{let roll=Math.random();if(roll<.36){let m=spin(a.mats),n=1+rnd(3);
- let map={"Iron Ore":"Iron","Steel Ore":"Steel","Silver Ore":"Silver","Hardwood":"Hardwood","Crystal":"Crystal","Drake Scale":"Drake Scale","Sunstone":"Sunstone","Frost Crystal":"Frost Crystal","Hellstone":"Hellstone","Leather":"Leather","Herb":"Herb","Flax":"Flax","Clay":"Clay","Wild Honey":"Wild Honey","Silk":"Silk","Moonleaf":"Moonleaf","Resin":"Resin","Living Bark":"Living Bark","Coal":"Coal","Adamant Shard":"Adamant Shard","Quartz":"Quartz","Sulfur":"Sulfur","Venom Sac":"Venom Sac","Black Herb":"Black Herb","Spirit Water":"Spirit Water","Bog Iron":"Bog Iron","Rotroot":"Rotroot","Ghost Reed":"Ghost Reed","Hydra Scale":"Hydra Scale","Glass Shard":"Glass Shard","Gold Ore":"Gold Ore","Desert Rose":"Desert Rose","Scorpion Chitin":"Scorpion Chitin","Star Sand":"Star Sand","Obsidian":"Obsidian","Wyrm Hide":"Wyrm Hide","Iceglass":"Iceglass","White Fur":"White Fur","Frozen Core":"Frozen Core","Blue Quartz":"Blue Quartz","Demon Horn":"Demon Horn","Blood Crystal":"Blood Crystal","Infernal Iron":"Infernal Iron","Ash Pearl":"Ash Pearl","Soul Ash":"Soul Ash","Demonhide":"Demonhide"};
- if(map[m])s.materials[map[m]]=(s.materials[map[m]]||0)+n;
- if(m.includes("Ore"))s.ore+=n;if(m.includes("Gold"))s.gold+=n*5;
- $("result").textContent="Wheel: MATERIAL";log("You find "+n+" "+m+".")}else if(roll<.70){$("result").textContent="Wheel: ENCOUNTER";enemy();log("A "+s.enemy.name+" appears.",true);document.getElementById("combatCard").scrollIntoView({behavior:"smooth",block:"start"})}else if(roll<.84){let it=makeItem(Math.random()<.5?"weapon":"armor");s.inventory.push(it);$("result").textContent="Wheel: TREASURE";log("You discover a "+it.rarity+" "+it.name+" with "+it.attr.name+" ("+it.attr.desc+").")}else{$("result").textContent="Wheel: HAZARD";let d=rollDie(20),dc=9+Math.floor(s.level/5);if(d>=dc)log("Hazard save d20: "+d+" vs DC "+dc+". You avoid it.");else{let h=5+s.level*2;s.hp=Math.max(1,s.hp-h);log("Hazard save d20: "+d+" vs DC "+dc+". You take "+h+" damage.")}}}save();render()}
+function rollWorldEvent(){if(area().type==="town"||s.activeWorldEvent||Math.random()>.10)return false;let type=spin(["Wandering Champion","Ancient Beast","Lost Treasure Caravan","Arcane Storm","Monster Nest"]);s.activeWorldEvent={type,area:area().name};if(type==="Lost Treasure Caravan"){let g=35+s.level*6;s.gold+=g;log("Rare event: lost caravan. You recover "+g+" gold.");s.activeWorldEvent=null}else if(type==="Arcane Storm"){let mm=Math.floor(maxMana()*.5);s.mana=Math.min(maxMana(),s.mana+mm);s.materials["Arcane Dust"]=(s.materials["Arcane Dust"]||0)+1;log("Rare event: Arcane Storm restores mana and leaves Arcane Dust.");s.activeWorldEvent=null}else{log("Rare event: "+type+" appears.");enemy();if(s.enemy){s.enemy.elite=true;if(!s.enemy.name.startsWith("Elite "))s.enemy.name="Elite "+s.enemy.name;s.enemy.hp=Math.floor(s.enemy.hp*1.45);s.enemy.max=s.enemy.hp;s.enemy.atk=Math.floor(s.enemy.atk*1.2)}if(s.enemy){s.enemy.name=type+" "+s.enemy.name;s.enemy.elite=true;s.enemy.hp=Math.floor(s.enemy.hp*1.5);s.enemy.max=s.enemy.hp;s.enemy.atk=Math.floor(s.enemy.atk*1.25)}}save();return true}
+function explore(){
+ advanceTime(1);
+ s.campCooldown=0;
+ let a=area();
+
+ if(a.type==="town"){
+   let r=spin(["inn","market","rumor"]);
+   $("result").textContent="Town wheel: "+r.toUpperCase();
+   if(r==="inn"){
+     let c=10+s.level*2;
+     if(s.gold>=c){s.gold-=c;s.hp=maxHp();s.mana=maxMana();log("You rest at the inn for "+c+" gold. HP and mana fully restored.");}
+     else log("You find an inn but cannot afford a room.");
+   }else if(r==="market"){
+     s.townPanel="market";
+     log("You wander through the local market.");
+   }else{
+     log(spin(["Rumor: dungeons often hold better gear than the open road.","Rumor: dangerous creatures become more active at night.","Rumor: explorers have found hidden routes between regions."]));
+   }
+   save();render();return;
+ }
+
+ if(rollWorldEvent()){save();render();return;}
+ if(discoverLandmark()){save();render();return;}
+ if(discoverConnectedRegion()){save();render();return;}
+
+ let roll=Math.random();
+ if(roll<.42){
+   enemy();
+   if(s.enemy){
+     $("result").textContent="Wheel: ENCOUNTER";
+     log("A "+s.enemy.name+" appears.",true);
+     let card=document.getElementById("combatCard");
+     if(card)card.scrollIntoView({behavior:"smooth",block:"start"});
+   }
+ }else if(roll<.66){
+   let m=spin(a.mats),n=1+rnd(3);
+   let map={"Iron Ore":"Iron","Steel Ore":"Steel","Silver Ore":"Silver"};
+   let key=map[m]||m;
+   s.materials[key]=(s.materials[key]||0)+n;
+   if(m.includes("Ore"))s.ore+=n;
+   if(m.includes("Gold"))s.gold+=n*5;
+   $("result").textContent="Wheel: MATERIAL";
+   log("You find "+n+" "+m+".");
+ }else if(roll<.82){
+   let it=makeItem(Math.random()<.5?"weapon":"armor");
+   s.inventory.push(it);
+   $("result").textContent="Wheel: TREASURE";
+   log("You discover a "+it.rarity+" "+it.name+" with "+it.attr.name+".");
+ }else{
+   $("result").textContent="Wheel: HAZARD";
+   let d=rollDie(20),dc=9+Math.floor((a.min||1)/5);
+   if(d>=dc)log("Hazard save d20: "+d+" vs DC "+dc+". You avoid it.");
+   else{
+     let h=4+Math.floor((a.min||1)*1.2);
+     s.hp=Math.max(1,s.hp-h);
+     log("Hazard save d20: "+d+" vs DC "+dc+". You take "+h+" damage.");
+   }
+ }
+ save();render();
+}
 function timeLabel(){let h=Math.floor(s.timeOfDay)%24;if(h>=5&&h<8)return"Dawn";if(h>=8&&h<18)return"Day";if(h>=18&&h<21)return"Dusk";return"Night"}
 function advanceTime(hours){s.timeOfDay+=hours;while(s.timeOfDay>=24){s.timeOfDay-=24;s.daysPassed++}}
 function showCampPopup(title,text){$("campModalTitle").textContent=title;$("campModalText").textContent=text;$("campModal").classList.add("open")}
@@ -739,9 +813,64 @@ function camp(){
  if(s.enemy||(s.dungeon&&s.dungeon.encounter)){showCampPopup("Camp Failed","You cannot make camp during combat.");return}
  if(s.campCooldown>0){showCampPopup("Camp Failed","You need to explore or travel before camping again.");return}
  advanceTime(8);
- if(Math.random()<.22){showCampPopup("Ambushed!","Something found your camp. Prepare for combat.");log("Your camp attracts trouble.");spawnEnemy(false);s.campCooldown=1;save();render();return}
+ if(Math.random()<.22){showCampPopup("Ambushed!","Something found your camp. Prepare for combat.");log("Your camp attracts trouble.");enemy();s.campCooldown=1;save();render();return}
  let h=Math.floor(maxHp()*.35),mm=Math.floor(maxMana()*.35);s.hp=Math.min(maxHp(),s.hp+h);s.mana=Math.min(maxMana(),s.mana+mm);s.campCooldown=1;let text="You rest until "+timeLabel()+". Restored "+h+" HP and "+mm+" mana.";showCampPopup("Camp Rest",text);log(text);save();render();
 }
+
+function unlockLocation(idx){
+ idx=+idx;
+ if(!Array.isArray(s.discoveredLocations))s.discoveredLocations=[0,1,2,3];
+ for(let i=0;i<Math.min(4,areas.length);i++)if(!s.discoveredLocations.includes(i))s.discoveredLocations.push(i);
+ if(idx>=0&&areas[idx]&&!s.discoveredLocations.includes(idx)){
+   s.discoveredLocations.push(idx);
+   log("New travel destination unlocked: "+areas[idx].name+".");
+ }
+}
+function discoverConnectedRegion(){
+ let links=worldConnections[area().name]||[];
+ let choices=links.map(n=>areas.findIndex(a=>a.name===n)).filter(i=>i>=0&&!s.discoveredLocations.includes(i));
+ if(!choices.length||Math.random()>.12)return false;
+ let idx=spin(choices);
+ unlockLocation(idx);
+ $("result").textContent="NEW ROUTE: "+areas[idx].name;
+ log("You discover a route toward "+areas[idx].name+". It can now appear on the travel wheel.");
+ return true;
+}
+function roadAmbush(destIndex){
+ if(Math.random()>=.16)return false;
+ const names=["Road Bandit","Highwayman","Goblin Raider","Cultist Scout","Orc Marauder","Desperate Mercenary","Wolf Pack","Roadside Troll"];
+ let destination=areas[destIndex],lv=Math.max(1,s.level,Math.min(destination?.min||1,s.level+2));
+ let hp=Math.floor(18+lv*7);
+ s.enemy={name:spin(names),lv,hp,max:hp,atk:4+Math.floor(lv*1.55),def:Math.floor(lv*.6),elite:false,identified:false,roadAmbush:true,pendingDestination:destIndex};
+ if(typeof rollEnemyAffix==="function")rollEnemyAffix(s.enemy);
+ $("result").textContent="ROAD AMBUSH";
+ log("Your journey is interrupted by "+s.enemy.name+". Defeat them to continue.");
+ return true;
+}
+function travel(){
+ advanceTime(3);
+ s.campCooldown=0;
+ if(s.enemy){log("You cannot travel while an enemy is attacking you.");return}
+
+ if(!Array.isArray(s.discoveredLocations)||!s.discoveredLocations.length)s.discoveredLocations=[0,1,2,3];
+ for(let i=0;i<Math.min(4,areas.length);i++)if(!s.discoveredLocations.includes(i))s.discoveredLocations.push(i);
+
+ let pool=s.discoveredLocations.filter(i=>areas[i]&&i!==s.location);
+ if(!pool.length){log("No other travel destinations are unlocked yet.");return}
+
+ let destIndex=spin(pool),old=area();
+ if(roadAmbush(destIndex)){save();render();return}
+
+ s.location=destIndex;
+ unlockLocation(destIndex);
+ if(!s.visited.includes(destIndex))s.visited.push(destIndex);
+ if(area().type==="town"&&old.type!=="town"){s.jobShifts=3;s.jobChallenge=null}
+
+ $("result").textContent="Travel wheel: "+area().name;
+ log("You travel from "+old.name+" to "+area().name+".");
+ save();render();
+}
+
 function dungeon(){
  if(area().type==="town"){log("You need to leave town before searching for a dungeon.");return}
  if(s.dungeon.active){log("You already have an active dungeon expedition.");showTab("dungeonTab");return}
@@ -854,7 +983,7 @@ function applyCharacterCreation(mode){
  s.baseHp+=race.hp||0;s.baseHp+=cl.hp||0;s.baseHp+=bg.hp||0;s.baseMana+=(cl.mana||0)+(race.mana||0);
  s.luck+=race.luck||0;s.luck+=cl.luck||0;s.luck+=bg.luck||0;
  s.bonusXP=(race.xp||0)+(bg.xp||0);s.bonusCrit=race.crit||0;s.bonusDodge=race.dodge||0;
- const startIndex=areas.findIndex(a=>a.name===bg.start);s.location=startIndex>=0?startIndex:0;s.visited=[s.location];
+ const startIndex=areas.findIndex(a=>a.name===bg.start);s.location=startIndex>=0?startIndex:0;s.visited=[s.location];s.discoveredLocations=[0,1,2,3];if(!s.discoveredLocations.includes(s.location))s.discoveredLocations.push(s.location);
  const wi=startingItem(cl.weapon,"weapon",Math.max(1,2+Math.floor((cl.atk||0)/2)));
  const ai=startingItem(cl.armor,"armor",Math.max(1,2+Math.floor((cl.def||0)/2)));
  s.inventory=[wi,ai];s.weapon=wi;s.armor=ai;s.hp=maxHp();s.mana=maxMana();if(classMagicUsers.includes(s.className)){const st=classStarterSpells[s.className];if(st&&!s.knownSpells.some(x=>x.id===st.id))s.knownSpells.push({...st,custom:false,mastery:{level:1,xp:0,xpNeed:8}});if(st)s.selectedSpell=st.id;}
@@ -1234,13 +1363,20 @@ function castKnownSpell(id, dungeonMode=false){
  save();render();
 }
 function mapTravel(idx){
- idx=+idx;if(!s.visited.includes(idx)||idx===s.location)return;
- let oldArea=area(),old=oldArea.name;s.location=idx;if(area().type==="town"&&oldArea.type!=="town"){s.jobShifts=3;s.jobChallenge=null;}log("You fast travel from "+old+" to "+area().name+".");save();render();
+ idx=+idx;
+ if(!Array.isArray(s.discoveredLocations)||!s.discoveredLocations.includes(idx)||idx===s.location)return;
+ let oldArea=area(),old=oldArea.name;
+ s.location=idx;
+ unlockLocation(idx);
+ if(!s.visited.includes(idx))s.visited.push(idx);
+ if(area().type==="town"&&oldArea.type!=="town"){s.jobShifts=3;s.jobChallenge=null;}
+ log("You fast travel from "+old+" to "+area().name+".");
+ save();render();
 }
 function renderWorldMap(){
  $("worldMap").innerHTML=areas.map((a,idx)=>{
-   const cons=worldConnections[a.name]||[],visited=s.visited.includes(idx),current=idx===s.location;
-   return '<div class="item mapNode '+(current?'mapCurrent':'')+' '+(visited?'fastTravel':'')+'"><div class="row"><b>'+a.name+'</b><span class="pill">'+a.type+'</span></div><div class="small">Recommended Lv '+a.min+'</div><div class="small">'+a.desc+'</div><div class="small">Routes: '+(cons.length?cons.join(", "):"None")+'</div><button data-maptravel="'+idx+'" '+((!visited||current)?'disabled':'')+'>'+(current?'CURRENT LOCATION':visited?'FAST TRAVEL':'UNVISITED')+'</button></div>';
+   const cons=worldConnections[a.name]||[],visited=s.visited.includes(idx),discovered=(s.discoveredLocations||[0,1,2,3]).includes(idx),current=idx===s.location;
+   return '<div class="item mapNode '+(current?'mapCurrent':'')+' '+(discovered?'fastTravel':'')+'"><div class="row"><b>'+a.name+'</b><span class="pill">'+a.type+'</span></div><div class="small">Recommended Lv '+a.min+'</div><div class="small">'+a.desc+'</div><div class="small">Routes: '+(cons.length?cons.join(", "):"None")+'</div><button data-maptravel="'+idx+'" '+((!discovered||current)?'disabled':'')+'>'+(current?'CURRENT LOCATION':discovered?'FAST TRAVEL':'UNDISCOVERED')+'</button></div>';
  }).join("");
 }
 function renderMaterialsTab(){
