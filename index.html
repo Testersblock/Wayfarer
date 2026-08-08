@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG v1.8</title>
+<title>Wayfarer: Wheel & Dice RPG v1.9</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
@@ -51,10 +51,10 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 <div class="card" id="townServices">
 <b>Town Services</b>
 <div class="small">Jobs and merchants are only available while you are in a town.</div>
-<div class="grid"><button data-a="openJobs">JOB BOARD</button><button class="secondary" data-a="openMarket">MARKET</button></div>
+<div class="grid"><button data-a="openJobs">JOB BOARD</button><button class="secondary" data-a="openMarket">MARKET</button></div><button class="secondary" data-a="openGambling">GAMBLING HALL</button>
 <div id="townPanel"></div>
 </div>
-<div class="card"><b>Wheel / Dice Result</b><div class="wheel" id="result">Nothing rolled yet.</div></div>
+<div class="card" id="npcCard"><b>NPCs & Quests</b><div id="npcPanel"></div></div><div class="card"><b>Wheel / Dice Result</b><div class="wheel" id="result">Nothing rolled yet.</div></div>
 <div class="card"><b>Adventure Log</b><div class="log" id="log"></div></div>
 
 <div class="card" id="combatCard"><b>Combat</b><div class="wheel" id="enemyName">No enemy</div><div class="small" id="enemyStats"></div><div class="grid"><button data-a="attack">ATTACK (d20)</button><button class="secondary" data-a="defend">DEFEND</button></div><div class="grid"><button class="blue" data-a="skill">POWER MOVE</button><button class="secondary" data-a="flee">FLEE (d20)</button></div><button class="blue" data-a="worldSpell" id="worldSpellBtn">CAST SELECTED SPELL</button></div>
@@ -234,6 +234,16 @@ const worldConnections={
 "Frostgrave":["Stonejaw Mountains"],
 "Demon March":["Highwall","Sunscar Desert"]
 };
+const campaignQuests=[
+{id:0,title:"A Kingdom in Trouble",npc:"Captain Elira",location:"Oakrest",desc:"Speak with Captain Elira in Oakrest.",type:"talk",target:1},
+{id:1,title:"Clear the Greenreach Road",npc:"Captain Elira",location:"Greenreach",desc:"Defeat 4 monsters in Greenreach.",type:"kills_region",region:"Greenreach",target:4},
+{id:2,title:"Report to Highwall",npc:"Commander Varric",location:"Highwall",desc:"Travel to Highwall and speak with Commander Varric.",type:"talk",target:1},
+{id:3,title:"The Broken Seal",npc:"Archivist Nemea",location:"Highwall",desc:"Clear a dungeon to recover a Demon Seal fragment.",type:"dungeon",target:1},
+{id:4,title:"The March Burns",npc:"Commander Varric",location:"Demon March",desc:"Defeat 6 monsters in the Demon March.",type:"kills_region",region:"Demon March",target:6},
+{id:5,title:"A Soul for the Gate",npc:"Archivist Nemea",location:"Highwall",desc:"Bring any filled Soul Crystal to Archivist Nemea.",type:"filled_soul",target:1},
+{id:6,title:"Royal Authorization",npc:"King Aldren",location:"Highwall",desc:"Speak with King Aldren to authorize the final assault.",type:"talk",target:1},
+{id:7,title:"The Demon Lord",npc:"Demon Lord Malachar",location:"Demon March",desc:"Confront and defeat Demon Lord Malachar.",type:"final_boss",target:1}
+];
 
 const tomeSpellPool=[
 {id:"ember_lance",name:"Ember Lance",school:"Pyromancy",power:1.8,cost:9,effect:"Piercing flame bolt",desc:"A narrow lance of fire that favors raw damage."},
@@ -306,7 +316,7 @@ function makeDungeonEncounter(){
   const count=1+rnd(Math.min(3,1+Math.floor(s.level/6)));
   let pack=[];
   for(let i=0;i<count;i++){
-    const lv=Math.max(1,s.level+rnd(3)-1);
+    const lv=Math.max(a.min,s.level+rnd(3)-1);
     const name=spin(dungeonCreatures);
     const hp=Math.floor(20+lv*7);
     pack.push({name,lv,hp,max:hp,atk:4+lv*2,def:Math.floor(lv*.55),boss:false});
@@ -360,7 +370,7 @@ function clearDungeonEncounter(){
     const reward=makeItem(Math.random()<.5?"weapon":"armor",8+s.dungeon.targetRooms);
     s.inventory.push(reward);
     const gold=80+s.dungeon.targetRooms*15+s.level*8;
-    s.gold+=gold;s.dungeons++;
+    s.gold+=gold;s.dungeons++;if(s.mode==="campaign")s.questProgress.dungeonsSinceQuest=Number(s.questProgress.dungeonsSinceQuest||0)+1;
     if(Math.random()<.72){
       const choices=tomeSpellPool.filter(sp=>!s.knownSpells.some(k=>k.id===sp.id)&&!s.spellTomes.some(t=>t.id===sp.id));
       if(choices.length){
@@ -408,11 +418,19 @@ const weaponNames=["Iron Sword","War Axe","Spear","Longbow","Mace","Rapier","Gre
 const townJobs=[
 {name:"Stable Hand",min:1,pay:14,type:"timing",desc:"Stop the grooming marker inside the green zone."},
 {name:"Courier",min:1,pay:20,type:"guess",desc:"Deduce the correct delivery number using higher/lower hints."},
+{name:"Kitchen Runner",min:1,pay:18,type:"memory",desc:"Memorize and repeat a short order sequence."},
 {name:"Smith's Laborer",min:2,pay:24,type:"timing",ore:1,desc:"Stop the forge heat marker inside the working-temperature zone."},
+{name:"Market Appraiser",min:2,pay:26,type:"choice",desc:"Pick the correct appraisal from a short knowledge check."},
 {name:"Town Guard",min:3,pay:30,type:"reaction",desc:"React to the signal only after it changes to STRIKE."},
-{name:"Caravan Escort",min:5,pay:42,type:"guess",desc:"Identify the safe road checkpoint from numerical hints."},
+{name:"Dock Loader",min:3,pay:28,type:"timing",desc:"Stop the crane over the marked drop zone."},
+{name:"Croupier",min:4,pay:34,type:"roulette",desc:"Run a roulette table and predict the winning color."},
+{name:"Caravan Escort",min:5,pay:42,type:"guess",desc:"Identify the safe checkpoint from higher/lower hints."},
+{name:"Locksmith",min:5,pay:40,type:"sequence",desc:"Repeat the lock-pin sequence in the correct order."},
+{name:"Arena Assistant",min:6,pay:46,type:"reaction",desc:"Release the arena gate at exactly the right signal."},
 {name:"Bounty Hunter",min:7,pay:58,type:"reaction",desc:"Wait for the target to expose themselves, then strike quickly."},
-{name:"Monster Exterminator",min:10,pay:75,type:"timing",desc:"Land the finishing blow while the moving marker is in the kill zone."}
+{name:"Alchemist's Assistant",min:8,pay:52,type:"choice",desc:"Choose the correct reagent from a clue."},
+{name:"Monster Exterminator",min:10,pay:75,type:"timing",desc:"Land the finishing blow while the moving marker is in the kill zone."},
+{name:"Royal Messenger",min:12,pay:88,type:"sequence",desc:"Memorize a coded route before the message is sealed."}
 ];
 
 const materialDefs={
@@ -468,9 +486,9 @@ const effortDefs={
 };
 const armorNames=["Leather Coat","Chainmail","Iron Plate","Ranger Cloak","Scale Armor","Knight Plate","Runed Robes","Brigandine","Warden Mail","Dragonhide"];
 function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:55,baseHp:55,mana:60,baseMana:60,atk:4,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,materials:{Iron:3,Steel:0,Silver:0,Hardwood:0,Crystal:0,"Drake Scale":0,Sunstone:0,"Frost Crystal":0,Hellstone:0,Leather:0,Herb:0,Flax:0,Clay:0,"Wild Honey":0,Silk:0,Moonleaf:0,Resin:0,"Living Bark":0,Coal:0,"Adamant Shard":0,Quartz:0,Sulfur:0,"Venom Sac":0,"Black Herb":0,"Spirit Water":0,"Bog Iron":0,Rotroot:0,"Ghost Reed":0,"Hydra Scale":0,"Glass Shard":0,"Gold Ore":0,"Desert Rose":0,"Scorpion Chitin":0,"Star Sand":0,Obsidian:0,"Wyrm Hide":0,Iceglass:0,"White Fur":0,"Frozen Core":0,"Blue Quartz":0,"Demon Horn":0,"Blood Crystal":0,"Infernal Iron":0,"Ash Pearl":0,"Soul Ash":0,Demonhide:0,"Ancient Parchment":0,"Arcane Dust":0},
-soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
+soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
 dungeon:{active:false,name:null,roomsEntered:0,targetRooms:0,blocked:null,bossReady:false,bossDefeated:false,encounter:null,boss:null,clearedRooms:0}}}
-let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
+let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.questProgress=Object.assign({},x.questProgress||{});s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
 if(!s.flags.soulCrystalObjectMigration){
   let legacyFilled=Number((x.materials||{})["Soul Crystal (Filled)"]||0);
   let legacyEmpty=Number((x.materials||{})["Soul Crystal (Empty)"]||0);
@@ -496,9 +514,11 @@ function area(){return areas[s.location]}
 function enemy(){let a=area(),name=spin(a.enemies),elite=Math.random()<.08+luck(),lv=Math.max(1,s.level+rnd(3)-1),hp=Math.floor((28+lv*9)*(elite?1.8:1));s.enemy={name:(elite?"Elite ":"")+name,lv,hp,max:hp,atk:5+lv*2,def:Math.floor(lv*.7),elite}}
 function levelUp(){while(s.xp>=s.xpNeed){s.xp-=s.xpNeed;s.level++;s.xpNeed=Math.floor(s.xpNeed*1.28);s.baseHp+=3;s.hp=maxHp();s.mana=maxMana();log("Level up! You are now level "+s.level+". HP and mana restored.")}}
 function loot(mult=1){let g=Math.floor((8+s.level*3)*mult*(1+attrsTotal("gold"))),xp=Math.floor((12+s.level*3)*mult*(1+attrsTotal("xp")+s.bonusXP));s.gold+=g;s.xp+=xp;if(Math.random()<.35){s.ore+=1+rnd(2);log("You recover forging ore.")}if(Math.random()<.16){let it=makeItem(Math.random()<.55?"weapon":"armor",2);s.inventory.push(it);log("Loot wheel: "+it.rarity+" "+it.name+" ["+it.attr.name+"].")}log("Reward: "+g+" gold, "+xp+" XP.");levelUp()}
-function win(){let dead={...s.enemy};s.kills++;captureSoul(dead,false);loot(s.enemy.elite?1.8:1);s.enemy=null;save();render()}
+function win(){let dead={...s.enemy};s.kills++;
+ if(s.mode==="campaign"){s.questProgress["kills_"+area().name]=Number(s.questProgress["kills_"+area().name]||0)+1;if(dead.finalBoss){s.finalBossDefeated=true;log("Demon Lord Malachar is defeated. Valedorn survives.");}}
+ captureSoul(dead,false);loot(s.enemy.elite?1.8:1);s.enemy=null;if(dead.finalBoss)advanceCampaign();save();render()}
 function enemyTurn(){if(!s.enemy)return;if(Math.random()<.12+attrsTotal("dodge")+s.bonusDodge){log(s.enemy.name+" misses.",true);return}let hit=Math.max(1,s.enemy.atk-def()-(s.turnDefend?Math.floor(def()*.7):0)+rnd(5));s.turnDefend=false;s.hp-=hit;log(s.enemy.name+" deals "+hit+" damage.",true);if(s.hp<=0){s.hp=maxHp();s.gold=Math.floor(s.gold*.8);s.enemy=null;log("You are defeated and wake in "+areas[1].name+". You lose 20% of your gold.");s.location=1}}
-function explore(){let a=area();if(a.type==="town"){let r=spin(["inn","market","rumor","job"]);$("result").textContent="Town wheel: "+r.toUpperCase();if(r==="inn"){let c=10+s.level*2;if(s.gold>=c){s.gold-=c;s.hp=maxHp();s.mana=maxMana();log("You rest at the inn for "+c+" gold. HP and mana fully restored.")}else log("The innkeeper remains tragically committed to capitalism.")}else if(r==="market"){s.gold+=5+rnd(15);log("You make a small profit trading supplies.")}else if(r==="job"){s.gold+=12+s.level*2;log("You complete a local job.")}else log("Rumor: dungeons often hold better gear than the open road.");}
+function explore(){let a=area();if(a.type==="town"){let r=spin(["inn","market","rumor"]);$("result").textContent="Town wheel: "+r.toUpperCase();if(r==="inn"){let c=10+s.level*2;if(s.gold>=c){s.gold-=c;s.hp=maxHp();s.mana=maxMana();log("You rest at the inn for "+c+" gold. HP and mana fully restored.")}else log("The innkeeper remains tragically committed to capitalism.")}else if(r==="market"){s.gold+=5+rnd(15);log("You make a small profit trading supplies.")}else log("Rumor: dungeons often hold better gear than the open road.");}
  else{let roll=Math.random();if(roll<.36){let m=spin(a.mats),n=1+rnd(3);
  let map={"Iron Ore":"Iron","Steel Ore":"Steel","Silver Ore":"Silver","Hardwood":"Hardwood","Crystal":"Crystal","Drake Scale":"Drake Scale","Sunstone":"Sunstone","Frost Crystal":"Frost Crystal","Hellstone":"Hellstone","Leather":"Leather","Herb":"Herb","Flax":"Flax","Clay":"Clay","Wild Honey":"Wild Honey","Silk":"Silk","Moonleaf":"Moonleaf","Resin":"Resin","Living Bark":"Living Bark","Coal":"Coal","Adamant Shard":"Adamant Shard","Quartz":"Quartz","Sulfur":"Sulfur","Venom Sac":"Venom Sac","Black Herb":"Black Herb","Spirit Water":"Spirit Water","Bog Iron":"Bog Iron","Rotroot":"Rotroot","Ghost Reed":"Ghost Reed","Hydra Scale":"Hydra Scale","Glass Shard":"Glass Shard","Gold Ore":"Gold Ore","Desert Rose":"Desert Rose","Scorpion Chitin":"Scorpion Chitin","Star Sand":"Star Sand","Obsidian":"Obsidian","Wyrm Hide":"Wyrm Hide","Iceglass":"Iceglass","White Fur":"White Fur","Frozen Core":"Frozen Core","Blue Quartz":"Blue Quartz","Demon Horn":"Demon Horn","Blood Crystal":"Blood Crystal","Infernal Iron":"Infernal Iron","Ash Pearl":"Ash Pearl","Soul Ash":"Soul Ash","Demonhide":"Demonhide"};
  if(map[m])s.materials[map[m]]=(s.materials[map[m]]||0)+n;
@@ -518,6 +538,53 @@ function dungeon(){
  generateDungeon(name);
  log("Dungeon discovered: "+name+". The Dungeon tab is now active.");
  save();render();showTab("dungeonTab");
+}
+function activeQuest(){return campaignQuests[Math.min(s.story,campaignQuests.length-1)]}
+function questCount(q){
+ if(!q)return 0;
+ if(q.type==="kills_region")return Number(s.questProgress["kills_"+q.region]||0);
+ if(q.type==="dungeon")return Number(s.questProgress.dungeonsSinceQuest||0);
+ if(q.type==="filled_soul")return s.soulCrystals.some(c=>c.filled)?1:0;
+ if(q.type==="final_boss")return s.finalBossDefeated?1:0;
+ return 0;
+}
+function questObjectiveMet(q){
+ if(!q)return false;
+ if(q.type==="talk")return area().name===q.location;
+ if(q.type==="kills_region"||q.type==="dungeon")return questCount(q)>=q.target;
+ if(q.type==="filled_soul")return s.soulCrystals.some(c=>c.filled);
+ if(q.type==="final_boss")return s.finalBossDefeated;
+ return false;
+}
+function campaignDialogue(id){return [
+"The roads are collapsing. If you can fight, Valedorn needs you.",
+"Return when the Greenreach road is safe.",
+"Highwall has been waiting for someone who can survive outside the walls.",
+"A seal fragment lies in one of the old dungeons. Find it.",
+"The Demon March must be weakened before we can open the gate.",
+"A captured soul can power the ancient gate mechanism.",
+"By royal order, the road to Malachar is open.",
+"You have come very far to die at my gate."
+][id]||""}
+function advanceCampaign(){
+ if(s.mode!=="campaign")return;let q=activeQuest();if(!q||!questObjectiveMet(q))return;
+ if(q.type==="filled_soul"){let idx=s.soulCrystals.findIndex(c=>c.filled);if(idx>=0)s.soulCrystals.splice(idx,1);}
+ if(q.type==="dungeon")s.questProgress.dungeonsSinceQuest=0;
+ s.gold+=25+s.story*15;s.xp+=20+s.story*12;levelUp();log("Quest complete: "+q.title+".");
+ if(s.story<campaignQuests.length-1)s.story++;save();render();
+}
+function talkToNPC(){
+ if(s.mode!=="campaign")return;let q=activeQuest();if(!q)return;
+ if(q.type==="talk"&&area().name===q.location){log(q.npc+": "+campaignDialogue(q.id));advanceCampaign();return}
+ if(q.type==="filled_soul"&&area().name===q.location&&questObjectiveMet(q)){log(q.npc+": The soul will open the Black Gate.");advanceCampaign();return}
+ log("There is nothing more to resolve here yet.");
+}
+function spawnFinalBoss(){
+ if(s.mode!=="campaign"||s.story!==7||area().name!=="Demon March"){log("The final confrontation is not available here.");return}
+ if(s.enemy){log("Finish your current battle first.");return}
+ let lv=Math.max(28,s.level+3),hp=280+lv*22;
+ s.enemy={name:"Demon Lord Malachar",lv,hp,max:hp,atk:14+lv*3,def:8+Math.floor(lv*1.2),elite:true,finalBoss:true};
+ log("The Black Gate opens. Demon Lord Malachar steps forward.",true);save();render();
 }
 function storyCheck(){let gates=[0,3,7,12,18,25];while(s.story<gates.length-1&&s.level>=gates[s.story+1]){s.story++;log("Campaign chapter "+s.story+" unlocked: "+["","The King's Summons","The Broken Fort","The Three Seals","March of Valedorn","The Demon Lord"][s.story]+".")}}
 function forge(kind){let cost=3+s.level/5|0,g=25+s.level*4;if(s.ore<cost||s.gold<g){log("Forging requires "+cost+" ore and "+g+" gold.");return}s.ore-=cost;s.gold-=g;let it=makeItem(kind,3);s.inventory.push(it);log("Forged "+it.rarity+" "+it.name+" with "+it.attr.name+".");save();render()}
@@ -580,19 +647,29 @@ function startJobChallenge(jobIndex){
    jobTimer=setInterval(()=>{
      if(!s.jobChallenge||s.jobChallenge.type!=="timing"){clearInterval(jobTimer);jobTimer=null;return}
      position+=direction*2.4;if(position>=100){position=100;direction=-1}else if(position<=0){position=0;direction=1}
-     s.jobChallenge.position=position;
-     const marker=$("jobMarker");if(marker)marker.style.left=position+"%";
+     s.jobChallenge.position=position;const marker=$("jobMarker");if(marker)marker.style.left=position+"%";
    },35);
  }else if(job.type==="guess"){
    s.jobChallenge.target=1+rnd(20);s.jobChallenge.attemptsLeft=5;s.jobChallenge.hint="Guess a number from 1 to 20.";
  }else if(job.type==="reaction"){
-   s.jobChallenge.ready=false;s.jobChallenge.armed=true;
-   let delay=1200+rnd(2600);
-   setTimeout(()=>{
-     if(s.jobChallenge&&s.jobChallenge.type==="reaction"&&s.jobChallenge.status==="active"){
-       s.jobChallenge.ready=true;s.jobChallenge.readyAt=Date.now();renderTownPanel();
-     }
-   },delay);
+   s.jobChallenge.ready=false;let delay=1200+rnd(2600);
+   setTimeout(()=>{if(s.jobChallenge&&s.jobChallenge.type==="reaction"&&s.jobChallenge.status==="active"){s.jobChallenge.ready=true;s.jobChallenge.readyAt=Date.now();renderTownPanel();}},delay);
+ }else if(job.type==="roulette"){
+   s.jobChallenge.winning=spin(["RED","BLACK"]);
+ }else if(job.type==="memory"){
+   const pool=["Bread","Ale","Stew","Apple","Cheese","Soup"];
+   s.jobChallenge.sequence=Array.from({length:3+rnd(2)},()=>spin(pool));s.jobChallenge.phase="show";
+   setTimeout(()=>{if(s.jobChallenge&&s.jobChallenge.type==="memory"){s.jobChallenge.phase="answer";renderTownPanel();}},2400);
+ }else if(job.type==="sequence"){
+   s.jobChallenge.sequence=Array.from({length:4},()=>1+rnd(4));s.jobChallenge.input=[];s.jobChallenge.phase="show";
+   setTimeout(()=>{if(s.jobChallenge&&s.jobChallenge.type==="sequence"){s.jobChallenge.phase="answer";renderTownPanel();}},2200);
+ }else if(job.type==="choice"){
+   const questions=[
+    {q:"Which appraisal is most valuable?",opts:["Cracked copper ring","Silver brooch","Painted pebble"],ans:1},
+    {q:"Which reagent safely dilutes a potion?",opts:["Sulfur","Spirit Water","Coal"],ans:1},
+    {q:"Which metal is normally worth the most?",opts:["Iron","Silver","Clay"],ans:1}
+   ];
+   s.jobChallenge.question=spin(questions);
  }
  save();renderTownPanel();
 }
@@ -629,6 +706,10 @@ function reactionJobTap(){
  let ms=Date.now()-c.readyAt;
  finishJob(ms<=900,"Reaction time: "+ms+" ms.");
 }
+function rouletteJobPick(color){let c=s.jobChallenge;if(!c||c.type!=="roulette")return;finishJob(color===c.winning,"Roulette lands on "+c.winning+".");}
+function memoryJobAnswer(value){let c=s.jobChallenge;if(!c||c.type!=="memory"||c.phase!=="answer")return;let answer=value.split("|");finishJob(JSON.stringify(answer)===JSON.stringify(c.sequence),"Correct order: "+c.sequence.join(", ")+".");}
+function sequenceJobTap(n){let c=s.jobChallenge;if(!c||c.type!=="sequence"||c.phase!=="answer")return;c.input.push(+n);let idx=c.input.length-1;if(c.input[idx]!==c.sequence[idx]){finishJob(false,"Wrong pin sequence.");return}if(c.input.length===c.sequence.length){finishJob(true,"Lock sequence completed correctly.");return}save();renderTownPanel();}
+function choiceJobPick(i){let c=s.jobChallenge;if(!c||c.type!=="choice")return;finishJob(+i===c.question.ans,+i===c.question.ans?"Correct choice.":"Wrong choice.");}
 function sellItem(id){
  let idx=s.inventory.findIndex(x=>String(x.id)===String(id));if(idx<0)return;
  let it=s.inventory[idx];if(s.weapon&&String(s.weapon.id)===String(id))s.weapon=null;if(s.armor&&String(s.armor.id)===String(id))s.armor=null;
@@ -668,6 +749,22 @@ function customForge(){
  log("Forged "+q[0]+" "+forged.name+" • "+(bp.kind==="weapon"?"ATK ":"DEF ")+stat+" • "+finalAttr.name+".");
  save();render();
 }
+function gamble(type){
+ if(!currentTown()){log("Gambling is only available in town.");return}
+ let cost=10,payout=0,win=false,result="";
+ if(type.startsWith("dice_"))cost=15;if(type.startsWith("roulette_"))cost=20;
+ if(s.gold<cost){log("You need "+cost+" gold to make that wager.");return}
+ s.gold-=cost;
+ if(type==="coin_heads"||type==="coin_tails"){
+   result=Math.random()<.5?"HEADS":"TAILS";win=(type==="coin_heads"&&result==="HEADS")||(type==="coin_tails"&&result==="TAILS");payout=cost*2;
+ }else if(type==="dice_low"||type==="dice_high"){
+   let d=rollDie(12);result="d12 = "+d;win=(type==="dice_low"&&d<=6)||(type==="dice_high"&&d>=7);payout=cost*2;
+ }else{
+   let r=Math.random(),color=r<.47?"RED":r<.94?"BLACK":"GREEN";result="Roulette: "+color;win=type==="roulette_"+color.toLowerCase();payout=cost*(color==="GREEN"?14:2);
+ }
+ if(win){s.gold+=payout;log(result+". You win "+payout+" gold.");}else log(result+". You lose the wager.");
+ save();render();
+}
 function renderTownPanel(){
  let panel=$("townPanel");if(!panel)return;
  $("townServices").style.display=currentTown()?"block":"none";
@@ -679,16 +776,31 @@ function renderTownPanel(){
        panel.innerHTML='<div class="item"><div class="row"><b>'+j.name+' Skill Check</b><span class="pill">Shifts '+s.jobShifts+'/3</span></div><div class="small">'+j.desc+'</div><div class="skillTrack"><div class="skillZone" style="left:'+c.zoneStart+'%;width:'+(c.zoneEnd-c.zoneStart)+'%"></div><div class="skillMarker" id="jobMarker" style="left:'+(c.position||0)+'%"></div></div><button data-jobtiming="1">STOP</button></div>';
      }else if(c.type==="guess"){
        panel.innerHTML='<div class="item"><div class="row"><b>'+j.name+' Skill Check</b><span class="pill">'+c.attemptsLeft+' guesses left</span></div><div class="small">'+c.hint+'</div><input id="jobGuessInput" inputmode="numeric" type="number" min="1" max="20" placeholder="1–20"><button data-jobguess="1">SUBMIT GUESS</button></div>';
-     }else{
+     }else if(c.type==="reaction"){
        panel.innerHTML='<div class="item"><div class="row"><b>'+j.name+' Skill Check</b><span class="pill">Shifts '+s.jobShifts+'/3</span></div><div class="small">'+(c.ready?'STRIKE NOW!':'Wait for the signal. Do not tap early.')+'</div><button class="'+(c.ready?'red':'secondary')+'" data-jobreaction="1">'+(c.ready?'STRIKE':'WAIT...')+'</button></div>';
+     }else if(c.type==="roulette"){
+       panel.innerHTML='<div class="item"><b>'+j.name+' Roulette Check</b><div class="small">Pick the winning color.</div><div class="grid"><button class="red" data-jobroulette="RED">RED</button><button class="secondary" data-jobroulette="BLACK">BLACK</button></div></div>';
+     }else if(c.type==="memory"){
+       if(c.phase==="show")panel.innerHTML='<div class="item"><b>'+j.name+' Memory Check</b><div class="wheel">'+c.sequence.join(" → ")+'</div><div class="small">Memorize this order.</div></div>';
+       else{const p1=[...c.sequence],p2=[...c.sequence].reverse(),p3=[...c.sequence].sort(()=>Math.random()-.5);let perms=[p1,p2,p3].sort(()=>Math.random()-.5);panel.innerHTML='<div class="item"><b>'+j.name+' Memory Check</b><div class="small">Which was the original order?</div>'+perms.map(x=>'<button class="secondary" data-jobmemory="'+x.join("|")+'">'+x.join(" → ")+'</button>').join("")+'</div>';}
+     }else if(c.type==="sequence"){
+       if(c.phase==="show")panel.innerHTML='<div class="item"><b>'+j.name+' Sequence Check</b><div class="wheel">'+c.sequence.join(" • ")+'</div><div class="small">Remember the sequence.</div></div>';
+       else panel.innerHTML='<div class="item"><b>'+j.name+' Sequence Check</b><div class="small">Repeat the sequence. Progress: '+c.input.length+'/'+c.sequence.length+'</div><div class="grid">'+[1,2,3,4].map(n=>'<button data-jobseq="'+n+'">'+n+'</button>').join("")+'</div></div>';
+     }else if(c.type==="choice"){
+       let q=c.question;panel.innerHTML='<div class="item"><b>'+j.name+' Knowledge Check</b><div class="small">'+q.q+'</div>'+q.opts.map((o,i)=>'<button class="secondary" data-jobchoice="'+i+'">'+o+'</button>').join("")+'</div>';
      }
    }else{
-     panel.innerHTML='<div class="item"><div class="row"><b>Job Board</b><span class="pill">Shifts '+s.jobShifts+'/3</span></div><div class="small">Each job requires an actual skill check. You can complete up to 3 shifts before leaving town.</div></div>'+townJobs.map((j,i)=>'<div class="item"><div class="row"><b>'+j.name+'</b><span class="pill">Lv '+j.min+'+</span></div><div class="small">'+j.desc+'</div><div class="small">Pay: '+j.pay+'g • Check: '+j.type+'</div><button data-job="'+i+'" '+(s.level<j.min||s.jobShifts<=0?'disabled':'')+'>START SHIFT</button></div>').join("");
+     panel.innerHTML='<div class="item"><div class="row"><b>Job Board</b><span class="pill">Shifts '+s.jobShifts+'/3</span></div><div class="small">Each job requires a real skill check. You can complete up to 3 shifts before leaving town.</div></div>'+townJobs.map((j,i)=>'<div class="item"><div class="row"><b>'+j.name+'</b><span class="pill">Lv '+j.min+'+</span></div><div class="small">'+j.desc+'</div><div class="small">Pay: '+j.pay+'g • Check: '+j.type+'</div><button data-job="'+i+'" '+(s.level<j.min||s.jobShifts<=0?'disabled':'')+'>START SHIFT</button></div>').join("");
    }
  }else if(s.townPanel==="market"){
    panel.innerHTML='<div class="item"><b>Material Market</b><div class="small">Town prices are fixed for now; merchants remain committed to making a living.</div></div>'+
    Object.entries(materialDefs).map(([n,d])=>'<div class="item"><div class="row"><b>'+n+'</b><span>x'+(s.materials[n]||0)+'</span></div><div class="small">'+d.desc+'</div><div class="grid"><button data-buymat="'+n+'">BUY '+d.cost+'g</button><button class="secondary" data-sellmat="'+n+'" '+(!(s.materials[n]>0)?'disabled':'')+'>SELL '+Math.floor(d.cost*.55)+'g</button></div></div>').join("")+
    '<div class="item"><b>Sell Equipment</b></div>'+s.inventory.map(i=>{let val=Math.max(5,Math.floor((i.stat*8+(i.up||0)*15)*({"Common":1,"Uncommon":1.25,"Rare":1.6,"Epic":2.2,"Legendary":3.2}[i.rarity]||1)));return'<div class="item"><div class="row"><b>'+i.rarity+' '+i.name+'</b><span>'+val+'g</span></div><div class="small">'+(i.kind==="weapon"?"ATK ":"DEF ")+i.stat+' • '+i.attr.name+'</div><button class="secondary" data-sellitem="'+i.id+'">SELL EQUIPMENT</button></div>'}).join("");
+ }else if(s.townPanel==="gambling"){
+   panel.innerHTML='<div class="item"><b>Gambling Hall</b><div class="small">Wagers can be lost. The house remains distressingly solvent.</div></div>'+
+   '<div class="item"><b>Coin Toss</b><div class="small">Correct call pays 2×.</div><div class="grid"><button data-gamble="coin_heads">HEADS 10g</button><button data-gamble="coin_tails">TAILS 10g</button></div></div>'+
+   '<div class="item"><b>Dice High / Low</b><div class="small">d12: 1–6 LOW, 7–12 HIGH. Correct call pays 2×.</div><div class="grid"><button data-gamble="dice_low">LOW 15g</button><button data-gamble="dice_high">HIGH 15g</button></div></div>'+
+   '<div class="item"><b>Roulette</b><div class="small">Red/Black pays 2×. Green pays 14×.</div><div class="grid"><button class="red" data-gamble="roulette_red">RED 20g</button><button class="secondary" data-gamble="roulette_black">BLACK 20g</button></div><button data-gamble="roulette_green">GREEN 20g</button></div>';
  }else panel.innerHTML="";
 }
 function renderForgeOptions(){
@@ -923,8 +1035,22 @@ function render(){
  $("inventory").innerHTML=s.inventory.length?s.inventory.map(i=>"<div class='item'><div class='row'><b>"+i.rarity+" "+i.name+" +"+i.up+"</b><span class='pill'>"+i.kind+"</span></div><div class='small'>"+(i.kind==="weapon"?"ATK ":"DEF ")+i.stat+" • "+i.attr.name+": "+i.attr.desc+(i.material?" • "+i.material+(i.rune&&i.rune!=="None"?" • "+i.rune:"")+" • "+i.effort:"")+"</div><div class='grid'><button data-equip='"+i.id+"'>EQUIP</button><button class='secondary' data-upitem='"+i.id+"'>UPGRADE "+(20+(i.up+1)*20)+"g</button></div></div>").join(""):"<p class='small'>Your bag contains mostly optimism.</p>";
  $("stats").innerHTML="<div class='item'><b>"+s.name+"</b><div class='small'>"+s.race+" • "+s.className+" • "+(backstories.find(x=>x.id===s.backstory)?.name||"Unknown past")+"</div></div><div class='item'>Wealth Class: <b>"+s.wealthClass+"</b> <span class='small'>(d100: "+s.wealthRoll+")</span></div><div class='item'>Attack: <b>"+atk()+"</b></div><div class='item'>Defense: <b>"+def()+"</b></div><div class='item'>Max HP: <b>"+maxHp()+"</b></div><div class='item'>Max Mana: <b>"+maxMana()+"</b></div><div class='item'>Spellwork: <b>Lv "+s.spellwork.level+"</b></div><div class='item'>Item Quality Luck: <b>"+Math.round(luck()*100)+"%</b></div><div class='item'>Kills: <b>"+s.kills+"</b></div><div class='item'>Dungeons: <b>"+s.dungeons+"</b></div>";
  let ups=[["atk","Strength","+1 base attack"],["hp","Vitality","+6 max HP"],["def","Guard","+2 defense"],["luck","Fortune","+2% item-quality luck"]];$("upgrades").innerHTML=ups.map(u=>{let c=30+s.upgrade[u[0]]*30;return"<div class='item'><div class='row'><b>"+u[1]+"</b><span>Lv. "+s.upgrade[u[0]]+"</span></div><div class='small'>"+u[2]+"</div><button data-stat='"+u[0]+"'>UPGRADE "+c+"g</button></div>"}).join("");
- if(s.mode==="campaign"){let chapters=["Prologue: Rumors of war","The King's Summons","The Broken Fort","The Three Seals","March of Valedorn","The Demon Lord"]; $("questTitle").textContent="Campaign Journal";$("quests").innerHTML=chapters.map((x,i)=>"<div class='item "+(i>s.story?"small":"")+"'><b>"+(i<=s.story?"✓ ":"🔒 ")+x+"</b>"+(i===s.story&&i<5?"<div class='small'>Grow stronger and explore the world. Next chapter unlocks through level progression and dungeon activity.</div>":"")+"</div>").join("")}else{$("questTitle").textContent="Free Roam Journal";$("quests").innerHTML="<p class='small'>No destiny, no king yelling about prophecy. Explore, forge, clear dungeons and build the strongest character you can.</p>"}
- $("worldList").innerHTML=areas.map((a,i)=>"<div class='item'><b>"+a.name+"</b><div class='small'>Recommended level "+a.min+" • "+a.type+"</div></div>").join("");
+ if(s.mode==="campaign"){
+ $("questTitle").textContent="Campaign Journal";
+ $("quests").innerHTML=campaignQuests.map((q,i)=>{let state=i<s.story?"✓":i===s.story?"▶":"🔒";let prog=(i===s.story&&(q.type==="kills_region"||q.type==="dungeon"))?(" • "+Math.min(questCount(q),q.target)+"/"+q.target):"";return "<div class='item "+(i>s.story?"small":"")+"'><b>"+state+" "+q.title+"</b><div class='small'>"+q.desc+prog+"</div></div>"}).join("");
+}else{$("questTitle").textContent="Free Roam Journal";$("quests").innerHTML="<p class='small'>No destiny, no king yelling about prophecy. Explore, forge, clear dungeons and build the strongest character you can.</p>"}
+ if($("npcPanel")){
+ if(s.mode!=="campaign")$("npcPanel").innerHTML='<p class="small">Free Roam has no mandatory royal questline.</p>';
+ else{
+   let q=activeQuest(),here=q&&area().name===q.location,progress=(q&&(q.type==="kills_region"||q.type==="dungeon"))?(" • "+Math.min(questCount(q),q.target)+"/"+q.target):"";
+   let action="";
+   if(q&&q.type==="talk"&&here)action='<button data-a="talkNPC">TALK TO '+q.npc.toUpperCase()+'</button>';
+   else if(q&&q.type==="filled_soul"&&here)action='<button data-a="talkNPC" '+(!questObjectiveMet(q)?'disabled':'')+'>GIVE SOUL CRYSTAL TO '+q.npc.toUpperCase()+'</button>';
+   else if(q&&q.type==="final_boss"&&here)action='<button class="red" data-a="finalBoss">CONFRONT DEMON LORD</button>';
+   $("npcPanel").innerHTML='<div class="item"><div class="row"><b>'+q.title+'</b><span class="pill">Quest '+(s.story+1)+'/8</span></div><div class="small">'+q.desc+progress+'</div>'+action+'</div>';
+ }
+}
+$("worldList").innerHTML=areas.map((a,i)=>"<div class='item'><b>"+a.name+"</b><div class='small'>Recommended level "+a.min+" • "+a.type+"</div></div>").join("");
  renderTownPanel();renderForgeOptions();renderWorldMap();renderMaterialsTab();renderSpellUI();
  $("dungeonTabBtn").disabled=!s.dungeon.active;
  $("dungeonState").textContent=!s.dungeon.active?"NO DUNGEON":s.dungeon.bossReady?"BOSS ROOM":"IN PROGRESS";
@@ -956,10 +1082,15 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.study){studyTome(b.dataset.study);return}
  if(b.dataset.castspell){castKnownSpell(b.dataset.castspell,false);return}
  if(b.dataset.castdungeon){castKnownSpell(b.dataset.castdungeon,true);return}
+ if(b.dataset.gamble){gamble(b.dataset.gamble);return}
  if(b.dataset.job){startJobChallenge(+b.dataset.job);return}
  if(b.dataset.jobtiming){stopTimingJob();return}
  if(b.dataset.jobguess){submitJobGuess();return}
  if(b.dataset.jobreaction){reactionJobTap();return}
+ if(b.dataset.jobroulette){rouletteJobPick(b.dataset.jobroulette);return}
+ if(b.dataset.jobmemory){memoryJobAnswer(b.dataset.jobmemory);return}
+ if(b.dataset.jobseq){sequenceJobTap(b.dataset.jobseq);return}
+ if(b.dataset.jobchoice){choiceJobPick(b.dataset.jobchoice);return}
  if(b.dataset.buymat){buyMaterial(b.dataset.buymat);return}
  if(b.dataset.sellmat){sellMaterial(b.dataset.sellmat);return}
  if(b.dataset.sellitem){sellItem(b.dataset.sellitem);return}
@@ -976,8 +1107,11 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
    {let sp=getSelectedSpell();if(!sp){log("No spell selected.");break}castKnownSpell(sp.id,false);}break;
  case"dungeonSpell":
    {let sp=getSelectedSpell();if(!sp){dlog("No spell selected.");break}castKnownSpell(sp.id,true);}break;
+ case"talkNPC":talkToNPC();break;
+ case"finalBoss":spawnFinalBoss();break;
  case"openJobs":s.townPanel=s.townPanel==="jobs"?null:"jobs";save();render();break;
  case"openMarket":s.townPanel=s.townPanel==="market"?null:"market";save();render();break;
+ case"openGambling":s.townPanel=s.townPanel==="gambling"?null:"gambling";save();render();break;
  case"customForge":customForge();break;
  case"createSpell":createUniqueSpell();break;
  case"resetData":
