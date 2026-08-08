@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG v1.7</title>
+<title>Wayfarer: Wheel & Dice RPG v1.8</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
@@ -11,7 +11,7 @@
 .bar{height:9px;background:#2c303b;border-radius:99px;overflow:hidden;margin:4px 0 8px}.fill{height:100%}.hp{background:var(--r)}.xp{background:var(--b)}.mana{background:#8b72d9}
 button{width:100%;border:0;border-radius:13px;padding:13px 7px;margin-top:7px;background:var(--g);font-weight:850;font-size:14px;color:#18130b;touch-action:manipulation}button.secondary{background:#292e3b;color:white}button.blue{background:#355e86;color:white}button.red{background:#71383c;color:white}button:disabled{opacity:.4}.grid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.item{border-top:1px solid #303542;padding-top:9px;margin-top:9px}.pill{font-size:10px;background:#2a2f3b;border-radius:99px;padding:4px 7px}.hidden{display:none!important}.log{height:170px;overflow:auto;font-size:12px;line-height:1.5;color:#d0d3da}.wheel{font-size:19px;font-weight:900;text-align:center;background:#242936;border-radius:14px;padding:14px;margin:8px 0}.good{color:#7dd79a}.bad{color:#e97980}.rare{color:#9aa8ff}.legend{color:#ffcc69}
 input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;border-radius:12px;background:#222733;color:#fff;font-size:15px}
-.choicegrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.creatorStep{margin-top:10px}.selectedChoice{outline:2px solid var(--g);background:#302a20!important}.forgeRow{display:grid;grid-template-columns:1fr 1fr;gap:7px}.shopQty{max-width:90px}.positive{color:#7dd79a}.negative{color:#e97980}.mapNode{border-left:3px solid #6d7890;padding-left:8px}.mapCurrent{border-color:var(--g);background:#25251f}.spellCard{border-left:3px solid #596fbd;padding-left:8px}.customSpell{border-color:#a76bd4}.soul{border-left:3px solid #9a547e;padding-left:8px}.roomLoot{border-left:3px solid #8c7a47;padding-left:8px}.soulEquipped{outline:2px solid #9a547e;background:#241c27}.fastTravel{border-color:#5d7fae}
+.choicegrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}.creatorStep{margin-top:10px}.selectedChoice{outline:2px solid var(--g);background:#302a20!important}.forgeRow{display:grid;grid-template-columns:1fr 1fr;gap:7px}.shopQty{max-width:90px}.skillTrack{height:28px;background:#262c38;border-radius:999px;position:relative;overflow:hidden;margin:12px 0}.skillZone{position:absolute;top:0;bottom:0;background:#397a4c;border-radius:999px}.skillMarker{position:absolute;top:2px;width:8px;height:24px;background:#f2c65e;border-radius:8px;transform:translateX(-50%)}.positive{color:#7dd79a}.negative{color:#e97980}.mapNode{border-left:3px solid #6d7890;padding-left:8px}.mapCurrent{border-color:var(--g);background:#25251f}.spellCard{border-left:3px solid #596fbd;padding-left:8px}.customSpell{border-color:#a76bd4}.soul{border-left:3px solid #9a547e;padding-left:8px}.roomLoot{border-left:3px solid #8c7a47;padding-left:8px}.soulEquipped{outline:2px solid #9a547e;background:#241c27}.fastTravel{border-color:#5d7fae}
 .tabs{position:fixed;left:50%;transform:translateX(-50%);bottom:max(env(safe-area-inset-bottom),7px);width:calc(100% - 20px);max-width:620px;display:grid;grid-template-columns:repeat(7,1fr);gap:4px;background:#10131bf2;padding:6px;border:1px solid #292e3a;border-radius:16px}.tabs button{margin:0;padding:9px 1px;font-size:8px;background:#262b37;color:white}.tabs button.active{background:var(--g);color:#18130b}
 </style></head>
 <body><div id="app">
@@ -187,31 +187,31 @@ const areas=[
 const races={
  Human:{desc:"Adaptable and ambitious.",bonus:"Gain +5% XP.",xp:.05},
  Elf:{desc:"Keen-eyed and long-lived.",bonus:"+5% dodge.",dodge:.05},
- Dwarf:{desc:"Stout folk of stone and forge.",bonus:"+3 Defense and +10 HP.",def:3,hp:10},
- Orc:{desc:"Powerfully built and difficult to discourage.",bonus:"+3 Attack.",atk:3},
+ Dwarf:{desc:"Stout folk of stone and forge.",bonus:"+2 Defense and +6 HP.",def:2,hp:6},
+ Orc:{desc:"Powerfully built and difficult to discourage.",bonus:"+2 Attack.",atk:2},
  Halfling:{desc:"Small, quick, and absurdly fortunate.",bonus:"+8% Luck.",luck:.08},
- Tiefling:{desc:"Touched by infernal ancestry.",bonus:"+2 Attack and +5% critical chance.",atk:2,crit:.05},
- Beastkin:{desc:"Instinctive hunters with animal traits.",bonus:"+4% dodge and +2 Attack.",dodge:.04,atk:2}
+ Tiefling:{desc:"Touched by infernal ancestry.",bonus:"+1 Attack and +5% critical chance.",atk:1,crit:.05},
+ Beastkin:{desc:"Instinctive hunters with animal traits.",bonus:"+4% dodge and +1 Attack.",dodge:.04,atk:1}
 };
 const classes={
- Warrior:{desc:"Balanced frontline fighter.",atk:4,def:3,hp:15,weapon:"Iron Sword",armor:"Chainmail"},
- Ranger:{desc:"Mobile ranged hunter.",atk:3,def:1,hp:5,weapon:"Longbow",armor:"Ranger Cloak"},
- Rogue:{desc:"Fast, lucky skirmisher.",atk:3,def:1,hp:0,weapon:"Twin Daggers",armor:"Leather Coat",luck:.05},
- Mage:{desc:"Fragile but magically trained.",atk:5,def:0,hp:-10,mana:45,weapon:"Runic Staff",armor:"Runed Robes",luck:.02},
- Cleric:{desc:"Durable holy adventurer.",atk:2,def:3,hp:20,mana:25,weapon:"Mace",armor:"Chainmail"},
- Barbarian:{desc:"Huge health and brutal offense.",atk:6,def:0,hp:25,weapon:"War Axe",armor:"Leather Coat"},
- Warden:{desc:"Defensive guardian and survivalist.",atk:2,def:5,hp:20,mana:10,weapon:"Spear",armor:"Warden Mail"}
+ Warrior:{desc:"Balanced frontline fighter.",atk:2,def:2,hp:8,weapon:"Iron Sword",armor:"Chainmail"},
+ Ranger:{desc:"Mobile ranged hunter.",atk:2,def:1,hp:3,weapon:"Longbow",armor:"Ranger Cloak"},
+ Rogue:{desc:"Fast, lucky skirmisher.",atk:2,def:1,hp:0,weapon:"Twin Daggers",armor:"Leather Coat",luck:.05},
+ Mage:{desc:"Fragile but magically trained.",atk:2,def:0,hp:-5,mana:45,weapon:"Runic Staff",armor:"Runed Robes",luck:.02},
+ Cleric:{desc:"Durable holy adventurer.",atk:1,def:2,hp:10,mana:25,weapon:"Mace",armor:"Chainmail"},
+ Barbarian:{desc:"High health and brutal offense.",atk:3,def:0,hp:14,weapon:"War Axe",armor:"Leather Coat"},
+ Warden:{desc:"Defensive guardian and survivalist.",atk:1,def:3,hp:10,mana:10,weapon:"Spear",armor:"Warden Mail"}
 };
 const backstories=[
- {id:"farm",name:"Farmhand",start:"Greenreach",desc:"You left a quiet farm after raiders destroyed the harvest.",perk:"+15 HP",hp:15},
+ {id:"farm",name:"Farmhand",start:"Greenreach",desc:"You left a quiet farm after raiders destroyed the harvest.",perk:"+8 HP",hp:8},
  {id:"street",name:"Street Urchin",start:"Oakrest",desc:"You survived by stealing meals and sleeping wherever guards were not looking.",perk:"+10% Luck",luck:.10},
  {id:"apprentice",name:"Smith's Apprentice",start:"Oakrest",desc:"Years beside a forge taught you the value of good steel.",perk:"+5 starting ore",ore:5},
- {id:"hunter",name:"Forest Hunter",start:"Whispering Wood",desc:"You grew up tracking monsters through old woodland trails.",perk:"+3 Attack",atk:3},
+ {id:"hunter",name:"Forest Hunter",start:"Whispering Wood",desc:"You grew up tracking monsters through old woodland trails.",perk:"+2 Attack",atk:2},
  {id:"soldier",name:"Disgraced Soldier",start:"Highwall",desc:"Once a kingdom soldier, now stripped of rank and looking for another purpose.",perk:"+4 Defense",def:4},
  {id:"scholar",name:"Wandering Scholar",start:"Oakrest",desc:"You travel in search of old ruins, forbidden texts, and things sensible people leave buried.",perk:"+10% XP",xp:.10},
  {id:"miner",name:"Mountain Miner",start:"Stonejaw Mountains",desc:"You spent years beneath the mountains before deciding monsters were somehow preferable.",perk:"+8 ore",ore:8},
- {id:"pilgrim",name:"Temple Pilgrim",start:"Greenreach",desc:"Your journey began as a religious pilgrimage and became something considerably more violent.",perk:"+20 HP",hp:20},
- {id:"deserter",name:"Border Deserter",start:"Demon March",desc:"You saw what was gathering beyond the border and decided dying for an officer was overrated.",perk:"+4 Attack, +2 Defense",atk:4,def:2},
+ {id:"pilgrim",name:"Temple Pilgrim",start:"Greenreach",desc:"Your journey began as a religious pilgrimage and became something considerably more violent.",perk:"+10 HP",hp:10},
+ {id:"deserter",name:"Border Deserter",start:"Demon March",desc:"You saw what was gathering beyond the border and decided dying for an officer was overrated.",perk:"+2 Attack, +1 Defense",atk:2,def:1},
  {id:"noble",name:"Fallen Noble",start:"Highwall",desc:"Your family lost its title, estates, and nearly everything else. Nearly.",perk:"+30 starting gold",gold:30}
 ];
 const wealthClasses=[
@@ -335,10 +335,22 @@ function dungeonEnemyTurn(){
     s.dungeon=base().dungeon;
   }
 }
+function awardDungeonXP(pack,wasBoss){
+ let total=0;
+ for(const e of pack){
+   total+=Math.floor((7+(e.lv||s.level)*3)*(e.boss?2.5:1));
+ }
+ if(wasBoss)total=Math.floor(total*1.35);
+ total=Math.floor(total*(1+s.bonusXP+attrsTotal("xp")));
+ s.xp+=total;
+ dlog("Dungeon XP: +"+total+" XP.");
+ levelUp();
+}
 function clearDungeonEncounter(){
   if(!s.dungeon.encounter)return;
   const deadPack=s.dungeon.encounter.map(x=>({...x}));
   const wasBoss=s.dungeon.encounter.some(x=>x.boss);
+  awardDungeonXP(deadPack,wasBoss);
   if(s.equippedSoulCrystal){let target=deadPack.find(x=>x.boss)||deadPack.slice().sort((a,b)=>(b.lv||0)-(a.lv||0))[0];if(target)captureSoul(target,true);}
   s.dungeon.encounter=null;
   s.dungeon.clearedRooms++;
@@ -394,13 +406,13 @@ const attrs=[
 const weaponNames=["Iron Sword","War Axe","Spear","Longbow","Mace","Rapier","Greatsword","Twin Daggers","Runic Staff","Halberd"];
 
 const townJobs=[
-{name:"Stable Hand",min:1,pay:14,risk:0,desc:"Feed, groom, and clean up after animals with superior job security."},
-{name:"Courier",min:1,pay:20,risk:.08,desc:"Carry letters and parcels through the local roads."},
-{name:"Smith's Laborer",min:2,pay:24,risk:.04,ore:1,desc:"Haul ore and work the bellows. Earns a little forging material."},
-{name:"Town Guard",min:3,pay:30,risk:.18,desc:"Patrol the walls and respond when somebody inevitably starts something."},
-{name:"Caravan Escort",min:5,pay:42,risk:.28,desc:"Protect a merchant caravan from road attacks."},
-{name:"Bounty Hunter",min:7,pay:58,risk:.42,desc:"Track a wanted criminal or dangerous beast."},
-{name:"Monster Exterminator",min:10,pay:75,risk:.55,desc:"The town has something living beneath it. Naturally this is now your problem."}
+{name:"Stable Hand",min:1,pay:14,type:"timing",desc:"Stop the grooming marker inside the green zone."},
+{name:"Courier",min:1,pay:20,type:"guess",desc:"Deduce the correct delivery number using higher/lower hints."},
+{name:"Smith's Laborer",min:2,pay:24,type:"timing",ore:1,desc:"Stop the forge heat marker inside the working-temperature zone."},
+{name:"Town Guard",min:3,pay:30,type:"reaction",desc:"React to the signal only after it changes to STRIKE."},
+{name:"Caravan Escort",min:5,pay:42,type:"guess",desc:"Identify the safe road checkpoint from numerical hints."},
+{name:"Bounty Hunter",min:7,pay:58,type:"reaction",desc:"Wait for the target to expose themselves, then strike quickly."},
+{name:"Monster Exterminator",min:10,pay:75,type:"timing",desc:"Land the finishing blow while the moving marker is in the kill zone."}
 ];
 
 const materialDefs={
@@ -455,8 +467,8 @@ const effortDefs={
 "Masterwork":{mult:1.28,cost:2.5,bonus:22,desc:"Extremely expensive, with greatly improved quality odds."}
 };
 const armorNames=["Leather Coat","Chainmail","Iron Plate","Ranger Cloak","Scale Armor","Knight Plate","Runed Robes","Brigandine","Warden Mail","Dragonhide"];
-function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:100,baseHp:100,mana:60,baseMana:60,atk:8,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,materials:{Iron:3,Steel:0,Silver:0,Hardwood:0,Crystal:0,"Drake Scale":0,Sunstone:0,"Frost Crystal":0,Hellstone:0,Leather:0,Herb:0,Flax:0,Clay:0,"Wild Honey":0,Silk:0,Moonleaf:0,Resin:0,"Living Bark":0,Coal:0,"Adamant Shard":0,Quartz:0,Sulfur:0,"Venom Sac":0,"Black Herb":0,"Spirit Water":0,"Bog Iron":0,Rotroot:0,"Ghost Reed":0,"Hydra Scale":0,"Glass Shard":0,"Gold Ore":0,"Desert Rose":0,"Scorpion Chitin":0,"Star Sand":0,Obsidian:0,"Wyrm Hide":0,Iceglass:0,"White Fur":0,"Frozen Core":0,"Blue Quartz":0,"Demon Horn":0,"Blood Crystal":0,"Infernal Iron":0,"Ash Pearl":0,"Soul Ash":0,Demonhide:0,"Ancient Parchment":0,"Arcane Dust":0},
-soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
+function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:55,baseHp:55,mana:60,baseMana:60,atk:4,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,materials:{Iron:3,Steel:0,Silver:0,Hardwood:0,Crystal:0,"Drake Scale":0,Sunstone:0,"Frost Crystal":0,Hellstone:0,Leather:0,Herb:0,Flax:0,Clay:0,"Wild Honey":0,Silk:0,Moonleaf:0,Resin:0,"Living Bark":0,Coal:0,"Adamant Shard":0,Quartz:0,Sulfur:0,"Venom Sac":0,"Black Herb":0,"Spirit Water":0,"Bog Iron":0,Rotroot:0,"Ghost Reed":0,"Hydra Scale":0,"Glass Shard":0,"Gold Ore":0,"Desert Rose":0,"Scorpion Chitin":0,"Star Sand":0,Obsidian:0,"Wyrm Hide":0,Iceglass:0,"White Fur":0,"Frozen Core":0,"Blue Quartz":0,"Demon Horn":0,"Blood Crystal":0,"Infernal Iron":0,"Ash Pearl":0,"Soul Ash":0,Demonhide:0,"Ancient Parchment":0,"Arcane Dust":0},
+soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
 dungeon:{active:false,name:null,roomsEntered:0,targetRooms:0,blocked:null,bossReady:false,bossDefeated:false,encounter:null,boss:null,clearedRooms:0}}}
 let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
 if(!s.flags.soulCrystalObjectMigration){
@@ -470,11 +482,11 @@ if(!s.flags.soulCrystalObjectMigration){
 const $=id=>document.getElementById(id);const save=()=>localStorage.setItem(KEY,JSON.stringify(s));const rnd=n=>Math.floor(Math.random()*n);
 function log(t,combat=false){$(combat?"combatLog":"log").insertAdjacentHTML("afterbegin","<div>"+t+"</div>")}
 function attrsTotal(type){let n=0;[s.weapon,s.armor].forEach(i=>{if(i&&i.attr.type===type)n+=i.attr.val*(1+i.up*.25)});return n}
-function maxHp(){return Math.floor(s.baseHp+s.upgrade.hp*10+attrsTotal("hp"))}
+function maxHp(){return Math.floor(s.baseHp+s.upgrade.hp*6+attrsTotal("hp"))}
 function maxMana(){return Math.floor(s.baseMana+s.arcane.capacity*15+(s.weapon&&s.weapon.name&&s.weapon.name.includes("Staff")?10:0))}
 function spellCost(sp){return Math.max(1,Math.floor((sp.cost||10)*(1-Math.min(.45,s.arcane.efficiency*.04))))}
 function spellPowerMult(){return 1+s.arcane.potency*.05}
-function atk(){return Math.floor(s.atk+s.upgrade.atk*2+(s.weapon?s.weapon.stat:0)+attrsTotal("atk"))}function def(){return Math.floor(s.def+s.upgrade.def*2+(s.armor?s.armor.stat:0)+attrsTotal("def"))}
+function atk(){return Math.floor(s.atk+s.upgrade.atk+(s.weapon?s.weapon.stat:0)+attrsTotal("atk"))}function def(){return Math.floor(s.def+s.upgrade.def*2+(s.armor?s.armor.stat:0)+attrsTotal("def"))}
 function power(){return atk()*2+def()+Math.floor(maxHp()/10)+Math.floor(maxMana()/12)+s.level*3+s.spellwork.level*2}function luck(){return s.luck+s.upgrade.luck*.02+attrsTotal("luck")}
 function rollDie(n=20){return 1+rnd(n)}
 function spin(options){return options[rnd(options.length)]}
@@ -482,25 +494,25 @@ function rarity(){let r=Math.random()*100,acc=0;for(let x of rarities){acc+=x[1]
 function makeItem(kind,bonus=0){let ra=rarity(),a=attrs[rnd(attrs.length)],name=spin(kind==="weapon"?weaponNames:armorNames),stat=Math.max(1,Math.floor((3+s.level*.7+bonus)*ra[2]));return{id:Date.now()+Math.random(),kind,name,rarity:ra[0],stat,attr:{...a},up:0}}
 function area(){return areas[s.location]}
 function enemy(){let a=area(),name=spin(a.enemies),elite=Math.random()<.08+luck(),lv=Math.max(1,s.level+rnd(3)-1),hp=Math.floor((28+lv*9)*(elite?1.8:1));s.enemy={name:(elite?"Elite ":"")+name,lv,hp,max:hp,atk:5+lv*2,def:Math.floor(lv*.7),elite}}
-function levelUp(){while(s.xp>=s.xpNeed){s.xp-=s.xpNeed;s.level++;s.xpNeed=Math.floor(s.xpNeed*1.28);s.baseHp+=5;s.hp=maxHp();s.mana=maxMana();log("Level up! You are now level "+s.level+". HP and mana restored.")}}
-function loot(mult=1){let g=Math.floor((8+s.level*3)*mult*(1+attrsTotal("gold"))),xp=Math.floor((12+s.level*3)*mult*(1+attrsTotal("xp")+s.bonusXP));s.gold+=g;s.xp+=xp;if(Math.random()<.35){s.ore+=1+rnd(2);log("You recover forging ore.")}if(Math.random()<.16+luck()){let it=makeItem(Math.random()<.55?"weapon":"armor",2);s.inventory.push(it);log("Loot wheel: "+it.rarity+" "+it.name+" ["+it.attr.name+"].")}log("Reward: "+g+" gold, "+xp+" XP.");levelUp()}
+function levelUp(){while(s.xp>=s.xpNeed){s.xp-=s.xpNeed;s.level++;s.xpNeed=Math.floor(s.xpNeed*1.28);s.baseHp+=3;s.hp=maxHp();s.mana=maxMana();log("Level up! You are now level "+s.level+". HP and mana restored.")}}
+function loot(mult=1){let g=Math.floor((8+s.level*3)*mult*(1+attrsTotal("gold"))),xp=Math.floor((12+s.level*3)*mult*(1+attrsTotal("xp")+s.bonusXP));s.gold+=g;s.xp+=xp;if(Math.random()<.35){s.ore+=1+rnd(2);log("You recover forging ore.")}if(Math.random()<.16){let it=makeItem(Math.random()<.55?"weapon":"armor",2);s.inventory.push(it);log("Loot wheel: "+it.rarity+" "+it.name+" ["+it.attr.name+"].")}log("Reward: "+g+" gold, "+xp+" XP.");levelUp()}
 function win(){let dead={...s.enemy};s.kills++;captureSoul(dead,false);loot(s.enemy.elite?1.8:1);s.enemy=null;save();render()}
 function enemyTurn(){if(!s.enemy)return;if(Math.random()<.12+attrsTotal("dodge")+s.bonusDodge){log(s.enemy.name+" misses.",true);return}let hit=Math.max(1,s.enemy.atk-def()-(s.turnDefend?Math.floor(def()*.7):0)+rnd(5));s.turnDefend=false;s.hp-=hit;log(s.enemy.name+" deals "+hit+" damage.",true);if(s.hp<=0){s.hp=maxHp();s.gold=Math.floor(s.gold*.8);s.enemy=null;log("You are defeated and wake in "+areas[1].name+". You lose 20% of your gold.");s.location=1}}
 function explore(){let a=area();if(a.type==="town"){let r=spin(["inn","market","rumor","job"]);$("result").textContent="Town wheel: "+r.toUpperCase();if(r==="inn"){let c=10+s.level*2;if(s.gold>=c){s.gold-=c;s.hp=maxHp();s.mana=maxMana();log("You rest at the inn for "+c+" gold. HP and mana fully restored.")}else log("The innkeeper remains tragically committed to capitalism.")}else if(r==="market"){s.gold+=5+rnd(15);log("You make a small profit trading supplies.")}else if(r==="job"){s.gold+=12+s.level*2;log("You complete a local job.")}else log("Rumor: dungeons often hold better gear than the open road.");}
- else{let roll=Math.random(),l=luck();if(roll<.36+l){let m=spin(a.mats),n=1+rnd(3);
+ else{let roll=Math.random();if(roll<.36){let m=spin(a.mats),n=1+rnd(3);
  let map={"Iron Ore":"Iron","Steel Ore":"Steel","Silver Ore":"Silver","Hardwood":"Hardwood","Crystal":"Crystal","Drake Scale":"Drake Scale","Sunstone":"Sunstone","Frost Crystal":"Frost Crystal","Hellstone":"Hellstone","Leather":"Leather","Herb":"Herb","Flax":"Flax","Clay":"Clay","Wild Honey":"Wild Honey","Silk":"Silk","Moonleaf":"Moonleaf","Resin":"Resin","Living Bark":"Living Bark","Coal":"Coal","Adamant Shard":"Adamant Shard","Quartz":"Quartz","Sulfur":"Sulfur","Venom Sac":"Venom Sac","Black Herb":"Black Herb","Spirit Water":"Spirit Water","Bog Iron":"Bog Iron","Rotroot":"Rotroot","Ghost Reed":"Ghost Reed","Hydra Scale":"Hydra Scale","Glass Shard":"Glass Shard","Gold Ore":"Gold Ore","Desert Rose":"Desert Rose","Scorpion Chitin":"Scorpion Chitin","Star Sand":"Star Sand","Obsidian":"Obsidian","Wyrm Hide":"Wyrm Hide","Iceglass":"Iceglass","White Fur":"White Fur","Frozen Core":"Frozen Core","Blue Quartz":"Blue Quartz","Demon Horn":"Demon Horn","Blood Crystal":"Blood Crystal","Infernal Iron":"Infernal Iron","Ash Pearl":"Ash Pearl","Soul Ash":"Soul Ash","Demonhide":"Demonhide"};
  if(map[m])s.materials[map[m]]=(s.materials[map[m]]||0)+n;
  if(m.includes("Ore"))s.ore+=n;if(m.includes("Gold"))s.gold+=n*5;
- $("result").textContent="Wheel: MATERIAL";log("You find "+n+" "+m+".")}else if(roll<.70){$("result").textContent="Wheel: ENCOUNTER";enemy();log("A "+s.enemy.name+" appears.",true);document.getElementById("combatCard").scrollIntoView({behavior:"smooth",block:"start"})}else if(roll<.84+l){let it=makeItem(Math.random()<.5?"weapon":"armor");s.inventory.push(it);$("result").textContent="Wheel: TREASURE";log("You discover a "+it.rarity+" "+it.name+" with "+it.attr.name+" ("+it.attr.desc+").")}else{$("result").textContent="Wheel: HAZARD";let d=rollDie(20),dc=9+Math.floor(s.level/5);if(d>=dc)log("Hazard save d20: "+d+" vs DC "+dc+". You avoid it.");else{let h=5+s.level*2;s.hp=Math.max(1,s.hp-h);log("Hazard save d20: "+d+" vs DC "+dc+". You take "+h+" damage.")}}}save();render()}
+ $("result").textContent="Wheel: MATERIAL";log("You find "+n+" "+m+".")}else if(roll<.70){$("result").textContent="Wheel: ENCOUNTER";enemy();log("A "+s.enemy.name+" appears.",true);document.getElementById("combatCard").scrollIntoView({behavior:"smooth",block:"start"})}else if(roll<.84){let it=makeItem(Math.random()<.5?"weapon":"armor");s.inventory.push(it);$("result").textContent="Wheel: TREASURE";log("You discover a "+it.rarity+" "+it.name+" with "+it.attr.name+" ("+it.attr.desc+").")}else{$("result").textContent="Wheel: HAZARD";let d=rollDie(20),dc=9+Math.floor(s.level/5);if(d>=dc)log("Hazard save d20: "+d+" vs DC "+dc+". You avoid it.");else{let h=5+s.level*2;s.hp=Math.max(1,s.hp-h);log("Hazard save d20: "+d+" vs DC "+dc+". You take "+h+" damage.")}}}save();render()}
 function travel(){
  let unlocked=areas.filter(a=>a.min<=s.level),choices=unlocked.filter(a=>areas.indexOf(a)!==s.location);if(!choices.length)choices=unlocked;
- let dest=spin(choices),old=area();s.location=areas.indexOf(dest);if(!s.visited.includes(s.location))s.visited.push(s.location);
+ let dest=spin(choices),old=area(),wasTown=old.type==="town";s.location=areas.indexOf(dest);if(!s.visited.includes(s.location))s.visited.push(s.location);if(area().type==="town"&&!wasTown){s.jobShifts=3;s.jobChallenge=null;}
  $("result").textContent="Travel wheel: "+dest.name;log("You leave "+old.name+" and travel to "+dest.name+".");save();render();
 }
 function dungeon(){
  if(area().type==="town"){log("You need to leave town before searching for a dungeon.");return}
  if(s.dungeon.active){log("You already have an active dungeon expedition.");showTab("dungeonTab");return}
- let d=rollDie(20),dc=11-Math.floor(luck()*10);$("result").textContent="Dungeon search d20: "+d;
+ let d=rollDie(20),dc=11;$("result").textContent="Dungeon search d20: "+d;
  if(d<dc){log("You find nothing but old stones and several aggressively ordinary bushes.");return}
  let name=spin(dungeons);
  generateDungeon(name);
@@ -533,8 +545,8 @@ function applyCharacterCreation(mode){
  s.luck+=race.luck||0;s.luck+=cl.luck||0;s.luck+=bg.luck||0;
  s.bonusXP=(race.xp||0)+(bg.xp||0);s.bonusCrit=race.crit||0;s.bonusDodge=race.dodge||0;
  const startIndex=areas.findIndex(a=>a.name===bg.start);s.location=startIndex>=0?startIndex:0;s.visited=[s.location];
- const wi=startingItem(cl.weapon,"weapon",Math.max(3,5+Math.floor((cl.atk||0)/2)));
- const ai=startingItem(cl.armor,"armor",Math.max(2,4+Math.floor((cl.def||0)/2)));
+ const wi=startingItem(cl.weapon,"weapon",Math.max(1,2+Math.floor((cl.atk||0)/2)));
+ const ai=startingItem(cl.armor,"armor",Math.max(1,2+Math.floor((cl.def||0)/2)));
  s.inventory=[wi,ai];s.weapon=wi;s.armor=ai;s.hp=maxHp();s.mana=maxMana();
  save();render();
  log("Character created: "+s.name+", "+s.race+" "+s.className+".");
@@ -554,20 +566,68 @@ function renderCreator(){
 }
 
 function currentTown(){return area().type==="town"}
-function jobRoll(job){
+let jobTimer=null;
+function startJobChallenge(jobIndex){
  if(!currentTown()){log("You need to be in a town to take a job.");return}
+ const job=townJobs[jobIndex];if(!job)return;
  if(s.level<job.min){log(job.name+" requires level "+job.min+".");return}
- let d=rollDie(20),risk=job.risk,dc=Math.floor(6+risk*18),total=d+Math.floor((atk()+def())/8);
- $("result").textContent="Job d20: "+d;
- if(total>=dc){
+ if(s.jobShifts<=0){log("You have worked enough shifts for now. Travel away and return to a town to refresh job shifts.");return}
+ if(jobTimer){clearInterval(jobTimer);jobTimer=null}
+ s.jobChallenge={jobIndex,type:job.type,status:"active",attempts:0};
+ if(job.type==="timing"){
+   let zoneStart=28+rnd(35),zoneWidth=18,position=0,direction=1;
+   s.jobChallenge.zoneStart=zoneStart;s.jobChallenge.zoneEnd=zoneStart+zoneWidth;s.jobChallenge.position=0;
+   jobTimer=setInterval(()=>{
+     if(!s.jobChallenge||s.jobChallenge.type!=="timing"){clearInterval(jobTimer);jobTimer=null;return}
+     position+=direction*2.4;if(position>=100){position=100;direction=-1}else if(position<=0){position=0;direction=1}
+     s.jobChallenge.position=position;
+     const marker=$("jobMarker");if(marker)marker.style.left=position+"%";
+   },35);
+ }else if(job.type==="guess"){
+   s.jobChallenge.target=1+rnd(20);s.jobChallenge.attemptsLeft=5;s.jobChallenge.hint="Guess a number from 1 to 20.";
+ }else if(job.type==="reaction"){
+   s.jobChallenge.ready=false;s.jobChallenge.armed=true;
+   let delay=1200+rnd(2600);
+   setTimeout(()=>{
+     if(s.jobChallenge&&s.jobChallenge.type==="reaction"&&s.jobChallenge.status==="active"){
+       s.jobChallenge.ready=true;s.jobChallenge.readyAt=Date.now();renderTownPanel();
+     }
+   },delay);
+ }
+ save();renderTownPanel();
+}
+function finishJob(success,message){
+ if(!s.jobChallenge)return;
+ if(jobTimer){clearInterval(jobTimer);jobTimer=null}
+ const job=townJobs[s.jobChallenge.jobIndex];
+ s.jobShifts=Math.max(0,s.jobShifts-1);
+ if(success){
    let pay=job.pay+Math.floor(s.level*1.5);s.gold+=pay;
    if(job.ore){s.ore+=job.ore;s.materials.Iron=(s.materials.Iron||0)+job.ore}
-   log("Job complete: "+job.name+". You earn "+pay+" gold"+(job.ore?" and "+job.ore+" Iron.":"."));
- }else{
-   let dmg=Math.max(1,Math.floor(maxHp()*(.05+job.risk*.18)));s.hp=Math.max(1,s.hp-dmg);
-   log(job.name+" goes badly. You take "+dmg+" damage and receive no pay.");
- }
- save();render();
+   log(job.name+" completed: "+message+" You earn "+pay+" gold"+(job.ore?" and "+job.ore+" Iron.":"."));
+ }else log(job.name+" failed: "+message+" No pay.");
+ s.jobChallenge=null;save();render();
+}
+function stopTimingJob(){
+ let c=s.jobChallenge;if(!c||c.type!=="timing")return;
+ let p=c.position||0,success=p>=c.zoneStart&&p<=c.zoneEnd;
+ finishJob(success,success?"Perfect timing.":"You missed the target zone.");
+}
+function submitJobGuess(){
+ let c=s.jobChallenge;if(!c||c.type!=="guess")return;
+ let input=$("jobGuessInput"),v=Number(input&&input.value);
+ if(!Number.isInteger(v)||v<1||v>20){c.hint="Enter a whole number from 1 to 20.";renderTownPanel();return}
+ c.attemptsLeft--;c.attempts++;
+ if(v===c.target){finishJob(true,"You deduced the correct number in "+c.attempts+" guesses.");return}
+ if(c.attemptsLeft<=0){finishJob(false,"The correct number was "+c.target+".");return}
+ c.hint=v<c.target?"Higher than "+v+".":"Lower than "+v+".";
+ save();renderTownPanel();
+}
+function reactionJobTap(){
+ let c=s.jobChallenge;if(!c||c.type!=="reaction")return;
+ if(!c.ready){finishJob(false,"You moved too early.");return}
+ let ms=Date.now()-c.readyAt;
+ finishJob(ms<=900,"Reaction time: "+ms+" ms.");
 }
 function sellItem(id){
  let idx=s.inventory.findIndex(x=>String(x.id)===String(id));if(idx<0)return;
@@ -613,7 +673,18 @@ function renderTownPanel(){
  $("townServices").style.display=currentTown()?"block":"none";
  if(!currentTown()){panel.innerHTML="";return}
  if(s.townPanel==="jobs"){
-   panel.innerHTML='<div class="item"><b>Job Board</b></div>'+townJobs.map((j,i)=>'<div class="item"><div class="row"><b>'+j.name+'</b><span class="pill">Lv '+j.min+'+</span></div><div class="small">'+j.desc+'</div><div class="small">Base pay: '+j.pay+'g • Risk: '+Math.round(j.risk*100)+'%</div><button data-job="'+i+'" '+(s.level<j.min?'disabled':'')+'>TAKE JOB</button></div>').join("");
+   if(s.jobChallenge){
+     const c=s.jobChallenge,j=townJobs[c.jobIndex];
+     if(c.type==="timing"){
+       panel.innerHTML='<div class="item"><div class="row"><b>'+j.name+' Skill Check</b><span class="pill">Shifts '+s.jobShifts+'/3</span></div><div class="small">'+j.desc+'</div><div class="skillTrack"><div class="skillZone" style="left:'+c.zoneStart+'%;width:'+(c.zoneEnd-c.zoneStart)+'%"></div><div class="skillMarker" id="jobMarker" style="left:'+(c.position||0)+'%"></div></div><button data-jobtiming="1">STOP</button></div>';
+     }else if(c.type==="guess"){
+       panel.innerHTML='<div class="item"><div class="row"><b>'+j.name+' Skill Check</b><span class="pill">'+c.attemptsLeft+' guesses left</span></div><div class="small">'+c.hint+'</div><input id="jobGuessInput" inputmode="numeric" type="number" min="1" max="20" placeholder="1–20"><button data-jobguess="1">SUBMIT GUESS</button></div>';
+     }else{
+       panel.innerHTML='<div class="item"><div class="row"><b>'+j.name+' Skill Check</b><span class="pill">Shifts '+s.jobShifts+'/3</span></div><div class="small">'+(c.ready?'STRIKE NOW!':'Wait for the signal. Do not tap early.')+'</div><button class="'+(c.ready?'red':'secondary')+'" data-jobreaction="1">'+(c.ready?'STRIKE':'WAIT...')+'</button></div>';
+     }
+   }else{
+     panel.innerHTML='<div class="item"><div class="row"><b>Job Board</b><span class="pill">Shifts '+s.jobShifts+'/3</span></div><div class="small">Each job requires an actual skill check. You can complete up to 3 shifts before leaving town.</div></div>'+townJobs.map((j,i)=>'<div class="item"><div class="row"><b>'+j.name+'</b><span class="pill">Lv '+j.min+'+</span></div><div class="small">'+j.desc+'</div><div class="small">Pay: '+j.pay+'g • Check: '+j.type+'</div><button data-job="'+i+'" '+(s.level<j.min||s.jobShifts<=0?'disabled':'')+'>START SHIFT</button></div>').join("");
+   }
  }else if(s.townPanel==="market"){
    panel.innerHTML='<div class="item"><b>Material Market</b><div class="small">Town prices are fixed for now; merchants remain committed to making a living.</div></div>'+
    Object.entries(materialDefs).map(([n,d])=>'<div class="item"><div class="row"><b>'+n+'</b><span>x'+(s.materials[n]||0)+'</span></div><div class="small">'+d.desc+'</div><div class="grid"><button data-buymat="'+n+'">BUY '+d.cost+'g</button><button class="secondary" data-sellmat="'+n+'" '+(!(s.materials[n]>0)?'disabled':'')+'>SELL '+Math.floor(d.cost*.55)+'g</button></div></div>').join("")+
@@ -785,7 +856,7 @@ function castKnownSpell(id, dungeonMode=false){
 }
 function mapTravel(idx){
  idx=+idx;if(!s.visited.includes(idx)||idx===s.location)return;
- let old=area().name;s.location=idx;log("You fast travel from "+old+" to "+area().name+".");save();render();
+ let oldArea=area(),old=oldArea.name;s.location=idx;if(area().type==="town"&&oldArea.type!=="town"){s.jobShifts=3;s.jobChallenge=null;}log("You fast travel from "+old+" to "+area().name+".");save();render();
 }
 function renderWorldMap(){
  $("worldMap").innerHTML=areas.map((a,idx)=>{
@@ -850,8 +921,8 @@ function render(){
  $("enemyName").textContent=s.enemy?s.enemy.name:"No enemy";$("enemyStats").textContent=s.enemy?"Lv. "+s.enemy.lv+" • HP "+Math.max(0,s.enemy.hp)+"/"+s.enemy.max+" • DEF "+s.enemy.def:"Explore until you encounter something.";$("worldSpellBtn").textContent=getSelectedSpell()?"CAST "+getSelectedSpell().name.toUpperCase():"CAST SELECTED SPELL";$("worldSpellBtn").disabled=!s.enemy||!getSelectedSpell();
  $("equipped").innerHTML="<div class='item'><b>Weapon:</b> "+(s.weapon?s.weapon.rarity+" "+s.weapon.name+" +"+s.weapon.up+" • "+s.weapon.attr.name:"None")+"</div><div class='item'><b>Armor:</b> "+(s.armor?s.armor.rarity+" "+s.armor.name+" +"+s.armor.up+" • "+s.armor.attr.name:"None")+"</div>";
  $("inventory").innerHTML=s.inventory.length?s.inventory.map(i=>"<div class='item'><div class='row'><b>"+i.rarity+" "+i.name+" +"+i.up+"</b><span class='pill'>"+i.kind+"</span></div><div class='small'>"+(i.kind==="weapon"?"ATK ":"DEF ")+i.stat+" • "+i.attr.name+": "+i.attr.desc+(i.material?" • "+i.material+(i.rune&&i.rune!=="None"?" • "+i.rune:"")+" • "+i.effort:"")+"</div><div class='grid'><button data-equip='"+i.id+"'>EQUIP</button><button class='secondary' data-upitem='"+i.id+"'>UPGRADE "+(20+(i.up+1)*20)+"g</button></div></div>").join(""):"<p class='small'>Your bag contains mostly optimism.</p>";
- $("stats").innerHTML="<div class='item'><b>"+s.name+"</b><div class='small'>"+s.race+" • "+s.className+" • "+(backstories.find(x=>x.id===s.backstory)?.name||"Unknown past")+"</div></div><div class='item'>Wealth Class: <b>"+s.wealthClass+"</b> <span class='small'>(d100: "+s.wealthRoll+")</span></div><div class='item'>Attack: <b>"+atk()+"</b></div><div class='item'>Defense: <b>"+def()+"</b></div><div class='item'>Max HP: <b>"+maxHp()+"</b></div><div class='item'>Max Mana: <b>"+maxMana()+"</b></div><div class='item'>Spellwork: <b>Lv "+s.spellwork.level+"</b></div><div class='item'>Luck: <b>"+Math.round(luck()*100)+"%</b></div><div class='item'>Kills: <b>"+s.kills+"</b></div><div class='item'>Dungeons: <b>"+s.dungeons+"</b></div>";
- let ups=[["atk","Strength","+2 base attack"],["hp","Vitality","+10 max HP"],["def","Guard","+2 defense"],["luck","Fortune","+2% luck"]];$("upgrades").innerHTML=ups.map(u=>{let c=30+s.upgrade[u[0]]*30;return"<div class='item'><div class='row'><b>"+u[1]+"</b><span>Lv. "+s.upgrade[u[0]]+"</span></div><div class='small'>"+u[2]+"</div><button data-stat='"+u[0]+"'>UPGRADE "+c+"g</button></div>"}).join("");
+ $("stats").innerHTML="<div class='item'><b>"+s.name+"</b><div class='small'>"+s.race+" • "+s.className+" • "+(backstories.find(x=>x.id===s.backstory)?.name||"Unknown past")+"</div></div><div class='item'>Wealth Class: <b>"+s.wealthClass+"</b> <span class='small'>(d100: "+s.wealthRoll+")</span></div><div class='item'>Attack: <b>"+atk()+"</b></div><div class='item'>Defense: <b>"+def()+"</b></div><div class='item'>Max HP: <b>"+maxHp()+"</b></div><div class='item'>Max Mana: <b>"+maxMana()+"</b></div><div class='item'>Spellwork: <b>Lv "+s.spellwork.level+"</b></div><div class='item'>Item Quality Luck: <b>"+Math.round(luck()*100)+"%</b></div><div class='item'>Kills: <b>"+s.kills+"</b></div><div class='item'>Dungeons: <b>"+s.dungeons+"</b></div>";
+ let ups=[["atk","Strength","+1 base attack"],["hp","Vitality","+6 max HP"],["def","Guard","+2 defense"],["luck","Fortune","+2% item-quality luck"]];$("upgrades").innerHTML=ups.map(u=>{let c=30+s.upgrade[u[0]]*30;return"<div class='item'><div class='row'><b>"+u[1]+"</b><span>Lv. "+s.upgrade[u[0]]+"</span></div><div class='small'>"+u[2]+"</div><button data-stat='"+u[0]+"'>UPGRADE "+c+"g</button></div>"}).join("");
  if(s.mode==="campaign"){let chapters=["Prologue: Rumors of war","The King's Summons","The Broken Fort","The Three Seals","March of Valedorn","The Demon Lord"]; $("questTitle").textContent="Campaign Journal";$("quests").innerHTML=chapters.map((x,i)=>"<div class='item "+(i>s.story?"small":"")+"'><b>"+(i<=s.story?"✓ ":"🔒 ")+x+"</b>"+(i===s.story&&i<5?"<div class='small'>Grow stronger and explore the world. Next chapter unlocks through level progression and dungeon activity.</div>":"")+"</div>").join("")}else{$("questTitle").textContent="Free Roam Journal";$("quests").innerHTML="<p class='small'>No destiny, no king yelling about prophecy. Explore, forge, clear dungeons and build the strongest character you can.</p>"}
  $("worldList").innerHTML=areas.map((a,i)=>"<div class='item'><b>"+a.name+"</b><div class='small'>Recommended level "+a.min+" • "+a.type+"</div></div>").join("");
  renderTownPanel();renderForgeOptions();renderWorldMap();renderMaterialsTab();renderSpellUI();
@@ -885,7 +956,10 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.study){studyTome(b.dataset.study);return}
  if(b.dataset.castspell){castKnownSpell(b.dataset.castspell,false);return}
  if(b.dataset.castdungeon){castKnownSpell(b.dataset.castdungeon,true);return}
- if(b.dataset.job){jobRoll(townJobs[+b.dataset.job]);return}
+ if(b.dataset.job){startJobChallenge(+b.dataset.job);return}
+ if(b.dataset.jobtiming){stopTimingJob();return}
+ if(b.dataset.jobguess){submitJobGuess();return}
+ if(b.dataset.jobreaction){reactionJobTap();return}
  if(b.dataset.buymat){buyMaterial(b.dataset.buymat);return}
  if(b.dataset.sellmat){sellMaterial(b.dataset.sellmat);return}
  if(b.dataset.sellitem){sellItem(b.dataset.sellitem);return}
@@ -938,7 +1012,7 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  case"attack":if(!s.enemy)return;{let d=rollDie(20),hit=d+Math.floor(atk()/5),dc=8+s.enemy.def;$("result").textContent="Attack d20: "+d;log("Attack roll "+hit+" vs DC "+dc+".",true);if(d===1||hit<dc)log("You miss.",true);else{let dmg=Math.max(1,atk()-s.enemy.def+rnd(5)),crit=d===20||Math.random()<attrsTotal("crit")+s.bonusCrit;if(crit)dmg*=2;s.enemy.hp-=dmg;let heal=Math.floor(dmg*attrsTotal("leech"));if(heal)s.hp=Math.min(maxHp(),s.hp+heal);log((crit?"CRITICAL! ":"")+"You deal "+dmg+".",true);if(s.enemy.hp<=0){win();break}}enemyTurn();save();render()}break;
  case"defend":if(!s.enemy)return;s.turnDefend=true;{let mr=3+s.arcane.flow*2;s.mana=Math.min(maxMana(),s.mana+mr);log("You brace for the next attack and recover "+mr+" mana.",true);}enemyTurn();save();render();break;
  case"skill":if(!s.enemy)return;{let d=rollDie(12),dmg=Math.floor(atk()*1.6+d);s.enemy.hp-=dmg;s.hp=Math.max(1,s.hp-3);log("Power Move d12 bonus "+d+": "+dmg+" damage. Costs 3 HP.",true);if(s.enemy.hp<=0)win();else{enemyTurn();save();render()}}break;
- case"flee":if(!s.enemy)return;{let d=rollDie(20);log("Flee roll: "+d+".",true);if(d+Math.floor(luck()*10)>=10){s.enemy=null;log("You escape.",true)}else{log("You fail to escape.",true);enemyTurn()}save();render()}break}
+ case"flee":if(!s.enemy)return;{let d=rollDie(20);log("Flee roll: "+d+".",true);if(d>=10){s.enemy=null;log("You escape.",true)}else{log("You fail to escape.",true);enemyTurn()}save();render()}break}
 });render();
 })();
 </script></body></html>
