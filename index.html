@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG v1.9</title>
+<title>Wayfarer: Wheel & Dice RPG v2.0</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
@@ -54,7 +54,9 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 <div class="grid"><button data-a="openJobs">JOB BOARD</button><button class="secondary" data-a="openMarket">MARKET</button></div><button class="secondary" data-a="openGambling">GAMBLING HALL</button>
 <div id="townPanel"></div>
 </div>
-<div class="card" id="npcCard"><b>NPCs & Quests</b><div id="npcPanel"></div></div><div class="card"><b>Wheel / Dice Result</b><div class="wheel" id="result">Nothing rolled yet.</div></div>
+<div class="card" id="npcCard"><b>NPCs & Quests</b><div id="npcPanel"></div>
+<div class="item"><b>Local People</b><div id="localNPCs"></div></div>
+<div class="item"><b>Side Quests</b><div id="sideQuestPanel"></div></div></div><div class="card"><b>Wheel / Dice Result</b><div class="wheel" id="result">Nothing rolled yet.</div></div>
 <div class="card"><b>Adventure Log</b><div class="log" id="log"></div></div>
 
 <div class="card" id="combatCard"><b>Combat</b><div class="wheel" id="enemyName">No enemy</div><div class="small" id="enemyStats"></div><div class="grid"><button data-a="attack">ATTACK (d20)</button><button class="secondary" data-a="defend">DEFEND</button></div><div class="grid"><button class="blue" data-a="skill">POWER MOVE</button><button class="secondary" data-a="flee">FLEE (d20)</button></div><button class="blue" data-a="worldSpell" id="worldSpellBtn">CAST SELECTED SPELL</button></div>
@@ -174,24 +176,37 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 (()=>{"use strict";
 const KEY="wayfarer-wheel-rpg-v1";
 const areas=[
-{name:"Greenreach",type:"wild",min:1,desc:"Rolling plains, ruined roads and scattered farms.",enemies:["Wolf","Goblin Scout","Bandit","Wild Boar","Grassland Slime","Horned Hare","Field Imp","Roadside Cutthroat"],mats:["Iron Ore","Leather","Herb","Flax","Clay","Wild Honey"]},
-{name:"Oakrest",type:"town",min:1,desc:"A frontier town with an inn, smithy and job board.",enemies:[],mats:[]},
-{name:"Whispering Wood",type:"wild",min:3,desc:"Ancient forest where paths seem to move when nobody watches.",enemies:["Dire Wolf","Briar Goblin","Giant Spider","Forest Witch","Mossback Bear","Vine Horror","Silk Moth","Treant Sapling","Moon Deer"],mats:["Hardwood","Silk","Herb","Moonleaf","Resin","Living Bark"]},
-{name:"Stonejaw Mountains",type:"wild",min:6,desc:"Ore-rich mountains infested with trolls and harpies.",enemies:["Mountain Troll","Harpie","Stone Drake","Orc Raider","Cave Bear","Rock Worm","Iron Golem","Cliff Wyvern","Deep Kobold"],mats:["Steel Ore","Crystal","Drake Scale","Coal","Adamant Shard","Quartz","Sulfur"]},
-{name:"Mire of Bells",type:"wild",min:9,desc:"A drowned marsh where ruined bell towers rise from black water.",enemies:["Bog Wraith","Rot Knight","Swamp Hydra","Fen Hag","Mire Slime","Corpse Eel","Plague Crow","Mud Elemental","Bog Giant"],mats:["Venom Sac","Black Herb","Spirit Water","Bog Iron","Rotroot","Ghost Reed","Hydra Scale"]},
-{name:"Sunscar Desert",type:"wild",min:12,desc:"A red desert filled with buried temples and glass storms.",enemies:["Dune Stalker","Sand Golem","Scorpion Knight","Ash Djinn","Glass Serpent","Sun Mummy","Dust Devil","Dune Wyvern","Sandworm"],mats:["Sunstone","Glass Shard","Gold Ore","Desert Rose","Scorpion Chitin","Star Sand","Obsidian"]},
+{name:"Greenreach",type:"wild",min:1,desc:"Rolling plains, ruined roads and scattered farms.",enemies:["Wolf","Goblin Scout","Bandit","Wild Boar","Grassland Slime","Horned Hare","Field Imp","Roadside Cutthroat","Young Cockatrice","Rogue Squire"],mats:["Iron Ore","Leather","Herb","Flax","Clay","Wild Honey","Beast Fang"]},
+{name:"Oakrest",type:"town",min:1,desc:"A frontier town with an inn, smithy, gambling hall and job board.",enemies:[],mats:[]},
+{name:"Rivergate",type:"town",min:4,desc:"A river trading town built around stone bridges and crowded docks.",enemies:[],mats:[]},
+{name:"Whispering Wood",type:"wild",min:3,desc:"Ancient forest where paths seem to move when nobody watches.",enemies:["Dire Wolf","Briar Goblin","Giant Spider","Forest Witch","Mossback Bear","Vine Horror","Silk Moth","Treant Sapling","Moon Deer","Fungal Knight","Thorn Beast"],mats:["Hardwood","Silk","Herb","Moonleaf","Resin","Living Bark","Glowcap","Dryad Sap"]},
+{name:"Blackpine Hollow",type:"wild",min:7,desc:"A dark pine forest where old hunting lodges rot beneath permanent mist.",enemies:["Blackpine Wolf","Hollow Hunter","Mist Wraith","Antler Fiend","Needle Spider","Cursed Woodsman","Shadow Elk","Pine Troll"],mats:["Black Timber","Shadow Moss","Wolf Pelt","Mist Pearl","Dark Resin","Ironwood"]},
+{name:"Stonejaw Mountains",type:"wild",min:6,desc:"Ore-rich mountains infested with trolls and harpies.",enemies:["Mountain Troll","Harpie","Stone Drake","Orc Raider","Cave Bear","Rock Worm","Iron Golem","Cliff Wyvern","Deep Kobold","Granite Basilisk","Ore Eater"],mats:["Steel Ore","Crystal","Drake Scale","Coal","Adamant Shard","Quartz","Sulfur","Mithril Flake"]},
+{name:"Mire of Bells",type:"wild",min:9,desc:"A drowned marsh where ruined bell towers rise from black water.",enemies:["Bog Wraith","Rot Knight","Swamp Hydra","Fen Hag","Mire Slime","Corpse Eel","Plague Crow","Mud Elemental","Bog Giant","Bell Ghoul","Marsh Basilisk"],mats:["Venom Sac","Black Herb","Spirit Water","Bog Iron","Rotroot","Ghost Reed","Hydra Scale","Swamp Amber"]},
+{name:"Crystal Coast",type:"wild",min:11,desc:"Bright coastal cliffs riddled with crystal caves and wrecked ships.",enemies:["Reef Stalker","Crystal Crab","Siren","Drowned Corsair","Sea Drake","Salt Golem","Pearl Mimic","Tide Witch","Razor Gull"],mats:["Sea Crystal","Pearl","Saltstone","Coral","Siren Scale","Tideglass","Silver Ore"]},
+{name:"Sunscar Desert",type:"wild",min:12,desc:"A red desert filled with buried temples and glass storms.",enemies:["Dune Stalker","Sand Golem","Scorpion Knight","Ash Djinn","Glass Serpent","Sun Mummy","Dust Devil","Dune Wyvern","Sandworm","Temple Jackal","Bronze Scarab"],mats:["Sunstone","Glass Shard","Gold Ore","Desert Rose","Scorpion Chitin","Star Sand","Obsidian","Djinn Ash"]},
+{name:"Skyreach Plateau",type:"wild",min:14,desc:"High grasslands above the clouds, dotted with giant ruins.",enemies:["Thunder Ram","Sky Drake","Cloud Serpent","Giant Eagle","Storm Shaman","Cyclops","Wind Elemental","Roc Hatchling","Plateau Giant"],mats:["Stormglass","Cloud Feather","Sky Iron","Giant Bone","Lightning Core","Wind Silk"]},
 {name:"Highwall",type:"town",min:8,desc:"A wealthy fortress city guarding the eastern road.",enemies:[],mats:[]},
-{name:"Frostgrave",type:"wild",min:16,desc:"Frozen ruins beyond the northern pass.",enemies:["Ice Revenant","Frost Troll","White Wyrm","Lost Knight","Snow Stalker","Ice Elemental","Frozen Giant","Winter Wolf","Rime Witch"],mats:["Frost Crystal","Silver Ore","Wyrm Hide","Iceglass","White Fur","Frozen Core","Blue Quartz"]},
-{name:"Demon March",type:"wild",min:22,desc:"Blighted land near the Demon Lord's territory.",enemies:["Demon Hound","Hell Knight","Blood Mage","Lesser Demon","Ash Fiend","Horned Brute","Soul Eater","Infernal Drake","Dread Cultist","Pit Spawn"],mats:["Demon Horn","Hellstone","Blood Crystal","Infernal Iron","Ash Pearl","Soul Ash","Demonhide"]}
+{name:"Crownlands",type:"town",min:15,desc:"The royal heartland surrounding Valedorn's capital and palace.",enemies:[],mats:[]},
+{name:"Frostgrave",type:"wild",min:16,desc:"Frozen ruins beyond the northern pass.",enemies:["Ice Revenant","Frost Troll","White Wyrm","Lost Knight","Snow Stalker","Ice Elemental","Frozen Giant","Winter Wolf","Rime Witch","Glacier Spider","Frostbound Paladin"],mats:["Frost Crystal","Silver Ore","Wyrm Hide","Iceglass","White Fur","Frozen Core","Blue Quartz","Everfrost"]},
+{name:"Ashen Catacombs",type:"wild",min:18,desc:"A sprawling necropolis beneath volcanic ash fields.",enemies:["Ash Skeleton","Bone Priest","Crypt Warden","Grave Slime","Carrion Golem","Death Moth","Mourning Knight","Bone Dragonling","Ash Lich"],mats:["Bone Dust","Grave Wax","Black Iron","Soul Ash","Ancient Parchment","Crypt Amber","Death Silk"]},
+{name:"Demon March",type:"wild",min:22,desc:"Blighted land surrounding the Demon Lord's outer territory.",enemies:["Demon Hound","Hell Knight","Blood Mage","Lesser Demon","Ash Fiend","Horned Brute","Soul Eater","Infernal Drake","Dread Cultist","Pit Spawn","Chain Devil","Blood Golem"],mats:["Demon Horn","Hellstone","Blood Crystal","Infernal Iron","Ash Pearl","Soul Ash","Demonhide","Hellglass","Cursed Steel"]},
+{name:"Demon Citadel",type:"wild",min:26,desc:"Malachar's black fortress beyond the March. The campaign ends here.",enemies:["Citadel Guard","Greater Demon","Abyss Knight","Warlock Captain","Hell Chimera","Soul Reaver","Demon General","Infernal Colossus"],mats:["Abyssal Alloy","Demon Heart","Black Crystal","Royal Hellstone","Soulsteel","Infernal Ruby"]}
 ];
 const races={
  Human:{desc:"Adaptable and ambitious.",bonus:"Gain +5% XP.",xp:.05},
  Elf:{desc:"Keen-eyed and long-lived.",bonus:"+5% dodge.",dodge:.05},
  Dwarf:{desc:"Stout folk of stone and forge.",bonus:"+2 Defense and +6 HP.",def:2,hp:6},
  Orc:{desc:"Powerfully built and difficult to discourage.",bonus:"+2 Attack.",atk:2},
- Halfling:{desc:"Small, quick, and absurdly fortunate.",bonus:"+8% Luck.",luck:.08},
+ Halfling:{desc:"Small, quick, and absurdly fortunate.",bonus:"+8% item-quality luck.",luck:.08},
  Tiefling:{desc:"Touched by infernal ancestry.",bonus:"+1 Attack and +5% critical chance.",atk:1,crit:.05},
- Beastkin:{desc:"Instinctive hunters with animal traits.",bonus:"+4% dodge and +1 Attack.",dodge:.04,atk:1}
+ Beastkin:{desc:"Instinctive hunters with animal traits.",bonus:"+4% dodge and +1 Attack.",dodge:.04,atk:1},
+ Goblin:{desc:"Clever scavengers with a talent for surviving bad ideas.",bonus:"+10% item-quality luck, -3 HP.",luck:.10,hp:-3},
+ Dragonborn:{desc:"Scaled descendants of ancient drakes.",bonus:"+1 Attack, +1 Defense, +5 HP.",atk:1,def:1,hp:5},
+ Aasimar:{desc:"Mortals carrying a spark of celestial power.",bonus:"+20 Mana and +5% XP.",mana:20,xp:.05},
+ Kobold:{desc:"Small draconic tunnel-dwellers and obsessive trap engineers.",bonus:"+7% dodge and +5 Mana.",dodge:.07,mana:5},
+ Revenant:{desc:"A returned soul bound to a body that refuses to stay dead.",bonus:"+10 HP, -3% dodge.",hp:10,dodge:-.03},
+ Fae:{desc:"Otherworldly beings with strange magical instincts.",bonus:"+25 Mana and +5% item-quality luck.",mana:25,luck:.05}
 };
 const classes={
  Warrior:{desc:"Balanced frontline fighter.",atk:2,def:2,hp:8,weapon:"Iron Sword",armor:"Chainmail"},
@@ -200,7 +215,14 @@ const classes={
  Mage:{desc:"Fragile but magically trained.",atk:2,def:0,hp:-5,mana:45,weapon:"Runic Staff",armor:"Runed Robes",luck:.02},
  Cleric:{desc:"Durable holy adventurer.",atk:1,def:2,hp:10,mana:25,weapon:"Mace",armor:"Chainmail"},
  Barbarian:{desc:"High health and brutal offense.",atk:3,def:0,hp:14,weapon:"War Axe",armor:"Leather Coat"},
- Warden:{desc:"Defensive guardian and survivalist.",atk:1,def:3,hp:10,mana:10,weapon:"Spear",armor:"Warden Mail"}
+ Warden:{desc:"Defensive guardian and survivalist.",atk:1,def:3,hp:10,mana:10,weapon:"Spear",armor:"Warden Mail"},
+ Paladin:{desc:"Armored holy warrior with modest magical talent.",atk:2,def:3,hp:8,mana:20,weapon:"Mace",armor:"Knight Plate"},
+ Monk:{desc:"Disciplined fighter relying on speed and technique.",atk:2,def:1,hp:5,mana:10,weapon:"Twin Daggers",armor:"Leather Coat",luck:.03},
+ Druid:{desc:"Nature mage with balanced durability and mana.",atk:1,def:1,hp:6,mana:35,weapon:"Runic Staff",armor:"Ranger Cloak"},
+ Sorcerer:{desc:"Innate spellcaster with enormous mana reserves.",atk:2,def:0,hp:-8,mana:60,weapon:"Runic Staff",armor:"Runed Robes"},
+ Necromancer:{desc:"Forbidden caster specializing in souls and death magic.",atk:2,def:0,hp:-3,mana:50,weapon:"Runic Staff",armor:"Runed Robes"},
+ Artificer:{desc:"Craft-focused adventurer trained in runes and machinery.",atk:1,def:2,hp:4,mana:20,weapon:"Mace",armor:"Brigandine",luck:.04},
+ Spellblade:{desc:"Melee combatant trained to mix steel and magic.",atk:2,def:2,hp:5,mana:30,weapon:"Rapier",armor:"Chainmail"}
 };
 const backstories=[
  {id:"farm",name:"Farmhand",start:"Greenreach",desc:"You left a quiet farm after raiders destroyed the harvest.",perk:"+8 HP",hp:8},
@@ -224,26 +246,34 @@ const wealthClasses=[
 ];
 const dungeons=["Forgotten Crypt","Goblin Warrens","Sunken Temple","Abandoned Mine","Witch Catacombs","Ruined Keep","Crystal Cavern","Ancient Labyrinth","Dragon Barrow","Infernal Vault"];
 const worldConnections={
-"Greenreach":["Oakrest","Whispering Wood"],
-"Oakrest":["Greenreach","Highwall","Stonejaw Mountains"],
-"Whispering Wood":["Greenreach","Mire of Bells"],
-"Stonejaw Mountains":["Oakrest","Highwall","Frostgrave"],
-"Mire of Bells":["Whispering Wood","Sunscar Desert"],
-"Sunscar Desert":["Mire of Bells","Highwall","Demon March"],
-"Highwall":["Oakrest","Stonejaw Mountains","Sunscar Desert","Demon March"],
-"Frostgrave":["Stonejaw Mountains"],
-"Demon March":["Highwall","Sunscar Desert"]
+"Greenreach":["Oakrest","Rivergate","Whispering Wood"],"Oakrest":["Greenreach","Rivergate","Highwall","Stonejaw Mountains"],
+"Rivergate":["Oakrest","Greenreach","Whispering Wood","Crystal Coast"],"Whispering Wood":["Greenreach","Rivergate","Blackpine Hollow","Mire of Bells"],
+"Blackpine Hollow":["Whispering Wood","Stonejaw Mountains","Mire of Bells"],"Stonejaw Mountains":["Oakrest","Blackpine Hollow","Highwall","Skyreach Plateau","Frostgrave"],
+"Mire of Bells":["Whispering Wood","Blackpine Hollow","Crystal Coast","Sunscar Desert"],"Crystal Coast":["Rivergate","Mire of Bells","Sunscar Desert","Crownlands"],
+"Sunscar Desert":["Mire of Bells","Crystal Coast","Highwall","Skyreach Plateau","Demon March"],"Skyreach Plateau":["Stonejaw Mountains","Sunscar Desert","Crownlands","Frostgrave"],
+"Highwall":["Oakrest","Stonejaw Mountains","Sunscar Desert","Crownlands","Demon March"],"Crownlands":["Highwall","Crystal Coast","Skyreach Plateau","Ashen Catacombs"],
+"Frostgrave":["Stonejaw Mountains","Skyreach Plateau","Ashen Catacombs"],"Ashen Catacombs":["Crownlands","Frostgrave","Demon March"],
+"Demon March":["Highwall","Sunscar Desert","Ashen Catacombs","Demon Citadel"],"Demon Citadel":["Demon March"]
 };
 const campaignQuests=[
 {id:0,title:"A Kingdom in Trouble",npc:"Captain Elira",location:"Oakrest",desc:"Speak with Captain Elira in Oakrest.",type:"talk",target:1},
 {id:1,title:"Clear the Greenreach Road",npc:"Captain Elira",location:"Greenreach",desc:"Defeat 4 monsters in Greenreach.",type:"kills_region",region:"Greenreach",target:4},
-{id:2,title:"Report to Highwall",npc:"Commander Varric",location:"Highwall",desc:"Travel to Highwall and speak with Commander Varric.",type:"talk",target:1},
-{id:3,title:"The Broken Seal",npc:"Archivist Nemea",location:"Highwall",desc:"Clear a dungeon to recover a Demon Seal fragment.",type:"dungeon",target:1},
-{id:4,title:"The March Burns",npc:"Commander Varric",location:"Demon March",desc:"Defeat 6 monsters in the Demon March.",type:"kills_region",region:"Demon March",target:6},
-{id:5,title:"A Soul for the Gate",npc:"Archivist Nemea",location:"Highwall",desc:"Bring any filled Soul Crystal to Archivist Nemea.",type:"filled_soul",target:1},
-{id:6,title:"Royal Authorization",npc:"King Aldren",location:"Highwall",desc:"Speak with King Aldren to authorize the final assault.",type:"talk",target:1},
-{id:7,title:"The Demon Lord",npc:"Demon Lord Malachar",location:"Demon March",desc:"Confront and defeat Demon Lord Malachar.",type:"final_boss",target:1}
+{id:2,title:"River of Supplies",npc:"Quartermaster Ilyan",location:"Rivergate",desc:"Meet Quartermaster Ilyan in Rivergate.",type:"talk",target:1},
+{id:3,title:"Whispers in the Wood",npc:"Scout-Master Tessa",location:"Whispering Wood",desc:"Defeat 5 monsters in Whispering Wood.",type:"kills_region",region:"Whispering Wood",target:5},
+{id:4,title:"The Highwall Council",npc:"Commander Varric",location:"Highwall",desc:"Report to Commander Varric in Highwall.",type:"talk",target:1},
+{id:5,title:"The First Demon Seal",npc:"Archivist Nemea",location:"Highwall",desc:"Clear a dungeon to recover a Demon Seal fragment.",type:"dungeon",target:1},
+{id:6,title:"Crystal Tide",npc:"Admiral Serin",location:"Crystal Coast",desc:"Defeat 5 monsters on the Crystal Coast.",type:"kills_region",region:"Crystal Coast",target:5},
+{id:7,title:"Royal Audience",npc:"Chancellor Mirelle",location:"Crownlands",desc:"Meet Chancellor Mirelle in the Crownlands.",type:"talk",target:1},
+{id:8,title:"Frozen Vanguard",npc:"General Ordan",location:"Frostgrave",desc:"Defeat 6 monsters in Frostgrave.",type:"kills_region",region:"Frostgrave",target:6},
+{id:9,title:"A Soul for the Gate",npc:"Archivist Nemea",location:"Highwall",desc:"Bring any filled Soul Crystal to Archivist Nemea.",type:"filled_soul",target:1},
+{id:10,title:"Ashes of the Dead",npc:"Gravekeeper Sol",location:"Ashen Catacombs",desc:"Defeat 6 monsters in the Ashen Catacombs.",type:"kills_region",region:"Ashen Catacombs",target:6},
+{id:11,title:"Break the March",npc:"Commander Varric",location:"Demon March",desc:"Defeat 8 monsters in the Demon March.",type:"kills_region",region:"Demon March",target:8},
+{id:12,title:"The King's Command",npc:"King Aldren",location:"Crownlands",desc:"Return to King Aldren for authorization to assault the Citadel.",type:"talk",target:1},
+{id:13,title:"The Black Citadel",npc:"Demon Lord Malachar",location:"Demon Citadel",desc:"Enter the Demon Citadel and defeat Demon Lord Malachar.",type:"final_boss",target:1}
 ];
+const npcFirstNames=["Aren","Mira","Tovin","Selka","Bram","Nessa","Corin","Yara","Dain","Liora","Fen","Kael","Vessa","Orin","Talia","Joren","Maeve","Rurik","Sera","Niko","Elian","Brina","Torra","Cyrus","Asha","Ren","Kessa","Marek"];
+const npcLastNames=["Ashford","Vale","Thorn","Blackwater","Stone","Reed","Dusk","Bright","Moss","Rook","Vane","Hollow","Greymark","Windmere","Crow","Ember","Frost","Rivers","Dawn","Hart","Ironwood","Fox","Marrow","Quill"];
+const npcRoles=["Hunter","Merchant","Herbalist","Mercenary","Scholar","Miner","Pilgrim","Blacksmith","Courier","Farmer","Explorer","Guard","Fisher","Cartographer","Alchemist","Retired Adventurer"];
 
 const tomeSpellPool=[
 {id:"ember_lance",name:"Ember Lance",school:"Pyromancy",power:1.8,cost:9,effect:"Piercing flame bolt",desc:"A narrow lance of fire that favors raw damage."},
@@ -485,10 +515,10 @@ const effortDefs={
 "Masterwork":{mult:1.28,cost:2.5,bonus:22,desc:"Extremely expensive, with greatly improved quality odds."}
 };
 const armorNames=["Leather Coat","Chainmail","Iron Plate","Ranger Cloak","Scale Armor","Knight Plate","Runed Robes","Brigandine","Warden Mail","Dragonhide"];
-function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:55,baseHp:55,mana:60,baseMana:60,atk:4,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,materials:{Iron:3,Steel:0,Silver:0,Hardwood:0,Crystal:0,"Drake Scale":0,Sunstone:0,"Frost Crystal":0,Hellstone:0,Leather:0,Herb:0,Flax:0,Clay:0,"Wild Honey":0,Silk:0,Moonleaf:0,Resin:0,"Living Bark":0,Coal:0,"Adamant Shard":0,Quartz:0,Sulfur:0,"Venom Sac":0,"Black Herb":0,"Spirit Water":0,"Bog Iron":0,Rotroot:0,"Ghost Reed":0,"Hydra Scale":0,"Glass Shard":0,"Gold Ore":0,"Desert Rose":0,"Scorpion Chitin":0,"Star Sand":0,Obsidian:0,"Wyrm Hide":0,Iceglass:0,"White Fur":0,"Frozen Core":0,"Blue Quartz":0,"Demon Horn":0,"Blood Crystal":0,"Infernal Iron":0,"Ash Pearl":0,"Soul Ash":0,Demonhide:0,"Ancient Parchment":0,"Arcane Dust":0},
-soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
+function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:55,baseHp:55,mana:60,baseMana:60,atk:4,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,materials:{Iron:3,Steel:0,Silver:0,Hardwood:0,Crystal:0,"Drake Scale":0,Sunstone:0,"Frost Crystal":0,Hellstone:0,Leather:0,Herb:0,Flax:0,Clay:0,"Wild Honey":0,Silk:0,Moonleaf:0,Resin:0,"Living Bark":0,Coal:0,"Adamant Shard":0,Quartz:0,Sulfur:0,"Venom Sac":0,"Black Herb":0,"Spirit Water":0,"Bog Iron":0,Rotroot:0,"Ghost Reed":0,"Hydra Scale":0,"Glass Shard":0,"Gold Ore":0,"Desert Rose":0,"Scorpion Chitin":0,"Star Sand":0,Obsidian:0,"Wyrm Hide":0,Iceglass:0,"White Fur":0,"Frozen Core":0,"Blue Quartz":0,"Demon Horn":0,"Blood Crystal":0,"Infernal Iron":0,"Ash Pearl":0,"Soul Ash":0,Demonhide:0,"Ancient Parchment":0,"Arcane Dust":0,"Beast Fang":0,"Glowcap":0,"Dryad Sap":0,"Black Timber":0,"Shadow Moss":0,"Wolf Pelt":0,"Mist Pearl":0,"Dark Resin":0,"Ironwood":0,"Mithril Flake":0,"Swamp Amber":0,"Sea Crystal":0,"Pearl":0,"Saltstone":0,"Coral":0,"Siren Scale":0,"Tideglass":0,"Djinn Ash":0,"Stormglass":0,"Cloud Feather":0,"Sky Iron":0,"Giant Bone":0,"Lightning Core":0,"Wind Silk":0,"Everfrost":0,"Bone Dust":0,"Grave Wax":0,"Black Iron":0,"Crypt Amber":0,"Death Silk":0,"Hellglass":0,"Cursed Steel":0,"Abyssal Alloy":0,"Demon Heart":0,"Black Crystal":0,"Royal Hellstone":0,"Soulsteel":0,"Infernal Ruby":0},
+soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,randomNPCs:{},sideQuests:[],renown:0,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
 dungeon:{active:false,name:null,roomsEntered:0,targetRooms:0,blocked:null,bossReady:false,bossDefeated:false,encounter:null,boss:null,clearedRooms:0}}}
-let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.questProgress=Object.assign({},x.questProgress||{});s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
+let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.questProgress=Object.assign({},x.questProgress||{});s.randomNPCs=Object.assign({},x.randomNPCs||{});s.sideQuests=Array.isArray(x.sideQuests)?x.sideQuests:[];if(typeof x.renown==="number")s.renown=x.renown;s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
 if(!s.flags.soulCrystalObjectMigration){
   let legacyFilled=Number((x.materials||{})["Soul Crystal (Filled)"]||0);
   let legacyEmpty=Number((x.materials||{})["Soul Crystal (Empty)"]||0);
@@ -514,8 +544,8 @@ function area(){return areas[s.location]}
 function enemy(){let a=area(),name=spin(a.enemies),elite=Math.random()<.08+luck(),lv=Math.max(1,s.level+rnd(3)-1),hp=Math.floor((28+lv*9)*(elite?1.8:1));s.enemy={name:(elite?"Elite ":"")+name,lv,hp,max:hp,atk:5+lv*2,def:Math.floor(lv*.7),elite}}
 function levelUp(){while(s.xp>=s.xpNeed){s.xp-=s.xpNeed;s.level++;s.xpNeed=Math.floor(s.xpNeed*1.28);s.baseHp+=3;s.hp=maxHp();s.mana=maxMana();log("Level up! You are now level "+s.level+". HP and mana restored.")}}
 function loot(mult=1){let g=Math.floor((8+s.level*3)*mult*(1+attrsTotal("gold"))),xp=Math.floor((12+s.level*3)*mult*(1+attrsTotal("xp")+s.bonusXP));s.gold+=g;s.xp+=xp;if(Math.random()<.35){s.ore+=1+rnd(2);log("You recover forging ore.")}if(Math.random()<.16){let it=makeItem(Math.random()<.55?"weapon":"armor",2);s.inventory.push(it);log("Loot wheel: "+it.rarity+" "+it.name+" ["+it.attr.name+"].")}log("Reward: "+g+" gold, "+xp+" XP.");levelUp()}
-function win(){let dead={...s.enemy};s.kills++;
- if(s.mode==="campaign"){s.questProgress["kills_"+area().name]=Number(s.questProgress["kills_"+area().name]||0)+1;if(dead.finalBoss){s.finalBossDefeated=true;log("Demon Lord Malachar is defeated. Valedorn survives.");}}
+function win(){let dead={...s.enemy};s.kills++;s.questProgress["kills_"+area().name]=Number(s.questProgress["kills_"+area().name]||0)+1;
+ if(s.mode==="campaign"){if(dead.finalBoss){s.finalBossDefeated=true;log("Demon Lord Malachar is defeated. Valedorn survives.");}}
  captureSoul(dead,false);loot(s.enemy.elite?1.8:1);s.enemy=null;if(dead.finalBoss)advanceCampaign();save();render()}
 function enemyTurn(){if(!s.enemy)return;if(Math.random()<.12+attrsTotal("dodge")+s.bonusDodge){log(s.enemy.name+" misses.",true);return}let hit=Math.max(1,s.enemy.atk-def()-(s.turnDefend?Math.floor(def()*.7):0)+rnd(5));s.turnDefend=false;s.hp-=hit;log(s.enemy.name+" deals "+hit+" damage.",true);if(s.hp<=0){s.hp=maxHp();s.gold=Math.floor(s.gold*.8);s.enemy=null;log("You are defeated and wake in "+areas[1].name+". You lose 20% of your gold.");s.location=1}}
 function explore(){let a=area();if(a.type==="town"){let r=spin(["inn","market","rumor"]);$("result").textContent="Town wheel: "+r.toUpperCase();if(r==="inn"){let c=10+s.level*2;if(s.gold>=c){s.gold-=c;s.hp=maxHp();s.mana=maxMana();log("You rest at the inn for "+c+" gold. HP and mana fully restored.")}else log("The innkeeper remains tragically committed to capitalism.")}else if(r==="market"){s.gold+=5+rnd(15);log("You make a small profit trading supplies.")}else log("Rumor: dungeons often hold better gear than the open road.");}
@@ -539,6 +569,37 @@ function dungeon(){
  log("Dungeon discovered: "+name+". The Dungeon tab is now active.");
  save();render();showTab("dungeonTab");
 }
+function makeNPC(locationName){return{id:"npc_"+Date.now()+"_"+Math.random(),name:spin(npcFirstNames)+" "+spin(npcLastNames),role:spin(npcRoles),location:locationName,questGiven:false}}
+function ensureLocalNPCs(){
+ let key=area().name;
+ if(!Array.isArray(s.randomNPCs[key])||!s.randomNPCs[key].length){s.randomNPCs[key]=[];let count=area().type==="town"?4:2;for(let i=0;i<count;i++)s.randomNPCs[key].push(makeNPC(key));save()}
+ return s.randomNPCs[key];
+}
+function sideQuestProgress(q){
+ if(q.type==="kill")return Number(s.questProgress["kills_"+q.region]||0)-Number(q.startCount||0);
+ if(q.type==="gather")return Number(s.materials[q.material]||0);
+ if(q.type==="dungeon")return s.dungeons-Number(q.startCount||0);
+ return 0;
+}
+function sideQuestComplete(q){return sideQuestProgress(q)>=q.target}
+function generateNPCQuest(npc){
+ let region=area(),type=spin(["kill","gather","dungeon"]),q={id:"sq_"+Date.now()+"_"+Math.random(),npcId:npc.id,npcName:npc.name,location:npc.location,type,status:"active",rewardGold:20+s.level*5+Math.floor(s.renown*1.5),rewardXP:15+s.level*4,target:0};
+ if(type==="kill"){q.region=region.name;q.target=2+rnd(4);q.startCount=Number(s.questProgress["kills_"+region.name]||0);q.title="Local Menace";q.desc="Defeat "+q.target+" monsters in "+region.name+"."}
+ else if(type==="gather"){let mats=region.mats&&region.mats.length?region.mats:["Iron Ore","Herb"],raw=spin(mats),norm={"Iron Ore":"Iron","Steel Ore":"Steel","Silver Ore":"Silver"};q.material=norm[raw]||raw;q.target=2+rnd(3);q.title="Needed Supplies";q.desc="Bring "+q.target+" "+q.material+"."}
+ else{q.target=1;q.startCount=s.dungeons;q.title="Dungeon Rumor";q.desc="Clear one dungeon."}
+ return q;
+}
+function talkRandomNPC(id){
+ let npc=ensureLocalNPCs().find(n=>n.id===id);if(!npc)return;
+ let existing=s.sideQuests.find(q=>q.npcId===npc.id&&q.status==="active");if(existing){log(npc.name+": You are still working on "+existing.title+".");return}
+ if(npc.questGiven&&s.sideQuests.some(q=>q.npcId===npc.id&&q.status==="complete")){log(npc.name+": Good to see you again, "+s.name+".");return}
+ let q=generateNPCQuest(npc);npc.questGiven=true;s.sideQuests.push(q);log(npc.name+" the "+npc.role+": "+q.desc+" Reward: "+q.rewardGold+" gold and "+q.rewardXP+" XP.");save();render();
+}
+function turnInSideQuest(id){
+ let q=s.sideQuests.find(x=>x.id===id);if(!q||q.status!=="active"||!sideQuestComplete(q))return;
+ if(q.type==="gather")s.materials[q.material]=Math.max(0,(s.materials[q.material]||0)-q.target);
+ q.status="complete";s.gold+=q.rewardGold;s.xp+=q.rewardXP;s.renown++;levelUp();log("Side quest complete: "+q.title+". Renown +1.");save();render();
+}
 function activeQuest(){return campaignQuests[Math.min(s.story,campaignQuests.length-1)]}
 function questCount(q){
  if(!q)return 0;
@@ -557,14 +618,13 @@ function questObjectiveMet(q){
  return false;
 }
 function campaignDialogue(id){return [
-"The roads are collapsing. If you can fight, Valedorn needs you.",
-"Return when the Greenreach road is safe.",
-"Highwall has been waiting for someone who can survive outside the walls.",
-"A seal fragment lies in one of the old dungeons. Find it.",
-"The Demon March must be weakened before we can open the gate.",
-"A captured soul can power the ancient gate mechanism.",
-"By royal order, the road to Malachar is open.",
-"You have come very far to die at my gate."
+"The roads are collapsing. If you can fight, Valedorn needs you.","Return when the Greenreach road is safe.",
+"Rivergate is our supply artery. If it falls, Highwall starves.","The forest scouts are vanishing. Find out what is hunting them.",
+"Highwall has been waiting for someone who can survive outside the walls.","A seal fragment lies in one of the old dungeons. Find it.",
+"Something from the sea is destroying our crystal shipments.","The Crown needs to know whether you are merely lucky or actually useful.",
+"Malachar's servants are digging beneath Frostgrave. Stop them.","A captured soul can power the ancient gate mechanism.",
+"The dead beneath the ash are waking in numbers we cannot contain.","Break Malachar's outer army before the final assault.",
+"By royal order, the Black Citadel is now your target.","You have crossed a kingdom to die in my hall."
 ][id]||""}
 function advanceCampaign(){
  if(s.mode!=="campaign")return;let q=activeQuest();if(!q||!questObjectiveMet(q))return;
@@ -580,7 +640,7 @@ function talkToNPC(){
  log("There is nothing more to resolve here yet.");
 }
 function spawnFinalBoss(){
- if(s.mode!=="campaign"||s.story!==7||area().name!=="Demon March"){log("The final confrontation is not available here.");return}
+ if(s.mode!=="campaign"||s.story!==13||area().name!=="Demon Citadel"){log("The final confrontation is not available here.");return}
  if(s.enemy){log("Finish your current battle first.");return}
  let lv=Math.max(28,s.level+3),hp=280+lv*22;
  s.enemy={name:"Demon Lord Malachar",lv,hp,max:hp,atk:14+lv*3,def:8+Math.floor(lv*1.2),elite:true,finalBoss:true};
@@ -608,7 +668,7 @@ function applyCharacterCreation(mode){
  s.gold=wealth.gold+(bg.gold||0);s.ore=wealth.ore+(bg.ore||0);
  s.atk+=race.atk||0;s.atk+=cl.atk||0;s.atk+=bg.atk||0;
  s.def+=race.def||0;s.def+=cl.def||0;s.def+=bg.def||0;
- s.baseHp+=race.hp||0;s.baseHp+=cl.hp||0;s.baseHp+=bg.hp||0;s.baseMana+=cl.mana||0;
+ s.baseHp+=race.hp||0;s.baseHp+=cl.hp||0;s.baseHp+=bg.hp||0;s.baseMana+=(cl.mana||0)+(race.mana||0);
  s.luck+=race.luck||0;s.luck+=cl.luck||0;s.luck+=bg.luck||0;
  s.bonusXP=(race.xp||0)+(bg.xp||0);s.bonusCrit=race.crit||0;s.bonusDodge=race.dodge||0;
  const startIndex=areas.findIndex(a=>a.name===bg.start);s.location=startIndex>=0?startIndex:0;s.visited=[s.location];
@@ -977,8 +1037,8 @@ function renderWorldMap(){
  }).join("");
 }
 function renderMaterialsTab(){
- const all=Object.entries(s.materials);
- $("materialInventory").innerHTML=all.map(([k,v])=>'<div class="item"><div class="row"><b>'+k+'</b><span class="pill">x'+v+'</span></div></div>').join("");
+ const all=Object.entries(s.materials).filter(([k,v])=>Number(v)>0);
+ $("materialInventory").innerHTML=all.length?all.map(([k,v])=>'<div class="item"><div class="row"><b>'+k+'</b><span class="pill">x'+v+'</span></div></div>').join(""):'<p class="small">No materials currently carried.</p>';
  $("soulCrystalInventory").innerHTML=s.soulCrystals.length?s.soulCrystals.map(c=>'<div class="item soul '+(String(s.equippedSoulCrystal)===String(c.id)?'soulEquipped':'')+'"><div class="row"><b>'+c.rarity+' Soul Crystal</b><span class="pill">'+(c.filled?'FILLED':'EMPTY')+'</span></div><div class="small">'+(c.filled?('Soul: '+c.soul.rarity+' '+c.soul.name+' • Lv '+c.soul.level):'Ready to capture the next soul you kill.')+'</div>'+(c.filled?'':'<button data-equipsoul="'+c.id+'" '+(String(s.equippedSoulCrystal)===String(c.id)?'disabled':'')+'>'+(String(s.equippedSoulCrystal)===String(c.id)?'EQUIPPED':'EQUIP CRYSTAL')+'</button>')+'</div>').join(""):'<p class="small">No Soul Crystals.</p>';
 }
 function trainSpellwork(){
@@ -1033,12 +1093,16 @@ function render(){
  $("enemyName").textContent=s.enemy?s.enemy.name:"No enemy";$("enemyStats").textContent=s.enemy?"Lv. "+s.enemy.lv+" • HP "+Math.max(0,s.enemy.hp)+"/"+s.enemy.max+" • DEF "+s.enemy.def:"Explore until you encounter something.";$("worldSpellBtn").textContent=getSelectedSpell()?"CAST "+getSelectedSpell().name.toUpperCase():"CAST SELECTED SPELL";$("worldSpellBtn").disabled=!s.enemy||!getSelectedSpell();
  $("equipped").innerHTML="<div class='item'><b>Weapon:</b> "+(s.weapon?s.weapon.rarity+" "+s.weapon.name+" +"+s.weapon.up+" • "+s.weapon.attr.name:"None")+"</div><div class='item'><b>Armor:</b> "+(s.armor?s.armor.rarity+" "+s.armor.name+" +"+s.armor.up+" • "+s.armor.attr.name:"None")+"</div>";
  $("inventory").innerHTML=s.inventory.length?s.inventory.map(i=>"<div class='item'><div class='row'><b>"+i.rarity+" "+i.name+" +"+i.up+"</b><span class='pill'>"+i.kind+"</span></div><div class='small'>"+(i.kind==="weapon"?"ATK ":"DEF ")+i.stat+" • "+i.attr.name+": "+i.attr.desc+(i.material?" • "+i.material+(i.rune&&i.rune!=="None"?" • "+i.rune:"")+" • "+i.effort:"")+"</div><div class='grid'><button data-equip='"+i.id+"'>EQUIP</button><button class='secondary' data-upitem='"+i.id+"'>UPGRADE "+(20+(i.up+1)*20)+"g</button></div></div>").join(""):"<p class='small'>Your bag contains mostly optimism.</p>";
- $("stats").innerHTML="<div class='item'><b>"+s.name+"</b><div class='small'>"+s.race+" • "+s.className+" • "+(backstories.find(x=>x.id===s.backstory)?.name||"Unknown past")+"</div></div><div class='item'>Wealth Class: <b>"+s.wealthClass+"</b> <span class='small'>(d100: "+s.wealthRoll+")</span></div><div class='item'>Attack: <b>"+atk()+"</b></div><div class='item'>Defense: <b>"+def()+"</b></div><div class='item'>Max HP: <b>"+maxHp()+"</b></div><div class='item'>Max Mana: <b>"+maxMana()+"</b></div><div class='item'>Spellwork: <b>Lv "+s.spellwork.level+"</b></div><div class='item'>Item Quality Luck: <b>"+Math.round(luck()*100)+"%</b></div><div class='item'>Kills: <b>"+s.kills+"</b></div><div class='item'>Dungeons: <b>"+s.dungeons+"</b></div>";
+ $("stats").innerHTML="<div class='item'><b>"+s.name+"</b><div class='small'>"+s.race+" • "+s.className+" • "+(backstories.find(x=>x.id===s.backstory)?.name||"Unknown past")+"</div></div><div class='item'>Wealth Class: <b>"+s.wealthClass+"</b> <span class='small'>(d100: "+s.wealthRoll+")</span></div><div class='item'>Attack: <b>"+atk()+"</b></div><div class='item'>Defense: <b>"+def()+"</b></div><div class='item'>Max HP: <b>"+maxHp()+"</b></div><div class='item'>Max Mana: <b>"+maxMana()+"</b></div><div class='item'>Spellwork: <b>Lv "+s.spellwork.level+"</b></div><div class='item'>Item Quality Luck: <b>"+Math.round(luck()*100)+"%</b></div><div class='item'>Kills: <b>"+s.kills+"</b></div><div class='item'>Dungeons: <b>"+s.dungeons+"</b></div><div class='item'>Renown: <b>"+s.renown+"</b></div>";
  let ups=[["atk","Strength","+1 base attack"],["hp","Vitality","+6 max HP"],["def","Guard","+2 defense"],["luck","Fortune","+2% item-quality luck"]];$("upgrades").innerHTML=ups.map(u=>{let c=30+s.upgrade[u[0]]*30;return"<div class='item'><div class='row'><b>"+u[1]+"</b><span>Lv. "+s.upgrade[u[0]]+"</span></div><div class='small'>"+u[2]+"</div><button data-stat='"+u[0]+"'>UPGRADE "+c+"g</button></div>"}).join("");
  if(s.mode==="campaign"){
  $("questTitle").textContent="Campaign Journal";
  $("quests").innerHTML=campaignQuests.map((q,i)=>{let state=i<s.story?"✓":i===s.story?"▶":"🔒";let prog=(i===s.story&&(q.type==="kills_region"||q.type==="dungeon"))?(" • "+Math.min(questCount(q),q.target)+"/"+q.target):"";return "<div class='item "+(i>s.story?"small":"")+"'><b>"+state+" "+q.title+"</b><div class='small'>"+q.desc+prog+"</div></div>"}).join("");
 }else{$("questTitle").textContent="Free Roam Journal";$("quests").innerHTML="<p class='small'>No destiny, no king yelling about prophecy. Explore, forge, clear dungeons and build the strongest character you can.</p>"}
+ let locals=ensureLocalNPCs();
+ $("localNPCs").innerHTML=locals.map(n=>'<div class="item"><div class="row"><b>'+n.name+'</b><span class="pill">'+n.role+'</span></div><button class="secondary" data-talkrandom="'+n.id+'">TALK</button></div>').join("");
+ let activeSides=s.sideQuests.filter(q=>q.status==="active");
+ $("sideQuestPanel").innerHTML=activeSides.length?activeSides.map(q=>{let prog=Math.max(0,sideQuestProgress(q));return '<div class="item"><div class="row"><b>'+q.title+'</b><span class="pill">'+q.npcName+'</span></div><div class="small">'+q.desc+' • '+Math.min(prog,q.target)+'/'+q.target+'</div><button data-turninside="'+q.id+'" '+(!sideQuestComplete(q)?'disabled':'')+'>TURN IN</button></div>'}).join(""):'<p class="small">No active side quests.</p>';
  if($("npcPanel")){
  if(s.mode!=="campaign")$("npcPanel").innerHTML='<p class="small">Free Roam has no mandatory royal questline.</p>';
  else{
@@ -1082,6 +1146,8 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.study){studyTome(b.dataset.study);return}
  if(b.dataset.castspell){castKnownSpell(b.dataset.castspell,false);return}
  if(b.dataset.castdungeon){castKnownSpell(b.dataset.castdungeon,true);return}
+ if(b.dataset.talkrandom){talkRandomNPC(b.dataset.talkrandom);return}
+ if(b.dataset.turninside){turnInSideQuest(b.dataset.turninside);return}
  if(b.dataset.gamble){gamble(b.dataset.gamble);return}
  if(b.dataset.job){startJobChallenge(+b.dataset.job);return}
  if(b.dataset.jobtiming){stopTimingJob();return}
