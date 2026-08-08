@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG v2.3</title>
+<title>Wayfarer: Wheel & Dice RPG v2.4</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
@@ -110,6 +110,8 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 <div class="grid"><button class="blue" data-a="skill">POWER MOVE</button><button class="secondary" data-a="flee">FLEE (d20)</button></div>
 <div class="combatSpellRow"><button class="blue" data-a="worldSpell" id="worldSpellBtn">CAST SPELL</button><button class="secondary" data-a="toggleWorldSpellPicker" id="worldSpellSelectBtn">SELECT SPELL</button></div>
 <div class="combatSpellPicker" id="worldSpellPicker"></div>
+<div class="combatSpellRow"><button data-a="worldClassSkill" id="worldClassSkillBtn">USE SKILL</button><button class="secondary" data-a="toggleWorldSkillPicker" id="worldSkillSelectBtn">SELECT SKILL</button></div>
+<div class="combatSpellPicker" id="worldSkillPicker"></div>
 </div>
 <div class="card"><b>Combat Log</b><div class="log" id="combatLog"></div></div>
 </section>
@@ -149,19 +151,24 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 <div class="card"><div class="row"><b>Known Spells</b><span class="pill" id="selectedSpellLabel">None selected</span></div><div id="knownSpells"></div></div>
 <div class="card"><b>Spell Tomes</b><div class="small">Unique tomes can be found in dungeons. Identify reveals otherwise-hidden enemy statistics, weaknesses, and resistances.</div><div id="spellTomes"></div></div>
 <div class="card"><b>Spell Creation</b>
-<div class="small">Requires Spellwork 10 and one Soul Crystal filled with a soul. Creating a spell consumes the filled crystal.</div>
+<div class="small">Requires Spellwork 10 and one filled Soul Crystal.</div>
 <div class="item"><div class="small">SPELL NAME</div><input id="customSpellName" maxlength="24" placeholder="Name your spell"></div>
-<div class="item"><div class="small">MAGICAL DISCIPLINE</div><select id="spellDiscipline"></select></div>
-<div class="item"><div class="small">FORM</div><select id="spellForm"></select></div>
+<div class="item"><div class="small">TARGET</div><select id="spellTarget"></select></div>
+<div class="item"><div class="small">SPELL TYPE</div><select id="spellType"></select></div>
+<div class="item" id="summonTypeWrap"><div class="small">SUMMONED CREATURE</div><select id="summonType"></select></div>
+<div class="item"><div class="small">ELEMENT</div><select id="spellElement"></select></div>
 <div class="item"><div class="small">INTENT</div><select id="spellIntent"></select></div>
+<div class="item"><div class="row"><span class="small">POWER</span><b id="spellPowerLabel">50%</b></div><input id="spellPowerSlider" type="range" min="10" max="100" step="5" value="50"><div class="small">More power raises damage/healing/summon health and increases mana cost.</div></div>
 <div class="item" id="spellCreationPreview"></div>
-<button data-a="createSpell" id="createSpellBtn">CREATE UNIQUE SPELL</button>
-</div>
+<button data-a="createSpell" id="createSpellBtn">CREATE UNIQUE SPELL</button></div>
 </section>
 
 <section id="characterTab" class="hidden">
 <div class="card"><b>Character</b><div id="stats"></div></div>
-<div class="card"><b>Upgrades</b><div id="upgrades"></div></div>
+<div class="card"><b>Upgrades</b><div id="upgrades"></div></div><div class="card"><b>Class Skills</b>
+<div class="small">Class level rises once for every two character levels. New skills unlock automatically.</div>
+<div class="row"><span>Class Level</span><span class="pill" id="classLevelLabel">1</span></div>
+<div id="classSkills"></div></div>
 
 <div class="card"><b id="questTitle">Journal</b><div id="quests"></div></div>
 <div class="card"><b>World</b><div id="worldList"></div></div>
@@ -202,6 +209,8 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
   <div class="grid"><button class="blue" data-a="dungeonSkill">POWER MOVE</button><button class="secondary" data-a="dungeonPotion">SECOND WIND</button></div>
   <div class="combatSpellRow"><button class="blue" data-a="dungeonSpell" id="dungeonSpellBtn">CAST SPELL</button><button class="secondary" data-a="toggleDungeonSpellPicker" id="dungeonSpellSelectBtn">SELECT SPELL</button></div>
   <div class="combatSpellPicker" id="dungeonSpellPicker"></div>
+  <div class="combatSpellRow"><button data-a="dungeonClassSkill" id="dungeonClassSkillBtn">USE SKILL</button><button class="secondary" data-a="toggleDungeonSkillPicker" id="dungeonSkillSelectBtn">SELECT SKILL</button></div>
+  <div class="combatSpellPicker" id="dungeonSkillPicker"></div>
 </div>
 
 <div class="card"><b>Dungeon Log</b><div class="log" id="dungeonLog"></div></div>
@@ -275,6 +284,58 @@ const classes={
  Artificer:{desc:"Craft-focused adventurer trained in runes and machinery.",atk:1,def:2,hp:4,mana:20,weapon:"Mace",armor:"Brigandine",luck:.04},
  Spellblade:{desc:"Melee combatant trained to mix steel and magic.",atk:2,def:2,hp:5,mana:30,weapon:"Rapier",armor:"Chainmail"}
 };
+const classSkillTrees={
+ Warrior:[
+  {lv:1,id:"war_heavy",name:"Heavy Cut",desc:"Strong melee strike.",type:"damage",mult:1.45},
+  {lv:2,id:"war_wind",name:"Second Wind",desc:"Restore health.",type:"heal",pct:.18},
+  {lv:3,id:"war_break",name:"Guard Break",desc:"Piercing strike.",type:"pierce",mult:1.3},
+  {lv:4,id:"war_rally",name:"Battle Rally",desc:"Heal and gain attack.",type:"rally"},
+  {lv:5,id:"war_exec",name:"Executioner",desc:"Huge damage to wounded enemies.",type:"execute"}
+ ],
+ Ranger:[
+  {lv:1,id:"ran_aim",name:"Aimed Shot",desc:"Strong precise shot.",type:"damage",mult:1.35},
+  {lv:2,id:"ran_trap",name:"Snare Trap",desc:"May stop retaliation.",type:"control"},
+  {lv:3,id:"ran_volley",name:"Volley",desc:"Hits all dungeon enemies.",type:"aoe",mult:.8},
+  {lv:4,id:"ran_focus",name:"Hunter Focus",desc:"Heal and gain attack.",type:"rally"},
+  {lv:5,id:"ran_kill",name:"Kill Shot",desc:"Execution attack.",type:"execute"}
+ ],
+ Rogue:[
+  {lv:1,id:"rog_back",name:"Backstab",desc:"High damage.",type:"damage",mult:1.5},
+  {lv:2,id:"rog_smoke",name:"Smoke Bomb",desc:"Avoid retaliation.",type:"control"},
+  {lv:3,id:"rog_cut",name:"Deep Cut",desc:"Piercing strike.",type:"pierce",mult:1.35},
+  {lv:4,id:"rog_trick",name:"Dirty Trick",desc:"Random dirty effect.",type:"trick"},
+  {lv:5,id:"rog_ass",name:"Assassinate",desc:"Very strong on wounded enemies.",type:"execute"}
+ ],
+ Barbarian:[
+  {lv:1,id:"bar_smash",name:"Savage Smash",desc:"Brutal strike.",type:"damage",mult:1.55},
+  {lv:2,id:"bar_roar",name:"War Roar",desc:"Heal and gain attack.",type:"rally"},
+  {lv:3,id:"bar_cleave",name:"Cleave",desc:"Hits all dungeon enemies.",type:"aoe",mult:.9},
+  {lv:4,id:"bar_rage",name:"Rage",desc:"Trade HP for damage.",type:"rage"},
+  {lv:5,id:"bar_crush",name:"Skull Crusher",desc:"Execution attack.",type:"execute"}
+ ],
+ Warden:[
+  {lv:1,id:"ward_bash",name:"Shield Bash",desc:"May stop retaliation.",type:"control"},
+  {lv:2,id:"ward_mend",name:"Field Mend",desc:"Restore health.",type:"heal",pct:.2},
+  {lv:3,id:"ward_fort",name:"Fortify",desc:"Heal and gain attack.",type:"rally"},
+  {lv:4,id:"ward_counter",name:"Counterstance",desc:"Piercing strike.",type:"pierce",mult:1.2},
+  {lv:5,id:"ward_wall",name:"Living Wall",desc:"Large heal.",type:"heal",pct:.35}
+ ],
+ Monk:[
+  {lv:1,id:"monk_flurry",name:"Flurry",desc:"Rapid combo.",type:"damage",mult:1.4},
+  {lv:2,id:"monk_breath",name:"Centered Breath",desc:"Restore HP and mana.",type:"meditate"},
+  {lv:3,id:"monk_palm",name:"Stunning Palm",desc:"May stop retaliation.",type:"control"},
+  {lv:4,id:"monk_sweep",name:"Sweeping Kick",desc:"Hits all dungeon enemies.",type:"aoe",mult:.75},
+  {lv:5,id:"monk_perfect",name:"Perfect Strike",desc:"Powerful piercing blow.",type:"pierce",mult:1.6}
+ ],
+ Artificer:[
+  {lv:1,id:"art_bomb",name:"Alchemical Bomb",desc:"Explosive attack.",type:"damage",mult:1.3},
+  {lv:2,id:"art_patch",name:"Emergency Repair",desc:"Restore health.",type:"heal",pct:.2},
+  {lv:3,id:"art_flash",name:"Flash Charge",desc:"May stop retaliation.",type:"control"},
+  {lv:4,id:"art_cluster",name:"Cluster Bomb",desc:"Hits all dungeon enemies.",type:"aoe",mult:.95},
+  {lv:5,id:"art_over",name:"Overload",desc:"Trade HP for damage.",type:"rage"}
+ ]
+};
+
 const backstories=[
  {id:"farm",name:"Farmhand",start:"Greenreach",desc:"You left a quiet farm after raiders destroyed the harvest.",perk:"+8 HP",hp:8},
  {id:"street",name:"Street Urchin",start:"Oakrest",desc:"You survived by stealing meals and sleeping wherever guards were not looking.",perk:"+10% Luck",luck:.10},
@@ -341,6 +402,17 @@ const tomeSpellPool=[
 {id:"spirit_arrow",name:"Spirit Arrow",school:"Spirit",power:1.6,cost:11,effect:"Pierce",desc:"Ignores part of enemy defense."},
 {id:"echo_bolt",name:"Echo Bolt",school:"Resonance",power:1.4,cost:10,effect:"Echo",desc:"Has a chance to strike a second time."}
 ];
+const classStarterSpells={
+ Mage:{id:"identify",name:"Identify",school:"Divination",power:0,cost:6,effect:"Identify",target:"Enemy",spellType:"Sigil",element:"Arcane",desc:"Reveal hidden creature information."},
+ Cleric:{id:"cleric_mend",name:"Mend Wounds",school:"Radiance",power:1,cost:10,effect:"Heal",target:"Self",spellType:"Sigil",element:"Radiance",desc:"Restore your own health."},
+ Paladin:{id:"paladin_aegis",name:"Radiant Aegis",school:"Radiance",power:1,cost:12,effect:"Shield",target:"Self",spellType:"Sigil",element:"Radiance",desc:"Create a holy ward."},
+ Druid:{id:"druid_thorns",name:"Thorn Lash",school:"Verdancy",power:1.15,cost:10,effect:"Root",target:"Enemy",spellType:"Bolt",element:"Earth",desc:"Strike and possibly restrain an enemy."},
+ Sorcerer:{id:"sorc_burst",name:"Wild Arcana",school:"Arcane",power:1.35,cost:13,effect:"Damage",target:"Enemy",spellType:"Bolt",element:"Arcane",desc:"Blast a target with unstable arcane force."},
+ Necromancer:{id:"necro_skeleton",name:"Raise Skeleton",school:"Necromancy",power:1,cost:18,effect:"Summon",target:"Self",spellType:"Summoning",element:"Void",summonType:"Skeleton",desc:"Summon a skeleton ally."},
+ Spellblade:{id:"spellblade_edge",name:"Arcane Edge",school:"Arcane",power:1.1,cost:11,effect:"Empower",target:"Self",spellType:"Sigil",element:"Arcane",desc:"Empower your weapon temporarily."}
+};
+const classMagicUsers=["Mage","Cleric","Paladin","Druid","Sorcerer","Necromancer","Spellblade"];
+
 
 const spellDisciplines={
 "Flame":{power:1.20,cost:1.05,flavor:"burning"},
@@ -368,6 +440,11 @@ const spellIntents={
 "Shattering":{power:1.15,tag:"Armor Break"},
 "Echoing":{power:1.05,tag:"Multi-hit"}
 };
+const spellTargets=["Enemy","Self","AOE"];
+const spellTypes=["Bolt","Beam","Wave","Nova","Sigil","Summoning"];
+const summonTypes=["Skeleton","Wolf Spirit","Arcane Construct","Shadow Hound","Flame Imp","Frost Wisp","Stone Guardian"];
+const spellElements=["Arcane","Flame","Frost","Storm","Void","Blood","Spirit","Earth","Radiance"];
+
 
 const dungeonCreatures=["Skeleton","Cultist","Giant Spider","Goblin","Wraith","Stone Guardian","Slime","Ghoul","Mimic","Hellhound","Cave Troll","Serpent","Bone Knight","Carrion Bat","Rune Construct","Dungeon Ooze","Crypt Archer","Fungal Brute","Shadow Hound","Ancient Sentinel","Corpse Mage","Deep Stalker","Armored Beetle","Possessed Armor"];
 const bossElements=["Frost","Flame","Storm","Void","Rot","Crystal","Blood","Shadow","Arcane","Poison","Sun","Iron"];
@@ -410,7 +487,7 @@ function makeDungeonEncounter(){
   s.dungeon.encounter=pack;
   dlog("Dungeon encounter: "+pack.map(x=>x.name).join(", ")+".");
 }
-function dungeonEnemyTurn(){
+function dungeonEnemyTurn(){summonTurn(true);if(s.dungeon.encounter&&s.dungeon.encounter.every(x=>x.hp<=0)){clearDungeonEncounter();return}
   if(!s.dungeon.encounter||!s.dungeon.encounter.length)return;
   for(const e of s.dungeon.encounter){
     if(e.hp<=0)continue;
@@ -568,7 +645,7 @@ const effortDefs={
 };
 const armorNames=["Leather Coat","Chainmail","Iron Plate","Ranger Cloak","Scale Armor","Knight Plate","Runed Robes","Brigandine","Warden Mail","Dragonhide"];
 function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:55,baseHp:55,mana:60,baseMana:60,atk:4,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,materials:{Iron:3,Steel:0,Silver:0,Hardwood:0,Crystal:0,"Drake Scale":0,Sunstone:0,"Frost Crystal":0,Hellstone:0,Leather:0,Herb:0,Flax:0,Clay:0,"Wild Honey":0,Silk:0,Moonleaf:0,Resin:0,"Living Bark":0,Coal:0,"Adamant Shard":0,Quartz:0,Sulfur:0,"Venom Sac":0,"Black Herb":0,"Spirit Water":0,"Bog Iron":0,Rotroot:0,"Ghost Reed":0,"Hydra Scale":0,"Glass Shard":0,"Gold Ore":0,"Desert Rose":0,"Scorpion Chitin":0,"Star Sand":0,Obsidian:0,"Wyrm Hide":0,Iceglass:0,"White Fur":0,"Frozen Core":0,"Blue Quartz":0,"Demon Horn":0,"Blood Crystal":0,"Infernal Iron":0,"Ash Pearl":0,"Soul Ash":0,Demonhide:0,"Ancient Parchment":0,"Arcane Dust":0,"Beast Fang":0,"Glowcap":0,"Dryad Sap":0,"Black Timber":0,"Shadow Moss":0,"Wolf Pelt":0,"Mist Pearl":0,"Dark Resin":0,"Ironwood":0,"Mithril Flake":0,"Swamp Amber":0,"Sea Crystal":0,"Pearl":0,"Saltstone":0,"Coral":0,"Siren Scale":0,"Tideglass":0,"Djinn Ash":0,"Stormglass":0,"Cloud Feather":0,"Sky Iron":0,"Giant Bone":0,"Lightning Core":0,"Wind Silk":0,"Everfrost":0,"Bone Dust":0,"Grave Wax":0,"Black Iron":0,"Crypt Amber":0,"Death Silk":0,"Hellglass":0,"Cursed Steel":0,"Abyssal Alloy":0,"Demon Heart":0,"Black Crystal":0,"Royal Hellstone":0,"Soulsteel":0,"Infernal Ruby":0},
-soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,randomNPCs:{},sideQuests:[],renown:0,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
+soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,randomNPCs:{},sideQuests:[],renown:0,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,selectedClassSkill:null,activeSummon:null,tempAttackBuff:0,skipEnemyTurn:false,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
 dungeon:{active:false,name:null,roomsEntered:0,targetRooms:0,blocked:null,bossReady:false,bossDefeated:false,encounter:null,boss:null,clearedRooms:0}}}
 let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.questProgress=Object.assign({},x.questProgress||{});s.randomNPCs=Object.assign({},x.randomNPCs||{});s.sideQuests=Array.isArray(x.sideQuests)?x.sideQuests:[];if(typeof x.renown==="number")s.renown=x.renown;s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
 if(!s.flags.soulCrystalObjectMigration){
@@ -586,7 +663,7 @@ function maxHp(){return Math.floor(s.baseHp+s.upgrade.hp*6+attrsTotal("hp"))}
 function maxMana(){return Math.floor(s.baseMana+s.arcane.capacity*15+(s.weapon&&s.weapon.name&&s.weapon.name.includes("Staff")?10:0))}
 function spellCost(sp){return Math.max(1,Math.floor((sp.cost||10)*(1-Math.min(.45,s.arcane.efficiency*.04))))}
 function spellPowerMult(){return 1+s.arcane.potency*.05}
-function atk(){return Math.floor(s.atk+s.upgrade.atk+(s.weapon?s.weapon.stat:0)+attrsTotal("atk"))}function def(){return Math.floor(s.def+s.upgrade.def*2+(s.armor?s.armor.stat:0)+attrsTotal("def"))}
+function atk(){return Math.floor(s.atk+s.upgrade.atk+(s.weapon?s.weapon.stat:0)+attrsTotal("atk")+(s.tempAttackBuff||0))}function def(){return Math.floor(s.def+s.upgrade.def*2+(s.armor?s.armor.stat:0)+attrsTotal("def"))}
 function power(){return atk()*2+def()+Math.floor(maxHp()/10)+Math.floor(maxMana()/12)+s.level*3+s.spellwork.level*2}function luck(){return s.luck+s.upgrade.luck*.02+attrsTotal("luck")}
 function rollDie(n=20){return 1+rnd(n)}
 function spin(options){return options[rnd(options.length)]}
@@ -599,7 +676,7 @@ function loot(mult=1){let g=Math.floor((8+s.level*3)*mult*(1+attrsTotal("gold"))
 function win(){let dead={...s.enemy};s.kills++;s.questProgress["kills_"+area().name]=Number(s.questProgress["kills_"+area().name]||0)+1;
  if(s.mode==="campaign"){if(dead.finalBoss){s.finalBossDefeated=true;log("Demon Lord Malachar is defeated. Valedorn survives.");}}
  captureSoul(dead,false);loot(s.enemy.elite?1.8:1);s.enemy=null;if(dead.finalBoss)advanceCampaign();save();render()}
-function enemyTurn(){if(!s.enemy)return;if(Math.random()<.12+attrsTotal("dodge")+s.bonusDodge){log(s.enemy.name+" misses.",true);return}let hit=Math.max(1,s.enemy.atk-def()-(s.turnDefend?Math.floor(def()*.7):0)+rnd(5));s.turnDefend=false;s.hp-=hit;log(s.enemy.name+" deals "+hit+" damage.",true);if(s.hp<=0){s.hp=maxHp();s.gold=Math.floor(s.gold*.8);s.enemy=null;log("You are defeated and wake in "+areas[1].name+". You lose 20% of your gold.");s.location=1}}
+function enemyTurn(){summonTurn(false);if(s.enemy&&s.enemy.hp<=0){win();return}if(!s.enemy)return;if(Math.random()<.12+attrsTotal("dodge")+s.bonusDodge){log(s.enemy.name+" misses.",true);return}let hit=Math.max(1,s.enemy.atk-def()-(s.turnDefend?Math.floor(def()*.7):0)+rnd(5));s.turnDefend=false;s.hp-=hit;log(s.enemy.name+" deals "+hit+" damage.",true);if(s.hp<=0){s.hp=maxHp();s.gold=Math.floor(s.gold*.8);s.enemy=null;log("You are defeated and wake in "+areas[1].name+". You lose 20% of your gold.");s.location=1}}
 function explore(){let a=area();if(a.type==="town"){let r=spin(["inn","market","rumor"]);$("result").textContent="Town wheel: "+r.toUpperCase();if(r==="inn"){let c=10+s.level*2;if(s.gold>=c){s.gold-=c;s.hp=maxHp();s.mana=maxMana();log("You rest at the inn for "+c+" gold. HP and mana fully restored.")}else log("The innkeeper remains tragically committed to capitalism.")}else if(r==="market"){s.gold+=5+rnd(15);log("You make a small profit trading supplies.")}else log("Rumor: dungeons often hold better gear than the open road.");}
  else{let roll=Math.random();if(roll<.36){let m=spin(a.mats),n=1+rnd(3);
  let map={"Iron Ore":"Iron","Steel Ore":"Steel","Silver Ore":"Silver","Hardwood":"Hardwood","Crystal":"Crystal","Drake Scale":"Drake Scale","Sunstone":"Sunstone","Frost Crystal":"Frost Crystal","Hellstone":"Hellstone","Leather":"Leather","Herb":"Herb","Flax":"Flax","Clay":"Clay","Wild Honey":"Wild Honey","Silk":"Silk","Moonleaf":"Moonleaf","Resin":"Resin","Living Bark":"Living Bark","Coal":"Coal","Adamant Shard":"Adamant Shard","Quartz":"Quartz","Sulfur":"Sulfur","Venom Sac":"Venom Sac","Black Herb":"Black Herb","Spirit Water":"Spirit Water","Bog Iron":"Bog Iron","Rotroot":"Rotroot","Ghost Reed":"Ghost Reed","Hydra Scale":"Hydra Scale","Glass Shard":"Glass Shard","Gold Ore":"Gold Ore","Desert Rose":"Desert Rose","Scorpion Chitin":"Scorpion Chitin","Star Sand":"Star Sand","Obsidian":"Obsidian","Wyrm Hide":"Wyrm Hide","Iceglass":"Iceglass","White Fur":"White Fur","Frozen Core":"Frozen Core","Blue Quartz":"Blue Quartz","Demon Horn":"Demon Horn","Blood Crystal":"Blood Crystal","Infernal Iron":"Infernal Iron","Ash Pearl":"Ash Pearl","Soul Ash":"Soul Ash","Demonhide":"Demonhide"};
@@ -726,7 +803,7 @@ function applyCharacterCreation(mode){
  const startIndex=areas.findIndex(a=>a.name===bg.start);s.location=startIndex>=0?startIndex:0;s.visited=[s.location];
  const wi=startingItem(cl.weapon,"weapon",Math.max(1,2+Math.floor((cl.atk||0)/2)));
  const ai=startingItem(cl.armor,"armor",Math.max(1,2+Math.floor((cl.def||0)/2)));
- s.inventory=[wi,ai];s.weapon=wi;s.armor=ai;s.hp=maxHp();s.mana=maxMana();if(["Mage","Sorcerer","Necromancer","Spellblade","Druid","Cleric","Paladin"].includes(s.className)){const idSpell=tomeSpellPool.find(x=>x.id==="identify");if(idSpell&&!s.knownSpells.some(x=>x.id==="identify"))s.knownSpells.push({...idSpell,custom:false,mastery:{level:1,xp:0,xpNeed:8}});}
+ s.inventory=[wi,ai];s.weapon=wi;s.armor=ai;s.hp=maxHp();s.mana=maxMana();if(classMagicUsers.includes(s.className)){const st=classStarterSpells[s.className];if(st&&!s.knownSpells.some(x=>x.id===st.id))s.knownSpells.push({...st,custom:false,mastery:{level:1,xp:0,xpNeed:8}});if(st)s.selectedSpell=st.id;}
  save();render();
  log("Character created: "+s.name+", "+s.race+" "+s.className+".");
  log("Backstory: "+bg.name+". You begin in "+bg.start+".");
@@ -1029,23 +1106,20 @@ function studyTome(id){
 function createUniqueSpell(){
  if(s.spellwork.level<10){log("Spellwork 10 is required to create spells.");return}
  const filledCrystal=s.soulCrystals.find(c=>c.filled);if(!filledCrystal){log("You need a Soul Crystal filled with a soul.");return}
- const d=$("spellDiscipline").value,f=$("spellForm").value,i=$("spellIntent").value;
- const D=spellDisciplines[d],F=spellForms[f],I=spellIntents[i];
+ const target=$("spellTarget").value,type=$("spellType").value,element=$("spellElement").value,intent=$("spellIntent").value,p=Number($("spellPowerSlider").value||50);
  const name=($("customSpellName").value||"Unnamed Spell").trim().slice(0,24)||"Unnamed Spell";
- const variance=.88+Math.random()*.25;
- const power=+(1.45*D.power*F.power*I.power*variance).toFixed(2);
- const cost=Math.max(5,Math.floor((10+power*5)*D.cost*F.cost));
- const mutations=[
-   ["Unstable",1.18,"15% backlash chance"],["Efficient",.92,"Reduced casting cost"],["Hungry",1.12,"Restores a little HP"],["Lingering",1.05,"May strike twice"],
-   ["Piercing",1.08,"Partially ignores defense"],["Volatile",1.22,"Higher damage variance"],["Precise",1.04,"Improved reliability"],["Ancient",1.15,"Exceptional magical resonance"]
- ];
- const m=spin(mutations);
- const sp={id:"custom_"+Date.now(),name,school:d,form:f,intent:i,mastery:{level:1,xp:0,xpNeed:8},power:+(power*m[1]).toFixed(2),cost:m[0]==="Efficient"?Math.floor(cost*.72):cost,effect:I.tag,desc:d+" "+f+" focused on "+i.toLowerCase()+". "+m[0]+": "+m[2]+".",custom:true,mutation:m[0]};
- sp.soulSource={...filledCrystal.soul,crystalRarity:filledCrystal.rarity};
- const soulBoost=1+(soulCrystalPower(filledCrystal)-1)*.08;sp.power=+(sp.power*soulBoost).toFixed(2);
- s.customSpells.push(sp);s.knownSpells.push(sp);s.soulCrystals=s.soulCrystals.filter(c=>c.id!==filledCrystal.id);if(String(s.equippedSoulCrystal)===String(filledCrystal.id))s.equippedSoulCrystal=null;gainSpellworkXP(40);
- log("You consume a captured soul and create the unique spell "+name+".");
- save();render();
+ let power=.75+(p/50)*.8,cost=Math.floor(5+p*.22),effect=spellIntents[intent]?.tag||"Damage";
+ if(target==="Self"&&effect==="Damage")effect="Shield";
+ if(type==="Summoning")effect="Summon";
+ if(target==="AOE"){power*=.82;cost=Math.floor(cost*1.25)}
+ if(type==="Beam"){power*=1.18;cost=Math.floor(cost*1.15)}
+ if(type==="Sigil"){power*=.85;cost=Math.floor(cost*.9)}
+ if(type==="Nova"){power*=.78;cost=Math.floor(cost*1.3)}
+ const muts=[["Unstable",1.18],["Efficient",.92],["Hungry",1.12],["Lingering",1.05],["Piercing",1.08],["Volatile",1.22],["Precise",1.04],["Ancient",1.15]],m=spin(muts);
+ let sp={id:"custom_"+Date.now(),name,school:element,element,target,spellType:type,intent,power:+(power*m[1]).toFixed(2),cost:m[0]==="Efficient"?Math.floor(cost*.72):cost,effect,desc:element+" "+type+" targeting "+target.toLowerCase()+". "+m[0]+" construction.",custom:true,mutation:m[0],mastery:{level:1,xp:0,xpNeed:8},powerSetting:p};
+ if(type==="Summoning")sp.summonType=$("summonType").value;
+ sp.soulSource={...filledCrystal.soul,crystalRarity:filledCrystal.rarity};sp.power=+(sp.power*(1+(soulCrystalPower(filledCrystal)-1)*.08)).toFixed(2);
+ s.customSpells.push(sp);s.knownSpells.push(sp);s.soulCrystals=s.soulCrystals.filter(c=>c.id!==filledCrystal.id);gainSpellworkXP(40);log("You create "+name+".");save();render();
 }
 function castKnownSpell(id, dungeonMode=false){
  const sp=s.knownSpells.find(x=>x.id===id);if(!sp)return;
@@ -1060,12 +1134,20 @@ function castKnownSpell(id, dungeonMode=false){
    gainSpellworkXP(2);gainSpellMastery(sp,1);identifyTarget(target,dungeonMode);
    return;
  }
+ if(sp.effect==="Summon"||sp.spellType==="Summoning"){gainSpellworkXP(3);gainSpellMastery(sp,1);summonAlly(sp,dungeonMode);save();render();return}
+ if(sp.target==="Self"||sp.effect==="Heal"||sp.effect==="Shield"||sp.effect==="Empower"){
+   gainSpellworkXP(3);gainSpellMastery(sp,1);
+   if(sp.effect==="Heal"){let h=Math.floor(maxHp()*.16*sp.power);s.hp=Math.min(maxHp(),s.hp+h);lg(sp.name+" restores "+h+" HP.")}
+   else if(sp.effect==="Shield"){let h=Math.floor(maxHp()*.08*sp.power);s.hp=Math.min(maxHp(),s.hp+h);s.skipEnemyTurn=true;lg(sp.name+" creates a ward.")}
+   else{s.tempAttackBuff=Math.max(s.tempAttackBuff||0,Math.ceil(sp.power*3));lg(sp.name+" empowers your weapon.")}
+   save();render();return
+ }
  let damage=Math.max(1,Math.floor(atk()*sp.power*spellPowerMult()*(1+(mastery.level-1)*.03)*(.88+Math.random()*.24)));
  const affinity=monsterAffinity(target.name),element=normalizeSpellElement(sp);
  if(affinity.weak.includes(element)){damage=Math.floor(damage*1.5);}
  if(affinity.strong.includes(element)){damage=Math.max(1,Math.floor(damage*.65));}
  if(sp.effect==="Pierce"||sp.effect==="Armor Break")damage+=Math.floor(target.def*.6);
- target.hp-=damage;
+ if(sp.target==="AOE"&&dungeonMode){for(const e of s.dungeon.encounter.filter(x=>x.hp>0))e.hp-=damage}else target.hp-=damage;
  gainSpellworkXP(3);gainSpellMastery(sp,1);
  let effectiveness="";
  if(affinity.weak.includes(element))effectiveness=" It is super effective.";
@@ -1137,15 +1219,18 @@ function renderSpellUI(){
  $("arcaneUpgrades").innerHTML=arcDefs.map(a=>{let base={capacity:45,efficiency:60,potency:65,flow:50}[a[0]],step={capacity:35,efficiency:45,potency:50,flow:40}[a[0]],c=base+s.arcane[a[0]]*step;return '<div class="item"><div class="row"><b>'+a[1]+'</b><span>Lv. '+s.arcane[a[0]]+'</span></div><div class="small">'+a[2]+'</div><button data-arcane="'+a[0]+'">UPGRADE '+c+'g</button></div>'}).join("");
  $("meditateBtn").textContent="MEDITATE • Current Mana "+Math.floor(s.mana)+"/"+maxMana();
  $("meditateBtn").disabled=!!s.enemy||!!(s.dungeon&&s.dungeon.encounter);
- let d=$("spellDiscipline"),f=$("spellForm"),i=$("spellIntent");
- if(d){
-   let od=d.value,of=f.value,oi=i.value;
-   d.innerHTML=Object.keys(spellDisciplines).map(x=>'<option>'+x+'</option>').join("");if(od&&spellDisciplines[od])d.value=od;
-   f.innerHTML=Object.keys(spellForms).map(x=>'<option>'+x+'</option>').join("");if(of&&spellForms[of])f.value=of;
-   i.innerHTML=Object.keys(spellIntents).map(x=>'<option>'+x+'</option>').join("");if(oi&&spellIntents[oi])i.value=oi;
-   const D=spellDisciplines[d.value],F=spellForms[f.value],I=spellIntents[i.value];
-   $("spellCreationPreview").innerHTML='<b>Creation Preview</b><div class="small">'+d.value+' '+f.value+' • '+I.tag+'</div><div class="small">Creation requires 1 Filled Soul Crystal. Final power, mana cost, magical mutation, and the captured soul rarity all influence the result.</div><div class="small">Filled Soul Crystals: '+s.soulCrystals.filter(c=>c.filled).length+'</div>';
-   $("createSpellBtn").disabled=s.spellwork.level<10||!s.soulCrystals.some(c=>c.filled);
+ let t=$("spellTarget"),ty=$("spellType"),su=$("summonType"),el=$("spellElement"),i=$("spellIntent"),slider=$("spellPowerSlider");
+ if(t){
+  let ot=t.value,oty=ty.value,osu=su.value,oel=el.value,oi=i.value;
+  t.innerHTML=spellTargets.map(x=>'<option>'+x+'</option>').join("");if(ot&&spellTargets.includes(ot))t.value=ot;
+  ty.innerHTML=spellTypes.map(x=>'<option>'+x+'</option>').join("");if(oty&&spellTypes.includes(oty))ty.value=oty;
+  su.innerHTML=summonTypes.map(x=>'<option>'+x+'</option>').join("");if(osu&&summonTypes.includes(osu))su.value=osu;
+  el.innerHTML=spellElements.map(x=>'<option>'+x+'</option>').join("");if(oel&&spellElements.includes(oel))el.value=oel;
+  i.innerHTML=Object.keys(spellIntents).map(x=>'<option>'+x+'</option>').join("");if(oi&&spellIntents[oi])i.value=oi;
+  $("summonTypeWrap").style.display=ty.value==="Summoning"?"block":"none";
+  let p=Number(slider.value||50),cost=Math.floor(5+p*.22);if(t.value==="AOE")cost=Math.floor(cost*1.25);if(ty.value==="Beam")cost=Math.floor(cost*1.15);if(ty.value==="Nova")cost=Math.floor(cost*1.3);
+  $("spellPowerLabel").textContent=p+"%";$("spellCreationPreview").innerHTML='<b>Creation Preview</b><div class="small">'+el.value+' '+ty.value+' • Target: '+t.value+'</div><div class="small">Intent: '+i.value+(ty.value==="Summoning"?' • Summon: '+su.value:'')+'</div><div class="small">Estimated mana: '+cost+'</div><div class="small">Filled Soul Crystals: '+s.soulCrystals.filter(c=>c.filled).length+'</div>';
+  $("createSpellBtn").disabled=s.spellwork.level<10||!s.soulCrystals.some(c=>c.filled);
  }
 }
 function renderQuestDrop(){
@@ -1170,6 +1255,38 @@ function renderQuestDrop(){
  drop.innerHTML=rows.length?rows.join(""):'<div class="questEntry"><div class="small">No active quests.</div></div>';
  let open=drop.classList.contains("open");
  toggle.textContent=(rows.length?("QUESTS "+rows.length):"QUESTS")+(open?" ▼":" ▲");
+}
+function classLevel(){return 1+Math.floor((Math.max(1,s.level)-1)/2)}
+function genericMagicSkillTree(){return[
+ {lv:1,id:"magic_focus",name:"Arcane Focus",desc:"Restore mana.",type:"mana"},
+ {lv:2,id:"magic_barrier",name:"Mystic Barrier",desc:"Restore HP and avoid retaliation.",type:"controlheal"},
+ {lv:3,id:"magic_surge",name:"Spell Surge",desc:"Heal and gain attack.",type:"rally"},
+ {lv:4,id:"magic_burst",name:"Arcane Burst",desc:"Hits all dungeon enemies.",type:"aoe",mult:.85},
+ {lv:5,id:"magic_over",name:"Overchannel",desc:"Trade HP for damage.",type:"rage"}]}
+function classSkillsForCurrent(){return classSkillTrees[s.className]||genericMagicSkillTree()}
+function unlockedClassSkills(){return classSkillsForCurrent().filter(x=>x.lv<=classLevel())}
+function getSelectedClassSkill(){return unlockedClassSkills().find(x=>x.id===s.selectedClassSkill)||null}
+function selectClassSkill(id){if(unlockedClassSkills().some(x=>x.id===id)){s.selectedClassSkill=id;save();render()}}
+function summonStats(sp){let p=Math.max(.5,sp.power||1),lvl=s.level,hp=Math.floor(18+lvl*5+p*18);return{name:sp.summonType||"Arcane Servant",hp,max:hp,atk:Math.floor(3+lvl*1.3+p*4),element:sp.element||"Arcane"}}
+function summonAlly(sp,dungeonMode){s.activeSummon=summonStats(sp);(dungeonMode?dlog:log)(sp.name+" summons "+s.activeSummon.name+" with "+s.activeSummon.hp+" HP.")}
+function summonTurn(dungeonMode){if(!s.activeSummon||s.activeSummon.hp<=0)return;let t=dungeonMode?(s.dungeon.encounter&&s.dungeon.encounter.find(x=>x.hp>0)):s.enemy;if(!t)return;let d=Math.max(1,Math.floor(s.activeSummon.atk*(.85+Math.random()*.3)));t.hp-=d;(dungeonMode?dlog:log)(s.activeSummon.name+" attacks "+t.name+" for "+d+".")}
+function useClassSkill(skill,dungeonMode=false){
+ if(!skill)return;let lg=dungeonMode?dlog:log,target=dungeonMode?(s.dungeon.encounter&&s.dungeon.encounter.find(x=>x.hp>0)):s.enemy;
+ const finish=()=>{if(dungeonMode){if(s.dungeon.encounter&&s.dungeon.encounter.every(x=>x.hp<=0))clearDungeonEncounter();else if(!s.skipEnemyTurn)dungeonEnemyTurn()}else{if(s.enemy&&s.enemy.hp<=0)win();else if(!s.skipEnemyTurn)enemyTurn()}s.skipEnemyTurn=false;save();render()};
+ if(skill.type==="heal"){let h=Math.floor(maxHp()*(skill.pct||.18));s.hp=Math.min(maxHp(),s.hp+h);lg(skill.name+" restores "+h+" HP.");finish();return}
+ if(skill.type==="meditate"){let h=Math.floor(maxHp()*.12),m=Math.floor(maxMana()*.2);s.hp=Math.min(maxHp(),s.hp+h);s.mana=Math.min(maxMana(),s.mana+m);lg(skill.name+" restores HP and mana.");finish();return}
+ if(skill.type==="mana"){let m=Math.floor(maxMana()*.28);s.mana=Math.min(maxMana(),s.mana+m);lg(skill.name+" restores "+m+" mana.");finish();return}
+ if(skill.type==="controlheal"){let h=Math.floor(maxHp()*.12);s.hp=Math.min(maxHp(),s.hp+h);s.skipEnemyTurn=true;lg(skill.name+" restores "+h+" HP and prevents retaliation.");finish();return}
+ if(!target){lg("There is no target for "+skill.name+".");return}
+ let damage=Math.max(1,Math.floor(atk()*(skill.mult||1.15)*(.9+Math.random()*.2)));
+ if(skill.type==="pierce")damage+=Math.floor((target.def||0)*.7);
+ if(skill.type==="execute"&&target.hp<=target.max*.4)damage=Math.floor(damage*1.8);
+ if(skill.type==="rage"){let c=Math.max(1,Math.floor(maxHp()*.08));s.hp=Math.max(1,s.hp-c);damage=Math.floor(damage*1.7);lg("You sacrifice "+c+" HP.")}
+ if(skill.type==="control"&&Math.random()<.55)s.skipEnemyTurn=true;
+ if(skill.type==="trick"){let r=rnd(3);if(r===0)s.skipEnemyTurn=true;else if(r===1){let h=Math.floor(maxHp()*.12);s.hp=Math.min(maxHp(),s.hp+h)}else damage=Math.floor(damage*1.5)}
+ if(skill.type==="rally"){let h=Math.floor(maxHp()*.1);s.hp=Math.min(maxHp(),s.hp+h);s.tempAttackBuff=2+classLevel();lg(skill.name+" raises your attack.")}
+ if(skill.type==="aoe"&&dungeonMode){for(const e of s.dungeon.encounter.filter(x=>x.hp>0))e.hp-=damage;lg(skill.name+" hits every enemy for "+damage+".")}else{target.hp-=damage;lg(skill.name+" hits "+target.name+" for "+damage+".")}
+ finish();
 }
 function monsterAffinity(name){
  const n=(name||"").toLowerCase();
@@ -1224,6 +1341,18 @@ function spellPickerHTML(mode){
  if(!s.knownSpells.length)return '<div class="small">You do not know any spells yet.</div>';
  return s.knownSpells.map(sp=>'<button class="'+(s.selectedSpell===sp.id?'blue':'secondary')+'" data-combatselectspell="'+sp.id+'" data-combatmode="'+mode+'">'+(s.selectedSpell===sp.id?'✓ ':'')+sp.name+' • '+sp.school+' • Mana '+spellCost(sp)+'</button>').join("");
 }
+function classSkillPickerHTML(mode){let a=unlockedClassSkills();return a.length?a.map(sk=>'<button class="'+(s.selectedClassSkill===sk.id?'blue':'secondary')+'" data-selectclassskill="'+sk.id+'" data-skillmode="'+mode+'">'+(s.selectedClassSkill===sk.id?'✓ ':'')+sk.name+' • Class Lv '+sk.lv+'</button>').join(""):'<div class="small">No class skills unlocked.</div>'}
+function renderClassSkillUI(){
+ let lvl=classLevel();if($("classLevelLabel"))$("classLevelLabel").textContent=lvl;
+ if($("classSkills"))$("classSkills").innerHTML=classSkillsForCurrent().map(sk=>'<div class="item"><div class="row"><b>'+sk.name+'</b><span class="pill">'+(sk.lv<=lvl?"UNLOCKED":"Class Lv "+sk.lv)+'</span></div><div class="small">'+sk.desc+'</div>'+(sk.lv<=lvl?'<button data-selectclassskill="'+sk.id+'">'+(s.selectedClassSkill===sk.id?'SELECTED':'SELECT SKILL')+'</button>':'')+'</div>').join("");
+ let sk=getSelectedClassSkill();
+ if($("worldClassSkillBtn")){$("worldClassSkillBtn").textContent=sk?"USE "+sk.name.toUpperCase():"USE SKILL";$("worldClassSkillBtn").disabled=!sk}
+ if($("worldSkillSelectBtn"))$("worldSkillSelectBtn").textContent=sk?"SELECT: "+sk.name.toUpperCase():"SELECT SKILL";
+ if($("worldSkillPicker"))$("worldSkillPicker").innerHTML=classSkillPickerHTML("world");
+ if($("dungeonClassSkillBtn")){$("dungeonClassSkillBtn").textContent=sk?"USE "+sk.name.toUpperCase():"USE SKILL";$("dungeonClassSkillBtn").disabled=!sk}
+ if($("dungeonSkillSelectBtn"))$("dungeonSkillSelectBtn").textContent=sk?"SELECT: "+sk.name.toUpperCase():"SELECT SKILL";
+ if($("dungeonSkillPicker"))$("dungeonSkillPicker").innerHTML=classSkillPickerHTML("dungeon");
+}
 function renderCombatSpellPickers(){
  let sp=getSelectedSpell(),wp=$("worldSpellBtn"),ws=$("worldSpellSelectBtn"),wpk=$("worldSpellPicker");
  if(wp){wp.textContent=sp?"CAST "+sp.name.toUpperCase():"CAST SPELL";wp.disabled=!s.enemy||!sp}
@@ -1265,7 +1394,7 @@ function render(){
  $("enemyName").textContent=s.enemy?s.enemy.name:"No enemy";
  $("equipped").innerHTML="<div class='item'><b>Weapon:</b> "+(s.weapon?s.weapon.rarity+" "+s.weapon.name+" +"+s.weapon.up+" • "+s.weapon.attr.name:"None")+"</div><div class='item'><b>Armor:</b> "+(s.armor?s.armor.rarity+" "+s.armor.name+" +"+s.armor.up+" • "+s.armor.attr.name:"None")+"</div>";
  $("inventory").innerHTML=s.inventory.length?s.inventory.map(i=>"<div class='item'><div class='row'><b>"+i.rarity+" "+i.name+" +"+i.up+"</b><span class='pill'>"+i.kind+"</span></div><div class='small'>"+(i.kind==="weapon"?"ATK ":"DEF ")+i.stat+" • "+i.attr.name+": "+i.attr.desc+(i.material?" • "+i.material+(i.rune&&i.rune!=="None"?" • "+i.rune:"")+" • "+i.effort:"")+"</div><div class='grid'><button data-equip='"+i.id+"'>EQUIP</button><button class='secondary' data-upitem='"+i.id+"'>UPGRADE "+(20+(i.up+1)*20)+"g</button></div></div>").join(""):"<p class='small'>Your bag contains mostly optimism.</p>";
- $("stats").innerHTML="<div class='item'><b>"+s.name+"</b><div class='small'>"+s.race+" • "+s.className+" • "+(backstories.find(x=>x.id===s.backstory)?.name||"Unknown past")+"</div></div><div class='item'>Wealth Class: <b>"+s.wealthClass+"</b> <span class='small'>(d100: "+s.wealthRoll+")</span></div><div class='item'>Attack: <b>"+atk()+"</b></div><div class='item'>Defense: <b>"+def()+"</b></div><div class='item'>Max HP: <b>"+maxHp()+"</b></div><div class='item'>Max Mana: <b>"+maxMana()+"</b></div><div class='item'>Spellwork: <b>Lv "+s.spellwork.level+"</b></div><div class='item'>Item Quality Luck: <b>"+Math.round(luck()*100)+"%</b></div><div class='item'>Kills: <b>"+s.kills+"</b></div><div class='item'>Dungeons: <b>"+s.dungeons+"</b></div><div class='item'>Renown: <b>"+s.renown+"</b></div>";
+ $("stats").innerHTML="<div class='item'><b>"+s.name+"</b><div class='small'>"+s.race+" • "+s.className+" • "+(backstories.find(x=>x.id===s.backstory)?.name||"Unknown past")+"</div></div><div class='item'>Wealth Class: <b>"+s.wealthClass+"</b> <span class='small'>(d100: "+s.wealthRoll+")</span></div><div class='item'>Attack: <b>"+atk()+"</b></div><div class='item'>Defense: <b>"+def()+"</b></div><div class='item'>Max HP: <b>"+maxHp()+"</b></div><div class='item'>Max Mana: <b>"+maxMana()+"</b></div><div class='item'>Spellwork: <b>Lv "+s.spellwork.level+"</b></div><div class='item'>Class Level: <b>"+classLevel()+"</b></div><div class='item'>Item Quality Luck: <b>"+Math.round(luck()*100)+"%</b></div><div class='item'>Kills: <b>"+s.kills+"</b></div><div class='item'>Dungeons: <b>"+s.dungeons+"</b></div><div class='item'>Renown: <b>"+s.renown+"</b></div>";
  let ups=[["atk","Strength","+1 base attack"],["hp","Vitality","+6 max HP"],["def","Guard","+2 defense"],["luck","Fortune","+2% item-quality luck"]];$("upgrades").innerHTML=ups.map(u=>{let c=30+s.upgrade[u[0]]*30;return"<div class='item'><div class='row'><b>"+u[1]+"</b><span>Lv. "+s.upgrade[u[0]]+"</span></div><div class='small'>"+u[2]+"</div><button data-stat='"+u[0]+"'>UPGRADE "+c+"g</button></div>"}).join("");
  if(s.mode==="campaign"){
  $("questTitle").textContent="Campaign Journal";
@@ -1287,7 +1416,7 @@ function render(){
  }
 }
 $("worldList").innerHTML=areas.map((a,i)=>"<div class='item'><b>"+a.name+"</b><div class='small'>Recommended level "+a.min+" • "+a.type+"</div></div>").join("");
- renderTownPanel();renderForgeOptions();renderWorldMap();renderMaterialsTab();renderSpellUI();renderQuestDrop();renderMonsterCombatStats();renderCombatSpellPickers();
+ renderTownPanel();renderForgeOptions();renderWorldMap();renderMaterialsTab();renderSpellUI();renderQuestDrop();renderMonsterCombatStats();renderCombatSpellPickers();renderClassSkillUI();
  $("dungeonTabBtn").disabled=!s.dungeon.active;
  $("dungeonState").textContent=!s.dungeon.active?"NO DUNGEON":s.dungeon.bossReady?"BOSS ROOM":"IN PROGRESS";
  $("dungeonName").textContent=s.dungeon.active?s.dungeon.name:"No dungeon discovered.";
@@ -1309,7 +1438,7 @@ $("worldList").innerHTML=areas.map((a,i)=>"<div class='item'><b>"+a.name+"</b><d
  }
 
 }
-document.addEventListener("change",e=>{if(["forgeBlueprint","forgeMaterial","forgeRune","forgeEffort"].includes(e.target.id))renderForgeOptions();if(["spellDiscipline","spellForm","spellIntent"].includes(e.target.id))renderSpellUI()});
+document.addEventListener("change",e=>{if(["forgeBlueprint","forgeMaterial","forgeRune","forgeEffort"].includes(e.target.id))renderForgeOptions();if(["spellTarget","spellType","summonType","spellElement","spellIntent","spellPowerSlider"].includes(e.target.id))renderSpellUI()});
 document.addEventListener("click",e=>{
  const q=e.target.closest("#questToggle");
  if(!q)return;
@@ -1317,6 +1446,7 @@ document.addEventListener("click",e=>{
 });
 document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)return;if(b.dataset.equipsoul){equipSoulCrystal(b.dataset.equipsoul);return}
  if(b.dataset.maptravel){mapTravel(b.dataset.maptravel);return}
+ if(b.dataset.selectclassskill){selectClassSkill(b.dataset.selectclassskill);let p=b.dataset.skillmode?$(b.dataset.skillmode==="dungeon"?"dungeonSkillPicker":"worldSkillPicker"):null;if(p)p.classList.remove("open");return}
  if(b.dataset.combatselectspell){selectSpell(b.dataset.combatselectspell);let p=$(b.dataset.combatmode==="dungeon"?"dungeonSpellPicker":"worldSpellPicker");if(p)p.classList.remove("open");return}
  if(b.dataset.selectspell){selectSpell(b.dataset.selectspell);return}
  if(b.dataset.arcane){buyArcaneUpgrade(b.dataset.arcane);return}
@@ -1344,6 +1474,10 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.dir){moveDungeon(b.dataset.dir);return}
  if(b.dataset.equip){equip(b.dataset.equip);return}if(b.dataset.upitem){upgradeItem(b.dataset.upitem);return}if(b.dataset.stat){let k=b.dataset.stat,c=30+s.upgrade[k]*30;if(s.gold>=c){s.gold-=c;s.upgrade[k]++;s.hp=Math.min(maxHp(),s.hp+(k==="hp"?10:0));save();render()}return}
  switch(b.dataset.a){
+ case"toggleWorldSkillPicker":$("worldSkillPicker").classList.toggle("open");break;
+ case"toggleDungeonSkillPicker":$("dungeonSkillPicker").classList.toggle("open");break;
+ case"worldClassSkill":useClassSkill(getSelectedClassSkill(),false);break;
+ case"dungeonClassSkill":useClassSkill(getSelectedClassSkill(),true);break;
  case"toggleWorldSpellPicker":$("worldSpellPicker").classList.toggle("open");break;
  case"toggleDungeonSpellPicker":$("dungeonSpellPicker").classList.toggle("open");break;
  case"trainSpellwork":trainSpellwork();break;
