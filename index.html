@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG v2.8</title>
+<title>Wayfarer: Wheel & Dice RPG v2.9</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
@@ -89,8 +89,15 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 .siteMarkerLabel{font-size:10px}
 .worldDepthNote{font-size:11px;color:var(--muted);margin-top:4px}
 @media(max-width:520px){.factionGrid{grid-template-columns:1fr}}
+
+.harvestModal{display:none;position:fixed;inset:0;background:#000a;z-index:105;align-items:center;justify-content:center;padding:20px}
+.harvestModal.open{display:flex}.harvestModalCard{width:min(430px,100%);background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px}
+.harvestResultGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.harvestResultGrid .item{margin:0}
+.worldAlert{border-left:3px solid #c28b55;padding-left:9px}.dangerMeter{height:8px;background:#242a34;border-radius:999px;overflow:hidden;margin-top:5px}.dangerMeter>span{display:block;height:100%;background:#a66f55}
+@media(max-width:420px){.harvestResultGrid{grid-template-columns:1fr}}
 </style></head>
-<body><div id="campModal" class="campModal"><div class="campModalCard"><b id="campModalTitle">Camp Result</b><div class="small" id="campModalText" style="margin:10px 0"></div><button data-a="closeCampModal">CONTINUE</button></div></div>
+<body><div id="harvestModal" class="harvestModal"><div class="harvestModalCard"><b id="harvestModalTitle">Harvest Result</b><div id="harvestModalBody"></div><button data-a="closeHarvestModal">CONTINUE</button></div></div>
+<div id="campModal" class="campModal"><div class="campModalCard"><b id="campModalTitle">Camp Result</b><div class="small" id="campModalText" style="margin:10px 0"></div><button data-a="closeCampModal">CONTINUE</button></div></div>
 <div id="achievementPop" class="achievementPop"></div>
 <div id="app">
 <h1>Wayfarer</h1><div class="sub">An open-world text RPG driven by dice, wheels, shifting dungeons, questionable treasure, and your own bad decisions.</div><button class="secondary topCharacterBtn" data-tab="characterTab">CHARACTER</button>
@@ -125,7 +132,8 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 <div class="small" id="location"></div><div class="small" id="modeText"></div></div>
 
 <section id="worldTab">
-<div class="card"><b>Current Area</b><div class="wheel" id="areaTitle"></div><div class="small" id="areaDesc"></div><div class="grid"><button data-a="explore">EXPLORE</button><button class="secondary" data-a="travel">TRAVEL</button></div><button class="blue" data-a="dungeon">SEARCH FOR DUNGEON</button><button class="secondary" data-a="camp">MAKE CAMP</button><button class="secondary" data-a="harvestRegion">HARVEST REGION</button></div>
+<div class="card"><b>World Activity</b><div id="worldActivityPanel" class="small">The roads are quiet.</div></div>
+<div class="card"><b>Current Area</b><div class="wheel" id="areaTitle"></div><div class="small" id="areaDesc"></div><div class="grid"><button data-a="explore">EXPLORE</button><button class="secondary" data-a="travel">TRAVEL</button></div><button class="blue" data-a="dungeon">SEARCH FOR DUNGEON</button><button class="secondary" data-a="camp">MAKE CAMP</button><button class="secondary" data-a="harvestRegion">HARVEST REGION</button><button class="secondary" data-a="searchTreasureMap">SEARCH TREASURE MAP</button></div>
 <div class="card" id="townServices">
 <b>Town Services</b>
 <div class="small">Jobs and merchants are only available while you are in a town.</div>
@@ -174,7 +182,7 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
     <button class="primary" data-a="worldMapCenter">CENTER</button>
     <button data-a="worldMapZoomIn">＋</button>
     <button data-a="worldMapZoomOut">－</button>
-    <button class="secondary" data-a="worldMapToggleLabels" id="worldMapLabelsBtn">LABELS: ON</button>
+    <button class="secondary" data-a="worldMapToggleLabels" id="worldMapLabelsBtn">LABELS: ON</button><button class="secondary" data-a="worldMapReroll">REROLL WORLD</button>
     <div class="spacer"></div>
     <span class="pill" id="worldMapSeedLabel">WORLD</span>
   </div>
@@ -745,9 +753,9 @@ const effortDefs={
 };
 const armorNames=["Leather Coat","Chainmail","Iron Plate","Ranger Cloak","Scale Armor","Knight Plate","Runed Robes","Brigandine","Warden Mail","Dragonhide"];
 function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:55,baseHp:55,mana:60,baseMana:60,atk:4,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,materials:{Iron:3,Steel:0,Silver:0,Hardwood:0,Crystal:0,"Drake Scale":0,Sunstone:0,"Frost Crystal":0,Hellstone:0,Leather:0,Herb:0,Flax:0,Clay:0,"Wild Honey":0,Silk:0,Moonleaf:0,Resin:0,"Living Bark":0,Coal:0,"Adamant Shard":0,Quartz:0,Sulfur:0,"Venom Sac":0,"Black Herb":0,"Spirit Water":0,"Bog Iron":0,Rotroot:0,"Ghost Reed":0,"Hydra Scale":0,"Glass Shard":0,"Gold Ore":0,"Desert Rose":0,"Scorpion Chitin":0,"Star Sand":0,Obsidian:0,"Wyrm Hide":0,Iceglass:0,"White Fur":0,"Frozen Core":0,"Blue Quartz":0,"Demon Horn":0,"Blood Crystal":0,"Infernal Iron":0,"Ash Pearl":0,"Soul Ash":0,Demonhide:0,"Ancient Parchment":0,"Arcane Dust":0,"Beast Fang":0,"Glowcap":0,"Dryad Sap":0,"Black Timber":0,"Shadow Moss":0,"Wolf Pelt":0,"Mist Pearl":0,"Dark Resin":0,"Ironwood":0,"Mithril Flake":0,"Swamp Amber":0,"Sea Crystal":0,"Pearl":0,"Saltstone":0,"Coral":0,"Siren Scale":0,"Tideglass":0,"Djinn Ash":0,"Stormglass":0,"Cloud Feather":0,"Sky Iron":0,"Giant Bone":0,"Lightning Core":0,"Wind Silk":0,"Everfrost":0,"Bone Dust":0,"Grave Wax":0,"Black Iron":0,"Crypt Amber":0,"Death Silk":0,"Hellglass":0,"Cursed Steel":0,"Abyssal Alloy":0,"Demon Heart":0,"Black Crystal":0,"Royal Hellstone":0,"Soulsteel":0,"Infernal Ruby":0},
-soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,randomNPCs:{},sideQuests:[],renown:0,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,selectedClassSkill:null,activeSummon:null,tempAttackBuff:0,tempDefenseBuff:0,tempHaste:0,skipEnemyTurn:false,potions:{},statuses:[],bestiary:{},reputation:{},activeWorldEvent:null,campCooldown:0,timeOfDay:8,daysPassed:1,landmarksFound:{},achievements:{},title:"Wayfarer",selectedQuickPotion:null,discoveredLocations:[0,1,2,3],worldMapSeed:482731,weather:{},factions:{Wardens:0,Arcanists:0,Merchants:0,Freeblades:0},bounties:[],minorSites:{},regionalHarvest:{},location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
+soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,randomNPCs:{},sideQuests:[],renown:0,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,selectedClassSkill:null,activeSummon:null,tempAttackBuff:0,tempDefenseBuff:0,tempHaste:0,skipEnemyTurn:false,potions:{},statuses:[],bestiary:{},reputation:{},activeWorldEvent:null,campCooldown:0,timeOfDay:8,daysPassed:1,landmarksFound:{},achievements:{},title:"Wayfarer",selectedQuickPotion:null,discoveredLocations:[0,1,2,3],worldMapSeed:482731,weather:{},factions:{Wardens:0,Arcanists:0,Merchants:0,Freeblades:0},bounties:[],minorSites:{},regionalHarvest:{},travelingMerchant:null,worldBosses:[],regionDanger:{},treasureMaps:[],townFestivals:{},location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
 dungeon:{active:false,name:null,roomsEntered:0,targetRooms:0,blocked:null,bossReady:false,bossDefeated:false,encounter:null,boss:null,clearedRooms:0}}}
-let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.potions=Object.assign({},x.potions||{});s.bestiary=Object.assign({},x.bestiary||{});s.reputation=Object.assign({},x.reputation||{});s.statuses=Array.isArray(x.statuses)?x.statuses:[];s.landmarksFound=Object.assign({},x.landmarksFound||{});s.achievements=Object.assign({},x.achievements||{});if(typeof x.timeOfDay==="number")s.timeOfDay=x.timeOfDay;if(typeof x.daysPassed==="number")s.daysPassed=x.daysPassed;if(typeof x.title==="string")s.title=x.title;if(typeof x.selectedQuickPotion==="string")s.selectedQuickPotion=x.selectedQuickPotion;if(typeof x.worldMapSeed==="number")s.worldMapSeed=x.worldMapSeed;s.weather=Object.assign({},x.weather||{});s.factions=Object.assign({Wardens:0,Arcanists:0,Merchants:0,Freeblades:0},x.factions||{});s.bounties=Array.isArray(x.bounties)?x.bounties:[];s.minorSites=Object.assign({},x.minorSites||{});s.regionalHarvest=Object.assign({},x.regionalHarvest||{});s.discoveredLocations=Array.isArray(x.discoveredLocations)&&x.discoveredLocations.length?x.discoveredLocations:[0,1,2,3];s.questProgress=Object.assign({},x.questProgress||{});s.randomNPCs=Object.assign({},x.randomNPCs||{});s.sideQuests=Array.isArray(x.sideQuests)?x.sideQuests:[];if(typeof x.renown==="number")s.renown=x.renown;s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
+let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.potions=Object.assign({},x.potions||{});s.bestiary=Object.assign({},x.bestiary||{});s.reputation=Object.assign({},x.reputation||{});s.statuses=Array.isArray(x.statuses)?x.statuses:[];s.landmarksFound=Object.assign({},x.landmarksFound||{});s.achievements=Object.assign({},x.achievements||{});if(typeof x.timeOfDay==="number")s.timeOfDay=x.timeOfDay;if(typeof x.daysPassed==="number")s.daysPassed=x.daysPassed;if(typeof x.title==="string")s.title=x.title;if(typeof x.selectedQuickPotion==="string")s.selectedQuickPotion=x.selectedQuickPotion;if(typeof x.worldMapSeed==="number")s.worldMapSeed=x.worldMapSeed;s.weather=Object.assign({},x.weather||{});s.factions=Object.assign({Wardens:0,Arcanists:0,Merchants:0,Freeblades:0},x.factions||{});s.bounties=Array.isArray(x.bounties)?x.bounties:[];s.minorSites=Object.assign({},x.minorSites||{});s.regionalHarvest=Object.assign({},x.regionalHarvest||{});s.travelingMerchant=x.travelingMerchant||null;s.worldBosses=Array.isArray(x.worldBosses)?x.worldBosses:[];s.regionDanger=Object.assign({},x.regionDanger||{});s.treasureMaps=Array.isArray(x.treasureMaps)?x.treasureMaps:[];s.townFestivals=Object.assign({},x.townFestivals||{});s.discoveredLocations=Array.isArray(x.discoveredLocations)&&x.discoveredLocations.length?x.discoveredLocations:[0,1,2,3];s.questProgress=Object.assign({},x.questProgress||{});s.randomNPCs=Object.assign({},x.randomNPCs||{});s.sideQuests=Array.isArray(x.sideQuests)?x.sideQuests:[];if(typeof x.renown==="number")s.renown=x.renown;s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
 if(!s.flags.soulCrystalObjectMigration){
   let legacyFilled=Number((x.materials||{})["Soul Crystal (Filled)"]||0);
   let legacyEmpty=Number((x.materials||{})["Soul Crystal (Empty)"]||0);
@@ -785,7 +793,7 @@ function enemy(){
 }
 function levelUp(){while(s.xp>=s.xpNeed){s.xp-=s.xpNeed;s.level++;s.xpNeed=Math.floor(s.xpNeed*1.28);s.baseHp+=3;s.hp=maxHp();s.mana=maxMana();log("Level up! You are now level "+s.level+". HP and mana restored.")}}
 function loot(mult=1){let g=Math.floor((8+s.level*3)*mult*(1+attrsTotal("gold"))),xp=Math.floor((12+s.level*3)*mult*(1+attrsTotal("xp")+s.bonusXP));s.gold+=g;s.xp+=xp;if(Math.random()<.35){s.ore+=1+rnd(2);log("You recover forging ore.")}if(Math.random()<.16){let it=makeItem(Math.random()<.55?"weapon":"armor",2);s.inventory.push(it);log("Loot wheel: "+it.rarity+" "+it.name+" ["+it.attr.name+"].")}log("Reward: "+g+" gold, "+xp+" XP.");levelUp()}
-function win(){let dead={...s.enemy};updateBounties(dead.name);let roadDestination=dead.roadAmbush?dead.pendingDestination:null;s.kills++;s.questProgress["kills_"+area().name]=Number(s.questProgress["kills_"+area().name]||0)+1;
+function win(){let dead={...s.enemy};updateBounties(dead.name);modifyRegionDanger(area().name,-2);if(dead.worldBossId){let wb=s.worldBosses.find(x=>x.id===dead.worldBossId);if(wb){wb.defeated=true;s.gold+=100+wb.level*10;s.renown+=3;log("World Boss defeated! Renown +3 and a massive bounty paid.")}}let roadDestination=dead.roadAmbush?dead.pendingDestination:null;s.kills++;s.questProgress["kills_"+area().name]=Number(s.questProgress["kills_"+area().name]||0)+1;
  if(s.mode==="campaign"){if(dead.finalBoss){s.finalBossDefeated=true;log("Demon Lord Malachar is defeated. Valedorn survives.");}}
  captureSoul(dead,false);if(dead.elite&&/(Wandering Champion|Ancient Beast|Monster Nest)/.test(dead.name)){s.gold+=25+s.level*4;s.renown++;s.activeWorldEvent=null;log("Elite hunt complete. Bonus gold and Renown +1.")}loot((s.enemy.elite?1.8:1)*(dead.lootMult||1));s.enemy=null;
  if(roadDestination!==null&&areas[roadDestination]){
@@ -821,10 +829,11 @@ function explore(){
 
  if(rollWorldEvent()){save();render();return;}
  if(discoverLandmark()){save();render();return;}
- if(discoverConnectedRegion()){save();render();return;}if(discoverMinorSite()){save();render();return;}
+ if(discoverConnectedRegion()){save();render();return;}if(discoverMinorSite()){save();render();return;}if(maybeSpawnWorldBoss()){save();render();return;}
 
  let roll=Math.random();
- if(roll<.42){
+ let dangerBonus=(regionDangerValue()-50)/300;
+ if(roll<Math.max(.30,Math.min(.62,.42+dangerBonus))){
    enemy();
    if(s.enemy){
      $("result").textContent="Wheel: ENCOUNTER";
@@ -1057,7 +1066,7 @@ function renderCreator(){
  $("creatorPreview").innerHTML='<div class="item"><b>'+creatorState.race+' '+creatorState.className+'</b><div class="small">'+race.desc+' '+cl.desc+'</div></div><div class="item"><b>'+bg.name+'</b><div class="small">Starts in '+bg.start+' • '+bg.perk+'</div></div><div class="item"><b>Wealth</b><div class="small">Rolled secretly on a d100 when the game begins. Possible classes: Destitute, Poor, Common, Comfortable, Wealthy, Noble.</div></div>';
 }
 
-function currentTown(){return area().type==="town"}function townRep(n=area().name){return Number(s.reputation[n]||0)}function gainTownRep(n=1){if(currentTown())s.reputation[area().name]=townRep()+n}function townPriceMult(){return Math.max(.72,1-townRep()*.01)}
+function currentTown(){return area().type==="town"}function townRep(n=area().name){return Number(s.reputation[n]||0)}function gainTownRep(n=1){if(currentTown())s.reputation[area().name]=townRep()+n}function townPriceMult(){return Math.max(.65,(1-townRep()*.01)*festivalBonus().buy)}
 let jobTimer=null;
 function startJobChallenge(jobIndex){
  if(!currentTown()){log("You need to be in a town to take a job.");return}
@@ -1104,7 +1113,7 @@ function finishJob(success,message){
  const job=townJobs[s.jobChallenge.jobIndex];
  s.jobShifts=Math.max(0,s.jobShifts-1);
  if(success){
-   let pay=job.pay+Math.floor(s.level*1.5);s.gold+=pay;
+   let pay=job.pay+Math.floor(s.level*1.5);pay=Math.floor(pay*festivalBonus().job);s.gold+=pay;
    if(job.ore){s.ore+=job.ore;s.materials.Iron=(s.materials.Iron||0)+job.ore}
    gainTownRep(1);log(job.name+" completed: "+message+" You earn "+pay+" gold"+(job.ore?" and "+job.ore+" Iron.":"."));
  }else log(job.name+" failed: "+message+" No pay.");
@@ -1440,13 +1449,9 @@ function wmPRNG(a){
    return((t^t>>>14)>>>0)/4294967296;
  }
 }
-function wmCoast(cx,cy,rx,ry,n,rng){
- let p=[];
- for(let i=0;i<n;i++){
-   let a=i/n*Math.PI*2;
-   let m=1+Math.sin(a*3+rng()*.8)*.11+Math.sin(a*7+rng()*.8)*.06+(rng()-.5)*.18;
-   p.push({x:cx+Math.cos(a)*rx*m,y:cy+Math.sin(a)*ry*m});
- }
+function wmCoast(cx,cy,rx,ry,n,rng,rotation=0,rough=.22){
+ let p=[],h1=2+Math.floor(rng()*4),h2=5+Math.floor(rng()*5),h3=9+Math.floor(rng()*6),ph1=rng()*Math.PI*2,ph2=rng()*Math.PI*2,ph3=rng()*Math.PI*2;
+ for(let i=0;i<n;i++){let a=i/n*Math.PI*2,noise=Math.sin(a*h1+ph1)*rough*.34+Math.sin(a*h2+ph2)*rough*.20+Math.sin(a*h3+ph3)*rough*.11+(rng()-.5)*rough*.34,m=1+noise,lx=Math.cos(a)*rx*m,ly=Math.sin(a)*ry*m,cr=Math.cos(rotation),sr=Math.sin(rotation);p.push({x:cx+lx*cr-ly*sr,y:cy+lx*sr+ly*cr})}
  return p;
 }
 function wmBounds(p){
@@ -1479,36 +1484,8 @@ let worldMapRivers=[],worldMapMountains=[],worldMapRegions=[],worldMinorPoints=[
 function wmRegionName(rng){return regionNameA[Math.floor(rng()*regionNameA.length)]+regionNameB[Math.floor(rng()*regionNameB.length)]}
 function generateWorldDepth(rng){
  worldMapRivers=[];worldMapMountains=[];worldMapRegions=[];worldMinorPoints=[];
- for(let i=0;i<worldMapLand.length;i++){
-   let L=worldMapLand[i],bio=worldBiomes[Math.floor(rng()*worldBiomes.length)];
-   worldMapRegions.push({land:i,name:wmRegionName(rng),biome:bio,x:(L.b.minX+L.b.maxX)/2,y:(L.b.minY+L.b.maxY)/2});
-   if(i<3){
-     // mountain chain
-     let chain=[],count=5+Math.floor(rng()*5);
-     for(let m=0;m<count;m++){
-       let t=(m+1)/(count+1);
-       let x=L.b.minX+(L.b.maxX-L.b.minX)*t;
-       let y=(L.b.minY+L.b.maxY)/2 + Math.sin(t*Math.PI*2+rng()*2)*90;
-       if(wmInside(x,y,L.p))chain.push({x,y,s:18+rng()*16});
-     }
-     worldMapMountains.push(chain);
-     // river from highlands toward an edge
-     if(chain.length){
-       let start=chain[Math.floor(chain.length/2)],end={x:L.b.minX+30+rng()*(L.b.maxX-L.b.minX-60),y:L.b.maxY-20};
-       worldMapRivers.push({points:[
-         {x:start.x,y:start.y},
-         {x:start.x+(rng()-.5)*120,y:start.y+120},
-         {x:(start.x+end.x)/2+(rng()-.5)*100,y:(start.y+end.y)/2},
-         end
-       ]});
-     }
-   }
- }
- // decorative/discoverable minor sites
- for(let i=0;i<34;i++){
-   let L=worldMapLand[Math.floor(rng()*worldMapLand.length)],q=wmPoint(L,rng),type=worldMinorSiteTypes[Math.floor(rng()*worldMinorSiteTypes.length)];
-   worldMinorPoints.push({id:"ms_"+i,x:q.x,y:q.y,type,name:type+" "+(i+1),landIndex:worldMapLand.indexOf(L)});
- }
+ for(let i=0;i<worldMapLand.length;i++){let L=worldMapLand[i],bio=worldBiomes[Math.floor(rng()*worldBiomes.length)],c=wmLandCenter(L);worldMapRegions.push({land:i,name:wmRegionName(rng),biome:bio,x:c.x,y:c.y});if(L.major){let chains=Math.floor(rng()*4);for(let ch=0;ch<chains;ch++){let chain=[],count=4+Math.floor(rng()*7),angle=rng()*Math.PI,center=wmPoint(L,rng),length=120+rng()*300;for(let m=0;m<count;m++){let t=count===1?0:(m/(count-1)-.5),x=center.x+Math.cos(angle)*length*t+(rng()-.5)*35,y=center.y+Math.sin(angle)*length*t+(rng()-.5)*35;if(wmInside(x,y,L.p))chain.push({x,y,s:15+rng()*20})}if(chain.length)worldMapMountains.push(chain)}let rivers=Math.floor(rng()*4);for(let rv=0;rv<rivers;rv++){let start=wmPoint(L,rng),edge=wmNearestLandPoint(L,start),pts=[start],segments=3+Math.floor(rng()*4);for(let k=1;k<segments;k++){let t=k/segments;pts.push({x:start.x+(edge.x-start.x)*t+(rng()-.5)*100*(1-t),y:start.y+(edge.y-start.y)*t+(rng()-.5)*100*(1-t)})}pts.push(edge);worldMapRivers.push({points:pts})}}}
+ let siteCount=24+Math.floor(rng()*31);for(let i=0;i<siteCount;i++){let L=worldMapLand[Math.floor(rng()*worldMapLand.length)],q=wmPoint(L,rng),type=worldMinorSiteTypes[Math.floor(rng()*worldMinorSiteTypes.length)];worldMinorPoints.push({id:'ms_'+i,x:q.x,y:q.y,type,name:type+' '+(i+1),landIndex:worldMapLand.indexOf(L)})}
 }
 
 function worldWeatherFor(areaName){
@@ -1605,42 +1582,27 @@ function regionalSpecialty(a){
  return["Herb","Iron","Leather"];
 }
 function harvestRegion(){
- if(area().type==="town"){log("There is little to harvest inside town.");return}
- let spec=regionalSpecialty(area()),item=spin(spec),mods=weatherCombatMods(),qty=Math.max(1,Math.floor((1+rnd(3))*mods.gather));
- s.materials[item]=(s.materials[item]||0)+qty;
- s.regionalHarvest[area().name]=(s.regionalHarvest[area().name]||0)+qty;
- log("Regional harvest: "+qty+" "+item+".");
- save();render();
+ if(area().type==="town"){$("harvestModalTitle").textContent="Nothing to Harvest";$("harvestModalBody").innerHTML='<p class="small">You are inside '+area().name+'. Head into the wilderness to gather regional resources.</p>';$("harvestModal").classList.add("open");return}
+ let spec=regionalSpecialty(area()),item=spin(spec),mods=weatherCombatMods(),qty=Math.max(1,Math.floor((1+rnd(3))*mods.gather)),bonus="";if(Math.random()<.08){qty+=2;bonus="Rich deposit! "}s.materials[item]=(s.materials[item]||0)+qty;s.regionalHarvest[area().name]=(s.regionalHarvest[area().name]||0)+qty;
+ $("harvestModalTitle").textContent="Harvested "+area().name;$("harvestModalBody").innerHTML='<div class="harvestResultGrid"><div class="item"><div class="small">MATERIAL</div><b>'+item+'</b></div><div class="item"><div class="small">AMOUNT</div><b>x'+qty+'</b></div><div class="item"><div class="small">WEATHER</div><b>'+worldWeatherFor(area().name)+'</b></div><div class="item"><div class="small">TOTAL HARVESTED HERE</div><b>'+s.regionalHarvest[area().name]+'</b></div></div><p class="small">'+bonus+'Regional specialties: '+spec.join(', ')+'.</p>';$("harvestModal").classList.add("open");log("Regional harvest: "+qty+" "+item+".");save();render();
 }
 
+
+function wmLandCenter(L){return{x:(L.b.minX+L.b.maxX)/2,y:(L.b.minY+L.b.maxY)/2}}
+function wmLandRadius(L){return Math.max(L.b.maxX-L.b.minX,L.b.maxY-L.b.minY)/2}
+function wmTooClose(cx,cy,rx,ry,lands,pad=80){for(const L of lands){let c=wmLandCenter(L),r=wmLandRadius(L);if(Math.hypot(cx-c.x,cy-c.y)<r+Math.max(rx,ry)+pad)return true}return false}
+function wmRandomLand(rng,lands,major){for(let tries=0;tries<150;tries++){let rx=major?260+rng()*330:48+rng()*115,ry=major?190+rng()*250:36+rng()*95,cx=120+rx+rng()*(WORLD_MAP_W-240-rx*2),cy=90+ry+rng()*(WORLD_MAP_H-180-ry*2);if(!wmTooClose(cx,cy,rx,ry,lands,major?-40:20)){let rot=(rng()-.5)*1.45,p=wmCoast(cx,cy,rx,ry,major?60+Math.floor(rng()*24):28+Math.floor(rng()*18),rng,rot,major?.34:.46);return{p,b:wmBounds(p),major,rotation:rot}}}return null}
+function wmNearestLandPoint(L,target){let best=L.p[0],bd=Infinity;for(const p of L.p){let d=Math.hypot(p.x-target.x,p.y-target.y);if(d<bd){bd=d;best=p}}return best}
 function generateWayfarerWorldMap(){
- const rng=wmPRNG((s.worldMapSeed||482731)>>>0);
- worldMapLand=[];worldMapLocPoints=[];worldMapRoads=[];
-
- const centers=[{x:690,y:760},{x:1490,y:650},{x:1290,y:1160}];
- for(let i=0;i<3;i++){
-   let p=wmCoast(centers[i].x,centers[i].y,350+rng()*170,255+rng()*130,64,rng);
-   worldMapLand.push({p,b:wmBounds(p)});
- }
- for(let i=0;i<8;i++){
-   let p=wmCoast(160+rng()*(WORLD_MAP_W-320),130+rng()*(WORLD_MAP_H-260),55+rng()*95,40+rng()*70,34,rng);
-   worldMapLand.push({p,b:wmBounds(p)});
- }
-
- for(let i=0;i<areas.length;i++){
-   let L=worldMapLand[i%worldMapLand.length];
-   let q=wmPoint(L,rng);
-   worldMapLocPoints.push({idx:i,x:q.x,y:q.y});
- }
-
- for(let i=0;i<areas.length;i++){
-   let a=areas[i],pa=worldMapLocPoints[i],links=worldConnections[a.name]||[];
-   for(const n of links){
-     let j=areas.findIndex(z=>z.name===n);
-     if(j<0||j<=i)continue;
-     worldMapRoads.push({a:pa,b:worldMapLocPoints[j]});
-   }
- }
+ const rng=wmPRNG((s.worldMapSeed||482731)>>>0);worldMapLand=[];worldMapLocPoints=[];worldMapRoads=[];
+ let majorCount=2+Math.floor(rng()*4);
+ for(let i=0;i<majorCount;i++){let L=wmRandomLand(rng,worldMapLand,true);if(L)worldMapLand.push(L)}
+ while(worldMapLand.filter(x=>x.major).length<2){let cx=450+worldMapLand.length*650,cy=650+rng()*250,rx=340+rng()*140,ry=250+rng()*100,p=wmCoast(cx,cy,rx,ry,68,rng,(rng()-.5),.34);worldMapLand.push({p,b:wmBounds(p),major:true})}
+ let islandCount=5+Math.floor(rng()*12);for(let i=0;i<islandCount;i++){let L=wmRandomLand(rng,worldMapLand,false);if(L)worldMapLand.push(L)}
+ let majorLands=worldMapLand.filter(x=>x.major),shuffled=areas.map((a,i)=>i).sort(()=>rng()-.5),assigned=[];
+ for(let n=0;n<shuffled.length;n++){let idx=shuffled[n],L=n<majorLands.length?majorLands[n]:(rng()<.78?majorLands[Math.floor(rng()*majorLands.length)]:worldMapLand[Math.floor(rng()*worldMapLand.length)]),q=wmPoint(L,rng);for(let tries=0;tries<80;tries++){if(assigned.every(p=>Math.hypot(p.x-q.x,p.y-q.y)>95))break;q=wmPoint(L,rng)}assigned.push({idx,x:q.x,y:q.y,land:worldMapLand.indexOf(L)})}
+ worldMapLocPoints=assigned.sort((a,b)=>a.idx-b.idx);
+ for(let i=0;i<areas.length;i++){let a=areas[i],pa=worldMapLocPoints[i],links=worldConnections[a.name]||[];for(const n of links){let j=areas.findIndex(z=>z.name===n);if(j<0||j<=i)continue;worldMapRoads.push({a:pa,b:worldMapLocPoints[j],sea:pa.land!==worldMapLocPoints[j].land})}}
  generateWorldDepth(rng);worldMapReady=true;
 }
 function wmScreen(x,y){
@@ -2085,7 +2047,19 @@ const achievementDefs=[
 function achievementToast(t){let p=$("achievementPop");if(!p)return;p.textContent=t;p.classList.add("show");setTimeout(()=>p.classList.remove("show"),2200)}
 function checkAchievements(){for(const a of achievementDefs){if(!s.achievements[a.id]&&a.test()){s.achievements[a.id]=true;s.title=a.title;s.gold+=20;achievementToast("Achievement: "+a.name+" • Title: "+a.title)}}}
 function renderAchievements(){if($("titleLabel"))$("titleLabel").textContent=s.title;if($("achievementList"))$("achievementList").innerHTML=achievementDefs.map(a=>'<div class="item"><b>'+(s.achievements[a.id]?'✓ ':'🔒 ')+a.name+'</b><div class="small">Title: '+a.title+'</div></div>').join("")}
-function renderWorldSystems(){
+
+function regionDangerValue(name=area().name){if(typeof s.regionDanger[name]!=="number"){let a=areas.find(x=>x.name===name),base=a?.min||1;s.regionDanger[name]=Math.max(1,Math.min(100,Math.floor(base*4+5+rnd(22))))}return s.regionDanger[name]}
+function modifyRegionDanger(name,amount){s.regionDanger[name]=Math.max(1,Math.min(100,regionDangerValue(name)+amount))}
+function maybeTravelingMerchant(){if(s.travelingMerchant&&s.travelingMerchant.expiresDay<s.daysPassed)s.travelingMerchant=null;if(!s.travelingMerchant&&Math.random()<.08){let town=spin(areas.filter(a=>a.type==="town"));s.travelingMerchant={town:town.name,expiresDay:s.daysPassed+2,stock:[{name:"Traveler's Cache",cost:35+s.level*3,type:"cache"},{name:"Rare Soul Crystal",cost:70+s.level*5,type:"soul"},{name:"Treasure Map",cost:55+s.level*4,type:"map"}]};log("A traveling merchant has arrived in "+town.name+".")}}
+function buyTravelingMerchant(type){let m=s.travelingMerchant;if(!m||m.town!==area().name)return;let it=m.stock.find(x=>x.type===type);if(!it||s.gold<it.cost){log("You cannot afford that.");return}s.gold-=it.cost;if(type==="cache"){let mat=spin(regionalSpecialty(area()));s.materials[mat]=(s.materials[mat]||0)+3;log("The cache contains 3 "+mat+".")}else if(type==="soul"){addSoulCrystal("Rare");log("You buy a Rare Soul Crystal.")}else{createTreasureMap();log("You buy a treasure map.")}save();render()}
+function ensureWorldBosses(){if(s.worldBosses.length)return;let candidates=areas.filter(a=>a.type!=="town"&&a.min>=5);for(let i=0;i<Math.min(4,candidates.length);i++){let a=candidates.splice(rnd(candidates.length),1)[0];s.worldBosses.push({id:"wb_"+i,name:spin(["The Hollow King","Stormmaw","The Pale Colossus","Cinder Tyrant","Gravetide","The Glass Wyrm"]),area:a.name,level:Math.max(a.min,s.level+6+i*2),defeated:false})}}
+function maybeSpawnWorldBoss(){let b=s.worldBosses.find(x=>!x.defeated&&x.area===area().name);if(!b||Math.random()>.06||s.enemy)return false;let lv=b.level,hp=Math.floor(90+lv*18);s.enemy={name:b.name,lv,hp,max:hp,atk:Math.floor(9+lv*2.3),def:Math.floor(4+lv*.9),elite:true,boss:true,worldBossId:b.id,identified:false};$("result").textContent="WORLD BOSS";log("World Boss encountered: "+b.name+".",true);return true}
+function createTreasureMap(){let a=spin(areas.filter(a=>a.type!=="town"));s.treasureMaps.push({id:"tm_"+Date.now()+"_"+Math.random(),area:a.name,found:false,reward:45+s.level*10})}
+function searchTreasureMap(){let map=s.treasureMaps.find(x=>!x.found&&x.area===area().name);if(!map){log("You have no treasure map pointing to this region.");return}if(Math.random()<.55){map.found=true;s.gold+=map.reward;let item=makeItem(Math.random()<.5?"weapon":"armor",2+rnd(3));s.inventory.push(item);log("Treasure found! "+map.reward+" gold and "+item.name+".")}else log("You search the marked region but the landmarks do not line up yet.");save();render()}
+function townFestivalFor(name=area().name){if(!s.townFestivals[name]||s.townFestivals[name].day<s.daysPassed){if(Math.random()<.16)s.townFestivals[name]={day:s.daysPassed+1,type:spin(["Harvest Fair","Founders' Day","Moon Festival","Tournament","Market Jubilee"])};else s.townFestivals[name]={day:s.daysPassed-1,type:null}}let f=s.townFestivals[name];return f&&f.type&&f.day>=s.daysPassed?f:null}
+function festivalBonus(){let f=currentTown()?townFestivalFor():null;return f?{buy:.88,job:1.25}:{buy:1,job:1}}
+function renderTravelingMerchant(){if(!currentTown())return"";let m=s.travelingMerchant;if(!m||m.town!==area().name)return"";return '<div class="item worldAlert"><b>Traveling Merchant</b><div class="small">Leaves after Day '+m.expiresDay+'.</div>'+m.stock.map(x=>'<button data-travelmerchant="'+x.type+'">'+x.name+' • '+x.cost+'g</button>').join('')+'</div>'}
+function renderWorldSystems(){ensureWorldBosses();maybeTravelingMerchant();
  ensureBounties();
  if($("factionPanel")){
    $("factionPanel").innerHTML=Object.entries(s.factions).map(([n,v])=>'<div class="factionCard"><div class="row"><b>'+n+'</b><span class="pill">'+factionTier(v)+'</span></div><div class="small">Standing '+v+'</div></div>').join("");
@@ -2093,6 +2067,8 @@ function renderWorldSystems(){
  if($("bountyPanel")){
    $("bountyPanel").innerHTML=s.bounties.map(b=>'<div class="item"><div class="row"><b>'+b.target+'</b><span class="pill">'+b.faction+'</span></div><div class="small">'+b.area+' • '+Math.min(b.kills,b.need)+'/'+b.need+' defeated</div><div class="small">Reward: '+b.rewardGold+'g + '+b.rewardXP+' XP</div><button data-claimbounty="'+b.id+'" '+(!b.complete?'disabled':'')+'>CLAIM</button></div>').join("");
  }
+
+ if($("worldActivityPanel")){let danger=regionDangerValue(),f=currentTown()?townFestivalFor():null,boss=s.worldBosses.find(x=>!x.defeated&&x.area===area().name),maps=s.treasureMaps.filter(x=>!x.found&&x.area===area().name).length;$("worldActivityPanel").innerHTML='<div class="row"><span class="pill">Danger '+danger+'/100</span><span class="pill">'+worldWeatherFor(area().name)+'</span></div><div class="dangerMeter"><span style="width:'+danger+'%"></span></div>'+(boss?'<div class="worldDepthNote">Rumor: <b>'+boss.name+'</b> has been sighted here.</div>':'')+(maps?'<div class="worldDepthNote">You have '+maps+' treasure map'+(maps===1?'':'s')+' pointing here.</div>':'')+(f?'<div class="worldDepthNote">Festival: <b>'+f.type+'</b> is underway.</div>':'')+renderTravelingMerchant()}
 }
 function render(){
  s.mana=Math.min(maxMana(),Math.max(0,s.mana));
@@ -2162,6 +2138,7 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.castspell){castKnownSpell(b.dataset.castspell,false);return}
  if(b.dataset.castdungeon){castKnownSpell(b.dataset.castdungeon,true);return}
  if(b.dataset.selectquickpotion){s.selectedQuickPotion=b.dataset.selectquickpotion;let p=$(b.dataset.quickmode==="dungeon"?"quickPotionPickerDungeon":"quickPotionPicker");if(p)p.classList.remove("open");save();render();return}
+ if(b.dataset.travelmerchant){buyTravelingMerchant(b.dataset.travelmerchant);return}
  if(b.dataset.claimbounty){claimBounty(b.dataset.claimbounty);return}
  if(b.dataset.brew){brewPotion(b.dataset.brew);return}
  if(b.dataset.usepotion){usePotion(b.dataset.usepotion);return}
@@ -2186,11 +2163,14 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.dir){moveDungeon(b.dataset.dir);return}
  if(b.dataset.equip){equip(b.dataset.equip);return}if(b.dataset.upitem){upgradeItem(b.dataset.upitem);return}if(b.dataset.stat){let k=b.dataset.stat,c=30+s.upgrade[k]*30;if(s.gold>=c){s.gold-=c;s.upgrade[k]++;s.hp=Math.min(maxHp(),s.hp+(k==="hp"?10:0));save();render()}return}
  switch(b.dataset.a){
+ case"closeHarvestModal":$("harvestModal").classList.remove("open");break;
+ case"searchTreasureMap":searchTreasureMap();break;
  case"harvestRegion":harvestRegion();break;
  case"worldMapCenter":centerWorldCanvas();break;
  case"worldMapZoomIn":{let v=$("worldMapViewport");if(v)zoomWorldCanvas(v.clientWidth/2,v.clientHeight/2,1.22)}break;
  case"worldMapZoomOut":{let v=$("worldMapViewport");if(v)zoomWorldCanvas(v.clientWidth/2,v.clientHeight/2,.82)}break;
  case"worldMapToggleLabels":worldMapLabels=!worldMapLabels;drawWorldCanvas();break;
+ case"worldMapReroll":s.worldMapSeed=Math.floor(Math.random()*900000000)+100000;worldMapReady=false;generateWayfarerWorldMap();centerWorldCanvas();save();renderWorldMap();break;
  case"closeCampModal":$("campModal").classList.remove("open");break;
  case"toggleQuickPotionPicker":$("quickPotionPicker").classList.toggle("open");break;
  case"toggleQuickPotionPickerDungeon":$("quickPotionPickerDungeon").classList.toggle("open");break;
