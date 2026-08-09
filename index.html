@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG v3.1</title>
+<title>Wayfarer: Wheel & Dice RPG v3.2</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
@@ -109,11 +109,19 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 .prosperityBar,.affinityBar,.influenceBar{height:8px;background:#252b36;border-radius:999px;overflow:hidden;margin-top:5px}.prosperityBar>span,.affinityBar>span,.influenceBar>span{display:block;height:100%;background:#758c8a}
 .immersiveCard{border-left:3px solid #7b8a74;padding-left:8px}
 @media(max-width:420px){.actionResultGrid{grid-template-columns:1fr}}
+
+.enemyAlert{display:none;position:sticky;top:0;z-index:95;margin:-1px auto 8px;max-width:1050px;background:#571f27;border:1px solid #a84d59;color:#fff;padding:9px 11px;border-radius:0 0 13px 13px;box-shadow:0 7px 22px #0008}
+.enemyAlert.show{display:flex;align-items:center;gap:9px}.enemyAlertText{flex:1;min-width:0}.enemyAlertTitle{font-size:11px;font-weight:900;letter-spacing:.06em}.enemyAlertName{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.enemyAlert button{width:auto;white-space:nowrap;background:#f0d9b5;color:#261313;border-color:#f0d9b5;padding:7px 9px}
+.adventureWorldBar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:9px;margin-bottom:9px;border:1px solid var(--line);border-radius:14px;background:#121925}
+.adventureWorldCell{min-width:0;background:#1a2230;border:1px solid #2b3544;border-radius:10px;padding:7px 8px}.adventureWorldCell .small{font-size:9px;letter-spacing:.05em}.adventureWorldValue{font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+@media(max-width:560px){.adventureWorldBar{grid-template-columns:1fr 1fr}.enemyAlert{border-radius:0 0 11px 11px}}
 </style></head>
 <body><div id="actionModal" class="actionModal"><div class="actionModalCard"><b id="actionModalTitle">Result</b><div id="actionModalBody"></div><button data-a="closeActionModal">CONTINUE</button></div></div>
 <div id="harvestModal" class="harvestModal"><div class="harvestModalCard"><b id="harvestModalTitle">Harvest Result</b><div id="harvestModalBody"></div><button data-a="closeHarvestModal">CONTINUE</button></div></div>
 <div id="campModal" class="campModal"><div class="campModalCard"><b id="campModalTitle">Camp Result</b><div class="small" id="campModalText" style="margin:10px 0"></div><button data-a="closeCampModal">CONTINUE</button></div></div>
 <div id="achievementPop" class="achievementPop"></div>
+<div id="enemyAlert" class="enemyAlert"><div class="enemyAlertText"><div class="enemyAlertTitle">⚔ ACTIVE COMBAT</div><div class="enemyAlertName" id="enemyAlertName">An enemy is attacking you.</div></div><button data-a="jumpToCombat" id="enemyAlertJump">COMBAT</button></div>
 <div id="app">
 <h1>Wayfarer</h1><div class="sub">An open-world text RPG driven by dice, wheels, shifting dungeons, questionable treasure, and your own bad decisions.</div><button class="secondary topCharacterBtn" data-tab="characterTab">CHARACTER</button>
 
@@ -147,6 +155,12 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 <div class="small" id="location"></div><div class="small" id="modeText"></div></div>
 
 <section id="worldTab">
+<div class="adventureWorldBar" id="adventureWorldBar">
+<div class="adventureWorldCell"><div class="small">TIME</div><div class="adventureWorldValue" id="advTime">Day 1 • Day</div></div>
+<div class="adventureWorldCell"><div class="small">WEATHER</div><div class="adventureWorldValue" id="advWeather">Clear</div></div>
+<div class="adventureWorldCell"><div class="small">REGION</div><div class="adventureWorldValue" id="advRegion">Unknown</div></div>
+<div class="adventureWorldCell"><div class="small">DANGER</div><div class="adventureWorldValue" id="advDanger">1 / 100</div></div>
+</div>
 <div class="card"><b>World Activity</b><div id="worldActivityPanel" class="small">The roads are quiet.</div></div>
 <div class="card"><b>Current Area</b><div class="wheel" id="areaTitle"></div><div class="small" id="areaDesc"></div><div class="grid"><button data-a="explore">EXPLORE</button><button class="secondary" data-a="travel">TRAVEL</button></div><button class="blue" data-a="dungeon">SEARCH FOR DUNGEON</button><button class="secondary" data-a="camp">MAKE CAMP</button><button class="secondary" data-a="harvestRegion">HARVEST REGION</button><button class="secondary" data-a="searchTreasureMap">SEARCH TREASURE MAP</button><div class="grid"><button class="secondary" data-a="cookMeal">COOK MEAL</button><button class="secondary" data-a="fish">FISH</button></div><div id="cookPanel" class="hidden"></div></div>
 <div class="card" id="townServices">
@@ -2369,6 +2383,25 @@ function renderTenFeatureSystems(){
    $("cookPanel").innerHTML=Object.entries(mealRecipes).map(([n,r])=>'<div class="item recipeCard"><b>'+n+'</b><div class="small">'+r.desc+'</div><div class="small">Needs: '+Object.entries(r.need).map(([k,v])=>v+' '+k).join(", ")+'</div><button data-cookmeal="'+n+'" '+(!canCook(r)?'disabled':'')+'>COOK</button></div>').join("");
  }
 }
+function activeCombatInfo(){
+ if(s.enemy&&s.enemy.hp>0)return{type:"world",name:s.enemy.name,hp:s.enemy.hp,max:s.enemy.max||s.enemy.hp};
+ if(s.dungeon&&Array.isArray(s.dungeon.encounter)){let living=s.dungeon.encounter.filter(e=>e&&e.hp>0);if(living.length){let t=living[0];return{type:"dungeon",name:living.length>1?t.name+" + "+(living.length-1)+" more":t.name,hp:t.hp,max:t.max||t.hp}}}
+ return null;
+}
+function renderCombatAlert(){
+ let box=$("enemyAlert"),name=$("enemyAlertName"),btn=$("enemyAlertJump");if(!box||!name||!btn)return;
+ let info=activeCombatInfo();box.classList.toggle("show",!!info);if(!info)return;
+ name.textContent=info.name+" • "+Math.max(0,Math.round(info.hp))+"/"+Math.round(info.max)+" HP";btn.textContent=info.type==="dungeon"?"DUNGEON":"COMBAT";
+}
+function renderAdventureWorldBar(){
+ if(!$("adventureWorldBar"))return;let phase=timeLabel(),icon=phase==="Night"?"☾":phase==="Dusk"?"◐":phase==="Dawn"?"◑":"☀";
+ $("advTime").textContent=icon+" Day "+s.daysPassed+" • "+phase;$("advWeather").textContent=worldWeatherFor(area().name);$("advRegion").textContent=area().name;$("advDanger").textContent=effectiveRegionDanger()+" / 100";
+}
+function jumpToActiveCombat(){
+ let info=activeCombatInfo();if(!info)return;
+ if(info.type==="dungeon"){showTab("dungeonTab");setTimeout(()=>{let el=$("dungeonEnemyTitle")||$("dungeonTab");if(el)el.scrollIntoView({behavior:"smooth",block:"center"})},40)}
+ else{showTab("worldTab");setTimeout(()=>{let el=$("combatCard")||$("enemyName");if(el)el.scrollIntoView({behavior:"smooth",block:"center"})},40)}
+}
 function render(){
  s.mana=Math.min(maxMana(),Math.max(0,s.mana));
  $("setup").classList.toggle("hidden",s.started);$("game").classList.toggle("hidden",!s.started);$("tabs").classList.toggle("hidden",!s.started);if(!s.started){renderCreator();return;}
@@ -2399,7 +2432,7 @@ function render(){
 }
 if($("bestiaryList")){let bs=Object.values(s.bestiary);$("bestiaryList").innerHTML=bs.length?bs.map(x=>'<div class="item"><b>'+x.name+'</b><div class="small">Weak: '+x.affinity.weak.join(", ")+' • Resists: '+x.affinity.strong.join(", ")+'</div></div>').join(""):'<p class="small">No monsters identified yet.</p>';}
  $("worldList").innerHTML=areas.map((a,i)=>"<div class='item'><b>"+a.name+"</b><div class='small'>Recommended level "+a.min+" • "+a.type+"</div></div>").join("");
- renderTownPanel();renderForgeOptions();renderWorldMap();renderMaterialsTab();renderSpellUI();renderQuestDrop();renderMonsterCombatStats();renderSummonSlots();renderCombatSpellPickers();renderClassSkillUI();renderQuickPotion();renderAchievements();checkAchievements();renderWorldSystems();renderTenFeatureSystems();
+ renderTownPanel();renderForgeOptions();renderWorldMap();renderMaterialsTab();renderSpellUI();renderQuestDrop();renderMonsterCombatStats();renderSummonSlots();renderCombatSpellPickers();renderClassSkillUI();renderQuickPotion();renderAchievements();checkAchievements();renderWorldSystems();renderTenFeatureSystems();renderCombatAlert();renderAdventureWorldBar();
  $("dungeonTabBtn").disabled=!s.dungeon.active;
  $("dungeonState").textContent=!s.dungeon.active?"NO DUNGEON":s.dungeon.bossReady?"BOSS ROOM":"IN PROGRESS";
  $("dungeonName").textContent=s.dungeon.active?s.dungeon.name:"No dungeon discovered.";
@@ -2470,6 +2503,7 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.dir){moveDungeon(b.dataset.dir);return}
  if(b.dataset.equip){equip(b.dataset.equip);return}if(b.dataset.upitem){upgradeItem(b.dataset.upitem);return}if(b.dataset.stat){let k=b.dataset.stat,c=30+s.upgrade[k]*30;if(s.gold>=c){s.gold-=c;s.upgrade[k]++;s.hp=Math.min(maxHp(),s.hp+(k==="hp"?10:0));save();render()}return}
  switch(b.dataset.a){
+ case"jumpToCombat":jumpToActiveCombat();break;
  case"closeActionModal":$("actionModal").classList.remove("open");break;
  case"cookMeal":{let p=$("cookPanel");p.classList.toggle("hidden");renderTenFeatureSystems()}break;
  case"fish":fish();break;
