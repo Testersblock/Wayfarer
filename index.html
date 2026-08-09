@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG v3.6</title>
+<title>Wayfarer: Wheel & Dice RPG v3.7</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
@@ -278,6 +278,20 @@ body{padding-bottom:calc(92px + env(safe-area-inset-bottom)) !important}
 #xpOrbLayer{position:fixed;inset:0;pointer-events:none;z-index:210;overflow:hidden}.xpOrb{position:absolute;width:7px;height:7px;border-radius:50%;background:#76ff8c;box-shadow:0 0 7px #69ff82,0 0 14px #44cc67;opacity:0;animation:xpOrbRise var(--dur) ease-out forwards}
 @keyframes xpOrbRise{0%{transform:translate(0,0) scale(.4);opacity:0}12%{opacity:1}75%{opacity:.9}100%{transform:translate(var(--dx),calc(-55vh + var(--dy))) scale(.85);opacity:0}}
 @media(max-width:430px){.bossRewardGrid{grid-template-columns:1fr}}
+
+.marketModal,.skillGameModal{display:none;position:fixed;inset:0;background:#000b;z-index:225;align-items:center;justify-content:center;padding:16px}
+.marketModal.open,.skillGameModal.open{display:flex}
+.marketCard,.skillGameCard{width:min(520px,100%);max-height:88vh;overflow:auto;background:#171c25;border:1px solid var(--line);border-radius:18px;padding:15px;box-shadow:0 24px 70px #000c}
+.marketTabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:9px 0}.marketTabs button.active{background:#725c39;border-color:#9b7b4a}
+.marketList{max-height:58vh;overflow:auto}.marketItem{border-left:3px solid #6f6654;padding-left:9px}
+.fishTrack,.cookTrack{position:relative;height:34px;background:#111722;border:1px solid #344052;border-radius:999px;overflow:hidden;margin:12px 0}
+.fishTarget,.cookTarget{position:absolute;top:3px;bottom:3px;border-radius:999px;background:rgba(89,190,119,.42);border:1px solid #72d391}
+.fishNeedle,.cookNeedle{position:absolute;top:0;bottom:0;width:4px;background:#f3df8b;box-shadow:0 0 9px #f3df8b;transform:translateX(-2px)}
+.fishSlider{width:100%;accent-color:#78b8dc}
+.skillProgress{height:9px;background:#242b36;border-radius:999px;overflow:hidden;margin:8px 0}.skillProgress>span{display:block;height:100%;background:#69c980;transition:width .08s linear}
+.fishStatus,.cookStatus{text-align:center;font-size:12px;min-height:18px}
+.fishDifficulty{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin:6px 0}
+.foodQuality{font-weight:800;color:#e0c27c}
 </style></head>
 <body><div id="codexModal" class="codexModal"><div class="codexCard"><div class="row"><b>Creature Codex</b><button class="secondary" data-a="closeCodex">CLOSE</button></div><div class="small">Bestiary identification and combat familiarity are combined here.</div><select id="codexCreature"></select><div id="codexDetails"></div></div></div>
 <div id="actionModal" class="actionModal"><div class="actionModalCard"><b id="actionModalTitle">Result</b><div id="actionModalBody"></div><button data-a="closeActionModal">CONTINUE</button></div></div>
@@ -285,6 +299,12 @@ body{padding-bottom:calc(92px + env(safe-area-inset-bottom)) !important}
 <div id="campModal" class="campModal"><div class="campModalCard"><b id="campModalTitle">Camp Result</b><div class="small" id="campModalText" style="margin:10px 0"></div><button data-a="closeCampModal">CONTINUE</button></div></div>
 <div id="achievementPop" class="achievementPop"></div>
 <div id="weatherTint"></div><div id="weatherFx"></div><div id="xpOrbLayer"></div>
+<div id="marketModal" class="marketModal"><div class="marketCard">
+<div class="row"><b>Town Market</b><button class="secondary" data-a="closeMarketModal">CLOSE</button></div>
+<div class="small" id="marketTownLabel"></div>
+<div class="marketTabs"><button data-markettab="materials">MATERIALS</button><button data-markettab="food">FOOD</button><button data-markettab="minerals">MINERALS</button></div>
+<div id="marketPopupList" class="marketList"></div></div></div>
+<div id="skillGameModal" class="skillGameModal"><div class="skillGameCard"><div id="skillGameContent"></div></div></div>
 <div id="npcModal" class="npcModal"><div class="npcCard">
 <div class="npcHeader"><div class="npcPortrait">☻</div><div><b id="npcModalName">NPC</b><div class="small" id="npcModalRole">Local</div></div></div>
 <div class="npcSpeech" id="npcModalSpeech"></div><div id="npcQuestContent"></div><div class="npcQuestionGrid" id="npcQuestionButtons"></div>
@@ -539,20 +559,20 @@ body{padding-bottom:calc(92px + env(safe-area-inset-bottom)) !important}
 (()=>{"use strict";
 const KEY="wayfarer-wheel-rpg-v1";
 const areas=[
-{name:"Greenreach",type:"wild",min:1,desc:"Rolling plains, ruined roads and scattered farms.",enemies:["Wolf","Goblin Scout","Bandit","Wild Boar","Grassland Slime","Horned Hare","Field Imp","Roadside Cutthroat","Young Cockatrice","Rogue Squire"],mats:["Iron Ore","Leather","Herb","Flax","Clay","Wild Honey","Beast Fang"]},
+{name:"Greenreach",type:"wild",min:1,desc:"Rolling plains, ruined roads and scattered farms.",enemies:["Wolf","Goblin Scout","Bandit","Wild Boar","Grassland Slime","Horned Hare","Field Imp","Roadside Cutthroat","Young Cockatrice","Rogue Squire","Prairie Stalker","Mudhorn Bull","Goblin Bombardier","Dustback Hound"],mats:["Iron Ore","Leather","Herb","Flax","Clay","Wild Honey","Beast Fang"]},
 {name:"Oakrest",type:"town",min:1,desc:"A frontier town with an inn, smithy, gambling hall and job board.",enemies:[],mats:[]},
 {name:"Rivergate",type:"town",min:4,desc:"A river trading town built around stone bridges and crowded docks.",enemies:[],mats:[]},
-{name:"Whispering Wood",type:"wild",min:3,desc:"Ancient forest where paths seem to move when nobody watches.",enemies:["Dire Wolf","Briar Goblin","Giant Spider","Forest Witch","Mossback Bear","Vine Horror","Silk Moth","Treant Sapling","Moon Deer","Fungal Knight","Thorn Beast"],mats:["Hardwood","Silk","Herb","Moonleaf","Resin","Living Bark","Glowcap","Dryad Sap"]},
-{name:"Blackpine Hollow",type:"wild",min:7,desc:"A dark pine forest where old hunting lodges rot beneath permanent mist.",enemies:["Blackpine Wolf","Hollow Hunter","Mist Wraith","Antler Fiend","Needle Spider","Cursed Woodsman","Shadow Elk","Pine Troll"],mats:["Black Timber","Shadow Moss","Wolf Pelt","Mist Pearl","Dark Resin","Ironwood"]},
-{name:"Stonejaw Mountains",type:"wild",min:6,desc:"Ore-rich mountains infested with trolls and harpies.",enemies:["Mountain Troll","Harpie","Stone Drake","Orc Raider","Cave Bear","Rock Worm","Iron Golem","Cliff Wyvern","Deep Kobold","Granite Basilisk","Ore Eater"],mats:["Steel Ore","Crystal","Drake Scale","Coal","Adamant Shard","Quartz","Sulfur","Mithril Flake"]},
-{name:"Mire of Bells",type:"wild",min:9,desc:"A drowned marsh where ruined bell towers rise from black water.",enemies:["Bog Wraith","Rot Knight","Swamp Hydra","Fen Hag","Mire Slime","Corpse Eel","Plague Crow","Mud Elemental","Bog Giant","Bell Ghoul","Marsh Basilisk"],mats:["Venom Sac","Black Herb","Spirit Water","Bog Iron","Rotroot","Ghost Reed","Hydra Scale","Swamp Amber"]},
-{name:"Crystal Coast",type:"wild",min:11,desc:"Bright coastal cliffs riddled with crystal caves and wrecked ships.",enemies:["Reef Stalker","Crystal Crab","Siren","Drowned Corsair","Sea Drake","Salt Golem","Pearl Mimic","Tide Witch","Razor Gull"],mats:["Sea Crystal","Pearl","Saltstone","Coral","Siren Scale","Tideglass","Silver Ore"]},
-{name:"Sunscar Desert",type:"wild",min:12,desc:"A red desert filled with buried temples and glass storms.",enemies:["Dune Stalker","Sand Golem","Scorpion Knight","Ash Djinn","Glass Serpent","Sun Mummy","Dust Devil","Dune Wyvern","Sandworm","Temple Jackal","Bronze Scarab"],mats:["Sunstone","Glass Shard","Gold Ore","Desert Rose","Scorpion Chitin","Star Sand","Obsidian","Djinn Ash"]},
-{name:"Skyreach Plateau",type:"wild",min:14,desc:"High grasslands above the clouds, dotted with giant ruins.",enemies:["Thunder Ram","Sky Drake","Cloud Serpent","Giant Eagle","Storm Shaman","Cyclops","Wind Elemental","Roc Hatchling","Plateau Giant"],mats:["Stormglass","Cloud Feather","Sky Iron","Giant Bone","Lightning Core","Wind Silk"]},
+{name:"Whispering Wood",type:"wild",min:3,desc:"Ancient forest where paths seem to move when nobody watches.",enemies:["Dire Wolf","Briar Goblin","Giant Spider","Forest Witch","Mossback Bear","Vine Horror","Silk Moth","Treant Sapling","Moon Deer","Fungal Knight","Thorn Beast","Barkskin Ogre","Lantern Moth","Root Serpent","Dryad Outcast"],mats:["Hardwood","Silk","Herb","Moonleaf","Resin","Living Bark","Glowcap","Dryad Sap"]},
+{name:"Blackpine Hollow",type:"wild",min:7,desc:"A dark pine forest where old hunting lodges rot beneath permanent mist.",enemies:["Blackpine Wolf","Hollow Hunter","Mist Wraith","Antler Fiend","Needle Spider","Cursed Woodsman","Shadow Elk","Pine Troll","Fogbound Knight","Nightjaw Lynx","Hollow Treant","Blackpine Hag"],mats:["Black Timber","Shadow Moss","Wolf Pelt","Mist Pearl","Dark Resin","Ironwood"]},
+{name:"Stonejaw Mountains",type:"wild",min:6,desc:"Ore-rich mountains infested with trolls and harpies.",enemies:["Mountain Troll","Harpie","Stone Drake","Orc Raider","Cave Bear","Rock Worm","Iron Golem","Cliff Wyvern","Deep Kobold","Granite Basilisk","Ore Eater","Magma Beetle","Peak Reaver","Stonehorn Ram","Cave Roc"],mats:["Steel Ore","Crystal","Drake Scale","Coal","Adamant Shard","Quartz","Sulfur","Mithril Flake"]},
+{name:"Mire of Bells",type:"wild",min:9,desc:"A drowned marsh where ruined bell towers rise from black water.",enemies:["Bog Wraith","Rot Knight","Swamp Hydra","Fen Hag","Mire Slime","Corpse Eel","Plague Crow","Mud Elemental","Bog Giant","Bell Ghoul","Marsh Basilisk","Drowned Priest","Fen Leech Swarm","Bog Chimera","Mire Walker"],mats:["Venom Sac","Black Herb","Spirit Water","Bog Iron","Rotroot","Ghost Reed","Hydra Scale","Swamp Amber"]},
+{name:"Crystal Coast",type:"wild",min:11,desc:"Bright coastal cliffs riddled with crystal caves and wrecked ships.",enemies:["Reef Stalker","Crystal Crab","Siren","Drowned Corsair","Sea Drake","Salt Golem","Pearl Mimic","Tide Witch","Razor Gull","Shipwreck Wraith","Coral Knight","Deepwater Lurker","Tide Serpent"],mats:["Sea Crystal","Pearl","Saltstone","Coral","Siren Scale","Tideglass","Silver Ore"]},
+{name:"Sunscar Desert",type:"wild",min:12,desc:"A red desert filled with buried temples and glass storms.",enemies:["Dune Stalker","Sand Golem","Scorpion Knight","Ash Djinn","Glass Serpent","Sun Mummy","Dust Devil","Dune Wyvern","Sandworm","Temple Jackal","Bronze Scarab","Mirage Assassin","Bone Vulture","Glass Scorpion","Dune Revenant"],mats:["Sunstone","Glass Shard","Gold Ore","Desert Rose","Scorpion Chitin","Star Sand","Obsidian","Djinn Ash"]},
+{name:"Skyreach Plateau",type:"wild",min:14,desc:"High grasslands above the clouds, dotted with giant ruins.",enemies:["Thunder Ram","Sky Drake","Cloud Serpent","Giant Eagle","Storm Shaman","Cyclops","Wind Elemental","Roc Hatchling","Plateau Giant","Tempest Griffin","Cloud Knight","Lightning Basilisk","Sky Manta"],mats:["Stormglass","Cloud Feather","Sky Iron","Giant Bone","Lightning Core","Wind Silk"]},
 {name:"Highwall",type:"town",min:8,desc:"A wealthy fortress city guarding the eastern road.",enemies:[],mats:[]},
 {name:"Crownlands",type:"town",min:15,desc:"The royal heartland surrounding Valedorn's capital and palace.",enemies:[],mats:[]},
-{name:"Frostgrave",type:"wild",min:16,desc:"Frozen ruins beyond the northern pass.",enemies:["Ice Revenant","Frost Troll","White Wyrm","Lost Knight","Snow Stalker","Ice Elemental","Frozen Giant","Winter Wolf","Rime Witch","Glacier Spider","Frostbound Paladin"],mats:["Frost Crystal","Silver Ore","Wyrm Hide","Iceglass","White Fur","Frozen Core","Blue Quartz","Everfrost"]},
-{name:"Ashen Catacombs",type:"wild",min:18,desc:"A sprawling necropolis beneath volcanic ash fields.",enemies:["Ash Skeleton","Bone Priest","Crypt Warden","Grave Slime","Carrion Golem","Death Moth","Mourning Knight","Bone Dragonling","Ash Lich"],mats:["Bone Dust","Grave Wax","Black Iron","Soul Ash","Ancient Parchment","Crypt Amber","Death Silk"]},
+{name:"Frostgrave",type:"wild",min:16,desc:"Frozen ruins beyond the northern pass.",enemies:["Ice Revenant","Frost Troll","White Wyrm","Lost Knight","Snow Stalker","Ice Elemental","Frozen Giant","Winter Wolf","Rime Witch","Glacier Spider","Frostbound Paladin","Icebound Witch","Snow Wyrmling","Frozen Warden","Aurora Wraith"],mats:["Frost Crystal","Silver Ore","Wyrm Hide","Iceglass","White Fur","Frozen Core","Blue Quartz","Everfrost"]},
+{name:"Ashen Catacombs",type:"wild",min:18,desc:"A sprawling necropolis beneath volcanic ash fields.",enemies:["Ash Skeleton","Bone Priest","Crypt Warden","Grave Slime","Carrion Golem","Death Moth","Mourning Knight","Bone Dragonling","Ash Lich","Coffin Mimic","Grave Hound","Ember Skeleton","Crypt Seraph"],mats:["Bone Dust","Grave Wax","Black Iron","Soul Ash","Ancient Parchment","Crypt Amber","Death Silk"]},
 {name:"Demon March",type:"wild",min:22,desc:"Blighted land surrounding the Demon Lord's outer territory.",enemies:["Demon Hound","Hell Knight","Blood Mage","Lesser Demon","Ash Fiend","Horned Brute","Soul Eater","Infernal Drake","Dread Cultist","Pit Spawn","Chain Devil","Blood Golem"],mats:["Demon Horn","Hellstone","Blood Crystal","Infernal Iron","Ash Pearl","Soul Ash","Demonhide","Hellglass","Cursed Steel"]},
 {name:"Demon Citadel",type:"wild",min:26,desc:"Malachar's black fortress beyond the March. The campaign ends here.",enemies:["Citadel Guard","Greater Demon","Abyss Knight","Warlock Captain","Hell Chimera","Soul Reaver","Demon General","Infernal Colossus"],mats:["Abyssal Alloy","Demon Heart","Black Crystal","Royal Hellstone","Soulsteel","Infernal Ruby"]}
 ];
@@ -729,7 +749,19 @@ const spellDisciplines={
 "Blood":{power:1.15,cost:1.15,flavor:"life-draining"},
 "Spirit":{power:1.05,cost:.95,flavor:"ethereal"},
 "Earth":{power:1.15,cost:1.05,flavor:"crushing"},
-"Radiance":{power:1.22,cost:1.20,flavor:"radiant"}
+"Radiance":{power:1.22,cost:1.20,flavor:"radiant"},
+"Shadow":{power:1.18,cost:1.10,flavor:"shadowed"},
+"Poison":{power:1.05,cost:.95,flavor:"toxic"},
+"Rot":{power:1.20,cost:1.10,flavor:"decaying"},
+"Crystal":{power:1.18,cost:1.10,flavor:"crystalline"},
+"Water":{power:1.00,cost:.90,flavor:"tidal"},
+"Wind":{power:1.02,cost:.88,flavor:"cutting"},
+"Metal":{power:1.16,cost:1.06,flavor:"metallic"},
+"Nature":{power:1.08,cost:.94,flavor:"verdant"},
+"Sun":{power:1.28,cost:1.22,flavor:"solar"},
+"Moon":{power:1.12,cost:1.02,flavor:"lunar"},
+"Gravity":{power:1.32,cost:1.28,flavor:"gravitic"},
+"Time":{power:1.20,cost:1.35,flavor:"temporal"}
 };
 const spellForms={
 "Bolt":{power:1.0,cost:1.0,targets:1},
@@ -756,16 +788,16 @@ const spellIntents={
 const spellTargets=["Enemy","Self","AOE"];
 const spellTypes=["Bolt","Beam","Wave","Nova","Sigil","Summoning"];
 const summonTypes=["Skeleton","Wolf Spirit","Arcane Construct","Shadow Hound","Flame Imp","Frost Wisp","Stone Guardian"];
-const spellElements=["Arcane","Flame","Frost","Storm","Void","Blood","Spirit","Earth","Radiance"];
+const spellElements=["Arcane","Flame","Frost","Storm","Void","Blood","Spirit","Earth","Radiance","Shadow","Poison","Rot","Crystal","Water","Wind","Metal","Nature","Sun","Moon","Gravity","Time"];
 
 
 const enemyAffixes=[
 {name:"Frenzied",atk:1.25,hp:1,def:1,loot:1.25},{name:"Armored",atk:1,hp:1.1,def:1.45,loot:1.3},{name:"Vampiric",atk:1.1,hp:1.15,def:1,loot:1.35},{name:"Swift",atk:1.12,hp:.95,def:1,loot:1.25},{name:"Ancient",atk:1.2,hp:1.35,def:1.2,loot:1.55}
 ];
 function rollEnemyAffix(e){if(!e||e.boss||e.finalBoss||Math.random()>.16)return e;let a=spin(enemyAffixes);e.name=a.name+" "+e.name;e.affix=a.name;e.atk=Math.floor(e.atk*a.atk);e.hp=Math.floor(e.hp*a.hp);e.max=e.hp;e.def=Math.floor(e.def*a.def);e.lootMult=a.loot;return e}
-const dungeonCreatures=["Skeleton","Cultist","Giant Spider","Goblin","Wraith","Stone Guardian","Slime","Ghoul","Mimic","Hellhound","Cave Troll","Serpent","Bone Knight","Carrion Bat","Rune Construct","Dungeon Ooze","Crypt Archer","Fungal Brute","Shadow Hound","Ancient Sentinel","Corpse Mage","Deep Stalker","Armored Beetle","Possessed Armor"];
+const dungeonCreatures=["Skeleton","Cultist","Giant Spider","Goblin","Wraith","Stone Guardian","Slime","Ghoul","Mimic","Hellhound","Cave Troll","Serpent","Bone Knight","Carrion Bat","Rune Construct","Dungeon Ooze","Crypt Archer","Fungal Brute","Shadow Hound","Ancient Sentinel","Corpse Mage","Deep Stalker","Armored Beetle","Possessed Armor","Chain Wraith","Vault Keeper","Carrion Knight","Crystal Crawler","Bone Hound","Abyssal Rat","Rune Eater","Torch Mimic","Grave Spider","Dungeon Siren","Iron Revenant","Forgotten Champion","Rotting Alchemist","Living Statue"];
 const bossElements=["Frost","Flame","Storm","Void","Rot","Crystal","Blood","Shadow","Arcane","Poison","Sun","Iron"];
-const bossCreatures=["Hydra","Minotaur","Wyrm","Golem","Behemoth","Lich","Chimera","Manticore","Ogre King","Spider Queen","Dragon","Colossus"];
+const bossCreatures=["Hydra","Minotaur","Wyrm","Golem","Behemoth","Lich","Chimera","Manticore","Ogre King","Spider Queen","Dragon","Colossus","Kraken Spawn","Dread Knight","Basilisk King","Bone Titan","Archon","Leviathan","Griffin Matriarch","Abyssal Seraph"];
 
 const dungeonDirDelta={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]},dungeonOpposite={up:"down",down:"up",left:"right",right:"left"};
 function dungeonKey(x,y){return x+","+y}
@@ -851,7 +883,7 @@ const attrs=[
 {name:"Lucky",type:"luck",val:.07,desc:"Improves wheel outcomes"},{name:"Scholar's",type:"xp",val:.12,desc:"+12% XP"},{name:"Greedy",type:"gold",val:.15,desc:"+15% gold"},
 {name:"Executioner's",type:"crit",val:.08,desc:"+8% critical chance"},{name:"Guardian",type:"def",val:5,desc:"+5 Defense"},{name:"Soulbound",type:"xp",val:.18,desc:"+18% XP"},{name:"Treasure-Seeker's",type:"gold",val:.22,desc:"+22% gold"},{name:"Predatory",type:"leech",val:.14,desc:"Heal 14% of damage dealt"},{name:"Featherlight",type:"dodge",val:.09,desc:"+9% dodge"},{name:"Titanic",type:"hp",val:32,desc:"+32 Max HP"},{name:"Warforged",type:"atk",val:6,desc:"+6 Attack"},{name:"Fatewoven",type:"luck",val:.13,desc:"+13% Luck"}
 ];
-const weaponNames=["Iron Sword","War Axe","Spear","Longbow","Mace","Rapier","Greatsword","Twin Daggers","Runic Staff","Halberd","Scimitar","Sabre","Katana","Glaive","Warhammer","Morningstar","Crossbow","Recurve Bow","Quarterstaff","Spellblade","Hand Axe","Trident","Pike","Flail","Estoc","Khopesh","Twin Swords","Greatbow","Battle Staff","Polehammer"];
+const weaponNames=["Iron Sword","War Axe","Spear","Longbow","Mace","Rapier","Greatsword","Twin Daggers","Runic Staff","Halberd","Scimitar","Sabre","Katana","Glaive","Warhammer","Morningstar","Crossbow","Recurve Bow","Quarterstaff","Spellblade","Hand Axe","Trident","Pike","Flail","Estoc","Khopesh","Twin Swords","Greatbow","Battle Staff","Polehammer","Falchion","Claymore","Zweihander","Bardiche","Lucerne Hammer","War Pick","Javelin","Composite Bow","Repeating Crossbow","Chakram","Twin Axes","Chain Blade","Scythe","Spell Spear","Crystal Wand","Grimoire Staff","Bone Club","Dueling Saber"];
 
 const townJobs=[
 {name:"Stable Hand",min:1,pay:14,type:"timing",desc:"Stop the grooming marker inside the green zone."},
@@ -907,6 +939,22 @@ const forgeBlueprints={
 "Runic Staff":{kind:"weapon",base:8,materials:["Hardwood","Crystal","Sunstone","Frost Crystal","Hellstone"]},
 "Halberd":{kind:"weapon",base:11,materials:["Iron","Steel","Silver","Hardwood","Drake Scale"]},
 "Scimitar":{kind:"weapon",base:8,materials:["Iron","Steel","Silver","Obsidian","Mithril Flake"]},"Katana":{kind:"weapon",base:10,materials:["Steel","Silver","Mithril Flake","Soulsteel"]},"Glaive":{kind:"weapon",base:11,materials:["Steel","Silver","Hardwood","Sky Iron","Soulsteel"]},"Warhammer":{kind:"weapon",base:12,materials:["Iron","Steel","Black Iron","Hellstone","Abyssal Alloy"]},"Morningstar":{kind:"weapon",base:10,materials:["Iron","Steel","Silver","Black Iron"]},"Crossbow":{kind:"weapon",base:9,materials:["Hardwood","Steel","Mithril Flake","Sky Iron"]},"Trident":{kind:"weapon",base:10,materials:["Steel","Silver","Sea Crystal","Sky Iron"]},"Flail":{kind:"weapon",base:9,materials:["Iron","Steel","Black Iron","Hellstone"]},"Estoc":{kind:"weapon",base:9,materials:["Steel","Silver","Mithril Flake","Soulsteel"]},"Spellblade":{kind:"weapon",base:11,materials:["Silver","Crystal","Sunstone","Frost Crystal","Soulsteel","Abyssal Alloy"]},"Greatbow":{kind:"weapon",base:12,materials:["Hardwood","Drake Scale","Sky Iron","Mithril Flake"]},"Polehammer":{kind:"weapon",base:13,materials:["Steel","Black Iron","Sky Iron","Soulsteel","Abyssal Alloy"]},
+"Falchion":{kind:"weapon",base:9,materials:["Steel","Silver","Obsidian","Mithril Flake"]},
+"Claymore":{kind:"weapon",base:12,materials:["Steel","Black Iron","Sky Iron","Soulsteel"]},
+"Zweihander":{kind:"weapon",base:14,materials:["Steel","Black Iron","Soulsteel","Abyssal Alloy"]},
+"Bardiche":{kind:"weapon",base:12,materials:["Steel","Hardwood","Black Iron","Sky Iron"]},
+"War Pick":{kind:"weapon",base:10,materials:["Iron","Steel","Obsidian","Black Iron"]},
+"Javelin":{kind:"weapon",base:8,materials:["Iron","Steel","Hardwood","Sky Iron"]},
+"Composite Bow":{kind:"weapon",base:10,materials:["Hardwood","Drake Scale","Mithril Flake"]},
+"Repeating Crossbow":{kind:"weapon",base:11,materials:["Steel","Hardwood","Sky Iron","Mithril Flake"]},
+"Chakram":{kind:"weapon",base:9,materials:["Steel","Silver","Mithril Flake","Soulsteel"]},
+"Twin Axes":{kind:"weapon",base:11,materials:["Iron","Steel","Black Iron","Hellstone"]},
+"Chain Blade":{kind:"weapon",base:12,materials:["Steel","Black Iron","Soulsteel","Abyssal Alloy"]},
+"Scythe":{kind:"weapon",base:12,materials:["Steel","Black Iron","Soulsteel","Hellstone"]},
+"Spell Spear":{kind:"weapon",base:12,materials:["Silver","Crystal","Sky Iron","Soulsteel"]},
+"Crystal Wand":{kind:"weapon",base:8,materials:["Crystal","Silver","Sunstone","Frost Crystal"]},
+"Grimoire Staff":{kind:"weapon",base:11,materials:["Hardwood","Crystal","Soulsteel","Abyssal Alloy"]},
+"Dueling Saber":{kind:"weapon",base:9,materials:["Steel","Silver","Mithril Flake"]},
 "Leather Coat":{kind:"armor",base:5,materials:["Hardwood","Drake Scale"]},
 "Chainmail":{kind:"armor",base:7,materials:["Iron","Steel","Silver"]},
 "Iron Plate":{kind:"armor",base:9,materials:["Iron","Steel","Silver","Drake Scale","Hellstone"]},
@@ -938,9 +986,9 @@ const effortDefs={
 };
 const armorNames=["Leather Coat","Chainmail","Iron Plate","Ranger Cloak","Scale Armor","Knight Plate","Runed Robes","Brigandine","Warden Mail","Dragonhide"];
 function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:55,baseHp:55,mana:60,baseMana:60,atk:4,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,materials:{Iron:3,Steel:0,Silver:0,Hardwood:0,Crystal:0,"Drake Scale":0,Sunstone:0,"Frost Crystal":0,Hellstone:0,Leather:0,Herb:0,Flax:0,Clay:0,"Wild Honey":0,Silk:0,Moonleaf:0,Resin:0,"Living Bark":0,Coal:0,"Adamant Shard":0,Quartz:0,Sulfur:0,"Venom Sac":0,"Black Herb":0,"Spirit Water":0,"Bog Iron":0,Rotroot:0,"Ghost Reed":0,"Hydra Scale":0,"Glass Shard":0,"Gold Ore":0,"Desert Rose":0,"Scorpion Chitin":0,"Star Sand":0,Obsidian:0,"Wyrm Hide":0,Iceglass:0,"White Fur":0,"Frozen Core":0,"Blue Quartz":0,"Demon Horn":0,"Blood Crystal":0,"Infernal Iron":0,"Ash Pearl":0,"Soul Ash":0,Demonhide:0,"Ancient Parchment":0,"Arcane Dust":0,"Beast Fang":0,"Glowcap":0,"Dryad Sap":0,"Black Timber":0,"Shadow Moss":0,"Wolf Pelt":0,"Mist Pearl":0,"Dark Resin":0,"Ironwood":0,"Mithril Flake":0,"Swamp Amber":0,"Sea Crystal":0,"Pearl":0,"Saltstone":0,"Coral":0,"Siren Scale":0,"Tideglass":0,"Djinn Ash":0,"Stormglass":0,"Cloud Feather":0,"Sky Iron":0,"Giant Bone":0,"Lightning Core":0,"Wind Silk":0,"Everfrost":0,"Bone Dust":0,"Grave Wax":0,"Black Iron":0,"Crypt Amber":0,"Death Silk":0,"Hellglass":0,"Cursed Steel":0,"Abyssal Alloy":0,"Demon Heart":0,"Black Crystal":0,"Royal Hellstone":0,"Soulsteel":0,"Infernal Ruby":0},
-soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,randomNPCs:{},sideQuests:[],renown:0,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,selectedClassSkill:null,activeSummon:null,tempAttackBuff:0,tempDefenseBuff:0,tempHaste:0,skipEnemyTurn:false,potions:{},statuses:[],bestiary:{},reputation:{},activeWorldEvent:null,campCooldown:0,timeOfDay:8,daysPassed:1,landmarksFound:{},achievements:{},title:"Wayfarer",selectedQuickPotion:null,discoveredLocations:[0,1,2,3],worldMapSeed:482731,weather:{},factions:{Wardens:0,Arcanists:0,Merchants:0,Freeblades:0},bounties:[],minorSites:{},regionalHarvest:{},travelingMerchant:null,worldBosses:[],regionDanger:{},treasureMaps:[],townFestivals:{},companions:[],activeCompanion:null,meals:{},trophies:{},regionMastery:{},rumors:{},restedXP:0,prosperity:{},regionInfluence:{},companionAffinity:{},worldEvents:[],npcRelations:{},monsterKnowledge:{},worldHistory:[],activeNpcChat:null,pendingNpcQuest:null,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
+soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,randomNPCs:{},sideQuests:[],renown:0,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,selectedClassSkill:null,activeSummon:null,tempAttackBuff:0,tempDefenseBuff:0,tempHaste:0,skipEnemyTurn:false,potions:{},statuses:[],bestiary:{},reputation:{},activeWorldEvent:null,campCooldown:0,timeOfDay:8,daysPassed:1,landmarksFound:{},achievements:{},title:"Wayfarer",selectedQuickPotion:null,discoveredLocations:[0,1,2,3],worldMapSeed:482731,weather:{},factions:{Wardens:0,Arcanists:0,Merchants:0,Freeblades:0},bounties:[],minorSites:{},regionalHarvest:{},travelingMerchant:null,worldBosses:[],regionDanger:{},treasureMaps:[],townFestivals:{},companions:[],activeCompanion:null,meals:{},trophies:{},regionMastery:{},rumors:{},restedXP:0,prosperity:{},regionInfluence:{},companionAffinity:{},worldEvents:[],npcRelations:{},monsterKnowledge:{},worldHistory:[],activeNpcChat:null,pendingNpcQuest:null,marketTab:"materials",location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
 dungeon:{active:false,name:null,roomsEntered:0,targetRooms:0,dungeonLevel:1,currentRoom:"0,0",rooms:{},bossRoom:null,bossReady:false,bossDefeated:false,encounter:null,boss:null,clearedRooms:0}}}
-let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.potions=Object.assign({},x.potions||{});s.bestiary=Object.assign({},x.bestiary||{});s.reputation=Object.assign({},x.reputation||{});s.statuses=Array.isArray(x.statuses)?x.statuses:[];s.landmarksFound=Object.assign({},x.landmarksFound||{});s.achievements=Object.assign({},x.achievements||{});if(typeof x.timeOfDay==="number")s.timeOfDay=x.timeOfDay;if(typeof x.daysPassed==="number")s.daysPassed=x.daysPassed;if(typeof x.title==="string")s.title=x.title;if(typeof x.selectedQuickPotion==="string")s.selectedQuickPotion=x.selectedQuickPotion;if(typeof x.worldMapSeed==="number")s.worldMapSeed=x.worldMapSeed;s.weather=Object.assign({},x.weather||{});s.factions=Object.assign({Wardens:0,Arcanists:0,Merchants:0,Freeblades:0},x.factions||{});s.bounties=Array.isArray(x.bounties)?x.bounties:[];s.minorSites=Object.assign({},x.minorSites||{});s.regionalHarvest=Object.assign({},x.regionalHarvest||{});s.travelingMerchant=x.travelingMerchant||null;s.worldBosses=Array.isArray(x.worldBosses)?x.worldBosses:[];s.regionDanger=Object.assign({},x.regionDanger||{});s.treasureMaps=Array.isArray(x.treasureMaps)?x.treasureMaps:[];s.townFestivals=Object.assign({},x.townFestivals||{});s.companions=Array.isArray(x.companions)?x.companions:[];s.activeCompanion=x.activeCompanion||null;s.meals=Object.assign({},x.meals||{});s.trophies=Object.assign({},x.trophies||{});s.regionMastery=Object.assign({},x.regionMastery||{});s.rumors=Object.assign({},x.rumors||{});s.restedXP=Number(x.restedXP||0);s.prosperity=Object.assign({},x.prosperity||{});s.regionInfluence=Object.assign({},x.regionInfluence||{});s.companionAffinity=Object.assign({},x.companionAffinity||{});s.worldEvents=Array.isArray(x.worldEvents)?x.worldEvents:[];s.npcRelations=Object.assign({},x.npcRelations||{});s.monsterKnowledge=Object.assign({},x.monsterKnowledge||{});s.worldHistory=Array.isArray(x.worldHistory)?x.worldHistory:[];s.activeNpcChat=x.activeNpcChat||null;s.pendingNpcQuest=x.pendingNpcQuest||null;s.discoveredLocations=Array.isArray(x.discoveredLocations)&&x.discoveredLocations.length?x.discoveredLocations:[0,1,2,3];s.questProgress=Object.assign({},x.questProgress||{});s.randomNPCs=Object.assign({},x.randomNPCs||{});s.sideQuests=Array.isArray(x.sideQuests)?x.sideQuests:[];if(typeof x.renown==="number")s.renown=x.renown;s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
+let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.potions=Object.assign({},x.potions||{});s.bestiary=Object.assign({},x.bestiary||{});s.reputation=Object.assign({},x.reputation||{});s.statuses=Array.isArray(x.statuses)?x.statuses:[];s.landmarksFound=Object.assign({},x.landmarksFound||{});s.achievements=Object.assign({},x.achievements||{});if(typeof x.timeOfDay==="number")s.timeOfDay=x.timeOfDay;if(typeof x.daysPassed==="number")s.daysPassed=x.daysPassed;if(typeof x.title==="string")s.title=x.title;if(typeof x.selectedQuickPotion==="string")s.selectedQuickPotion=x.selectedQuickPotion;if(typeof x.worldMapSeed==="number")s.worldMapSeed=x.worldMapSeed;s.weather=Object.assign({},x.weather||{});s.factions=Object.assign({Wardens:0,Arcanists:0,Merchants:0,Freeblades:0},x.factions||{});s.bounties=Array.isArray(x.bounties)?x.bounties:[];s.minorSites=Object.assign({},x.minorSites||{});s.regionalHarvest=Object.assign({},x.regionalHarvest||{});s.travelingMerchant=x.travelingMerchant||null;s.worldBosses=Array.isArray(x.worldBosses)?x.worldBosses:[];s.regionDanger=Object.assign({},x.regionDanger||{});s.treasureMaps=Array.isArray(x.treasureMaps)?x.treasureMaps:[];s.townFestivals=Object.assign({},x.townFestivals||{});s.companions=Array.isArray(x.companions)?x.companions:[];s.activeCompanion=x.activeCompanion||null;s.meals=Object.assign({},x.meals||{});s.trophies=Object.assign({},x.trophies||{});s.regionMastery=Object.assign({},x.regionMastery||{});s.rumors=Object.assign({},x.rumors||{});s.restedXP=Number(x.restedXP||0);s.prosperity=Object.assign({},x.prosperity||{});s.regionInfluence=Object.assign({},x.regionInfluence||{});s.companionAffinity=Object.assign({},x.companionAffinity||{});s.worldEvents=Array.isArray(x.worldEvents)?x.worldEvents:[];s.npcRelations=Object.assign({},x.npcRelations||{});s.monsterKnowledge=Object.assign({},x.monsterKnowledge||{});s.worldHistory=Array.isArray(x.worldHistory)?x.worldHistory:[];s.activeNpcChat=x.activeNpcChat||null;s.pendingNpcQuest=x.pendingNpcQuest||null;s.marketTab=x.marketTab||"materials";s.discoveredLocations=Array.isArray(x.discoveredLocations)&&x.discoveredLocations.length?x.discoveredLocations:[0,1,2,3];s.questProgress=Object.assign({},x.questProgress||{});s.randomNPCs=Object.assign({},x.randomNPCs||{});s.sideQuests=Array.isArray(x.sideQuests)?x.sideQuests:[];if(typeof x.renown==="number")s.renown=x.renown;s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
 if(!s.flags.soulCrystalObjectMigration){
   let legacyFilled=Number((x.materials||{})["Soul Crystal (Filled)"]||0);
   let legacyEmpty=Number((x.materials||{})["Soul Crystal (Empty)"]||0);
@@ -1394,6 +1442,32 @@ function gamble(type){
 function hasIngredients(r){return Object.entries(r.ingredients).every(([k,v])=>(s.materials[k]||0)>=v)}
 function brewPotion(name){let r=potionRecipes[name];if(!r||!currentTown())return;if(!hasIngredients(r)){log("You lack the ingredients for "+name+".");return}for(const [k,v] of Object.entries(r.ingredients))s.materials[k]-=v;s.potions[name]=(s.potions[name]||0)+1;log("You brew "+name+".");save();render()}
 function usePotion(name){let r=potionRecipes[name];if(!r||(s.potions[name]||0)<=0)return;s.potions[name]--;if(r.effect==="heal")s.hp=Math.min(maxHp(),s.hp+r.power);else if(r.effect==="mana")s.mana=Math.min(maxMana(),s.mana+r.power);else if(r.effect==="cleanse")s.statuses=s.statuses.filter(x=>!["Poison","Rot","Bleed"].includes(x.name));else if(r.effect==="attack")s.tempAttackBuff=Math.max(s.tempAttackBuff||0,r.power);else if(r.effect==="defense")s.tempDefenseBuff=Math.max(s.tempDefenseBuff||0,r.power);else if(r.effect==="haste")s.tempHaste=1;log("You use "+name+".");save();render()}
+
+const mineralMarketNames=["Iron","Steel","Silver","Crystal","Sunstone","Frost Crystal","Hellstone","Mithril Flake","Obsidian","Sky Iron","Black Iron","Soulsteel","Abyssal Alloy"];
+const rawFoodPrices={"River Fish":10,Silverfin:22,"Marsh Eel":18,Shellfish:12,"Storm Pike":38,"Frost Char":40,"Golden Koi":85,Herb:5,"Wild Honey":8,Moonleaf:12};
+function renderMarketPopup(){
+ if(!$("marketPopupList"))return;$("marketTownLabel").textContent=area().name+" • Price modifier "+Math.round(townPriceMult()*100)+"%";
+ document.querySelectorAll("[data-markettab]").forEach(b=>b.classList.toggle("active",b.dataset.markettab===s.marketTab));
+ if(s.marketTab==="minerals"){
+   $("marketPopupList").innerHTML=mineralMarketNames.filter(n=>materialDefs[n]).map(n=>marketMaterialRow(n,materialDefs[n])).join("")||'<p class="small">No mineral stock.</p>';
+ }else if(s.marketTab==="food"){
+   let raws=Object.entries(rawFoodPrices).map(([n,c])=>{let buy=Math.max(1,Math.floor(c*townPriceMult())),sell=Math.max(1,Math.floor(c*.55));return `<div class="item marketItem"><div class="row"><b>${n}</b><span>x${s.materials[n]||0}</span></div><div class="grid"><button data-buyfood="${n}" data-foodcost="${c}">BUY ${buy}g</button><button class="secondary" data-sellfood="${n}" data-foodcost="${c}" ${(s.materials[n]||0)<=0?"disabled":""}>SELL ${sell}g</button></div></div>`}).join("");
+   let meals=Object.entries(s.meals).filter(([n,v])=>v>0).map(([n,v])=>{let val=18+Object.values(mealRecipes[n]?.need||{}).reduce((a,b)=>a+b,0)*6;return `<div class="item marketItem"><div class="row"><b>${n}</b><span>x${v}</span></div><div class="small">${mealRecipes[n]?.desc||"Prepared meal."}</div><button class="secondary" data-sellmeal="${n}" data-mealvalue="${val}">SELL ${val}g</button></div>`}).join("");
+   $("marketPopupList").innerHTML='<div class="item"><b>Raw Food & Fish</b></div>'+raws+'<div class="item"><b>Prepared Meals</b></div>'+meals;
+ }else{
+   let names=Object.keys(materialDefs).filter(n=>!mineralMarketNames.includes(n));
+   let extras=["Hardwood","Drake Scale","Beast Fang","Leather","Silk","Resin","Living Bark","Arcane Dust"].filter(n=>!names.includes(n));
+   $("marketPopupList").innerHTML=[...names,...extras].map(n=>materialDefs[n]?marketMaterialRow(n,materialDefs[n]):marketGenericRow(n)).join("");
+ }
+}
+function marketMaterialRow(n,d){let buy=Math.max(1,Math.floor(d.cost*townPriceMult())),sell=Math.max(1,Math.floor(d.cost*.55));return `<div class="item marketItem"><div class="row"><b>${n}</b><span>x${s.materials[n]||0}</span></div><div class="small">${d.desc}</div><div class="grid"><button data-buymat="${n}">BUY ${buy}g</button><button class="secondary" data-sellmat="${n}" ${(s.materials[n]||0)<=0?"disabled":""}>SELL ${sell}g</button></div></div>`}
+function marketGenericRow(n){let c=18,buy=Math.floor(c*townPriceMult()),sell=Math.floor(c*.55);return `<div class="item marketItem"><div class="row"><b>${n}</b><span>x${s.materials[n]||0}</span></div><div class="grid"><button data-buygeneric="${n}" data-genericcost="${c}">BUY ${buy}g</button><button class="secondary" data-sellgeneric="${n}" data-genericcost="${c}" ${(s.materials[n]||0)<=0?"disabled":""}>SELL ${sell}g</button></div></div>`}
+function openMarketPopup(){if(!currentTown())return;s.marketTab=s.marketTab||"materials";$("marketModal").classList.add("open");renderMarketPopup();save()}
+function buyFood(n,c){let cost=Math.max(1,Math.floor(Number(c)*townPriceMult()));if(s.gold<cost){log("Not enough gold.");return}s.gold-=cost;s.materials[n]=(s.materials[n]||0)+1;save();render();renderMarketPopup()}
+function sellFood(n,c){if(!(s.materials[n]>0))return;s.materials[n]--;s.gold+=Math.max(1,Math.floor(Number(c)*.55));save();render();renderMarketPopup()}
+function sellMealMarket(n,v){if(!(s.meals[n]>0))return;s.meals[n]--;s.gold+=Number(v);save();render();renderMarketPopup()}
+function buyGeneric(n,c){let cost=Math.floor(Number(c)*townPriceMult());if(s.gold<cost)return;s.gold-=cost;s.materials[n]=(s.materials[n]||0)+1;save();render();renderMarketPopup()}
+function sellGeneric(n,c){if(!(s.materials[n]>0))return;s.materials[n]--;s.gold+=Math.floor(Number(c)*.55);save();render();renderMarketPopup()}
 function renderTownPanel(){
  let panel=$("townPanel");if(!panel)return;
  $("townServices").style.display=currentTown()?"block":"none";
@@ -1421,10 +1495,7 @@ function renderTownPanel(){
    }else{
      panel.innerHTML='<div class="item"><div class="row"><b>Job Board</b><span class="pill">Shifts '+s.jobShifts+'/3</span></div><div class="small">Each job requires a real skill check. You can complete up to 3 shifts before leaving town.</div></div>'+townJobs.map((j,i)=>'<div class="item"><div class="row"><b>'+j.name+'</b><span class="pill">Lv '+j.min+'+</span></div><div class="small">'+j.desc+'</div><div class="small">Pay: '+j.pay+'g • Check: '+j.type+'</div><button data-job="'+i+'" '+(s.level<j.min||s.jobShifts<=0?'disabled':'')+'>START SHIFT</button></div>').join("");
    }
- }else if(s.townPanel==="market"){
-   panel.innerHTML='<div class="item"><b>Material Market</b><div class="small">Town prices are fixed for now; merchants remain committed to making a living.</div></div>'+
-   Object.entries(materialDefs).map(([n,d])=>'<div class="item"><div class="row"><b>'+n+'</b><span>x'+(s.materials[n]||0)+'</span></div><div class="small">'+d.desc+'</div><div class="grid"><button data-buymat="'+n+'">BUY '+d.cost+'g</button><button class="secondary" data-sellmat="'+n+'" '+(!(s.materials[n]>0)?'disabled':'')+'>SELL '+Math.floor(d.cost*.55)+'g</button></div></div>').join("")+
-   '<div class="item"><b>Sell Equipment</b></div>'+s.inventory.map(i=>{let val=Math.max(5,Math.floor((i.stat*8+(i.up||0)*15)*({"Common":1,"Uncommon":1.25,"Rare":1.6,"Epic":2.2,"Legendary":3.2}[i.rarity]||1)));return'<div class="item"><div class="row"><b>'+i.rarity+' '+i.name+'</b><span>'+val+'g</span></div><div class="small">'+(i.kind==="weapon"?"ATK ":"DEF ")+i.stat+' • '+i.attr.name+'</div><button class="secondary" data-sellitem="'+i.id+'">SELL EQUIPMENT</button></div>'}).join("");
+ }else if(s.townPanel==="market"){panel.innerHTML="";
  }else if(s.townPanel==="gambling"){
    panel.innerHTML='<div class="item"><b>Gambling Hall</b><div class="small">Wagers can be lost. The house remains distressingly solvent.</div></div>'+
    '<div class="item"><b>Coin Toss</b><div class="small">Correct call pays 2×.</div><div class="grid"><button data-gamble="coin_heads">HEADS 10g</button><button data-gamble="coin_tails">TAILS 10g</button></div></div>'+
@@ -2356,14 +2427,15 @@ const mealRecipes={
  "Hunter Stew":{need:{Herb:1,Leather:1},desc:"+3 attack for several fights.",effect:"atk"},
  "Miner Broth":{need:{Herb:1,Iron:1},desc:"+3 defense for several fights.",effect:"def"},
  "Moonleaf Tea":{need:{Moonleaf:2},desc:"Restores mana and grants rested XP.",effect:"mana"},
- "Trail Rations":{need:{Herb:1,"Wild Honey":1},desc:"Grants rested XP charges.",effect:"rest"}
+ "Trail Rations":{need:{Herb:1,"Wild Honey":1},desc:"Grants rested XP charges.",effect:"rest"},
+ "Grilled River Fish":{need:{"River Fish":1,Herb:1},desc:"Restores HP and grants 2 Rested XP charges.",effect:"fishheal"},
+ "Silverfin Fillet":{need:{Silverfin:1,Herb:1},desc:"Restores mana and grants a temporary dodge bonus.",effect:"fishmana"},
+ "Smoked Marsh Eel":{need:{"Marsh Eel":1,"Wild Honey":1},desc:"Grants attack and Rested XP.",effect:"fisheatk"},
+ "Shellfish Stew":{need:{Shellfish:2,Herb:1},desc:"Restores HP and grants temporary defense.",effect:"fishdef"},
+ "Fisherman's Platter":{need:{"River Fish":1,Silverfin:1,Shellfish:1},desc:"A powerful meal restoring HP, mana and Rested XP.",effect:"feast"}
 };
 function canCook(r){return Object.entries(r.need).every(([k,v])=>(s.materials[k]||0)>=v)}
-function cookMealByName(name){
- let r=mealRecipes[name];if(!r||!canCook(r)){log("You lack the ingredients for "+name+".");return}
- for(const [k,v] of Object.entries(r.need))s.materials[k]-=v;
- s.meals[name]=(s.meals[name]||0)+1;log("You cook "+name+".");save();render();
-}
+function cookMealByName(name){startCookingGame(name);}
 function eatMeal(name){
  if(!(s.meals[name]>0))return;s.meals[name]--;
  let r=mealRecipes[name];
@@ -2371,35 +2443,89 @@ function eatMeal(name){
  if(r.effect==="def"){s.tempDefenseBuff=Math.max(s.tempDefenseBuff||0,3);s.flags.mealDef=5}
  if(r.effect==="mana"){s.mana=Math.min(maxMana(),s.mana+Math.floor(maxMana()*.3));s.restedXP+=2}
  if(r.effect==="rest"){s.restedXP+=4}
+ if(r.effect==="fishheal"){s.hp=Math.min(maxHp(),s.hp+28);s.restedXP+=2}
+ if(r.effect==="fishmana"){s.mana=Math.min(maxMana(),s.mana+30);s.tempHaste=true;s.flags.mealFishMana=4}
+ if(r.effect==="fisheatk"){s.tempAttackBuff=Math.max(s.tempAttackBuff||0,4);s.flags.mealAtk=5;s.restedXP+=2}
+ if(r.effect==="fishdef"){s.hp=Math.min(maxHp(),s.hp+20);s.tempDefenseBuff=Math.max(s.tempDefenseBuff||0,4);s.flags.mealDef=5}
+ if(r.effect==="feast"){s.hp=Math.min(maxHp(),s.hp+45);s.mana=Math.min(maxMana(),s.mana+40);s.restedXP+=5}
  gainCompanionAffinity(1,"sharing a meal");log("You eat "+name+". "+r.desc);save();render();
 }
 
-// ---------- Feature 3: Fishing ----------
-function fish(){
- if(currentTown()){
-   showActionPopup("Fishing","<p class='small'>You need to leave town before fishing. The fountain does not count, regardless of optimism.</p>");
-   return;
- }
- let wet=/coast|mire|marsh|river|frost/i.test(area().name);
- let weather=worldWeatherFor(area().name),roll=Math.random(),bonus=wet?.16:0;
- if(weather==="Rain")bonus+=.08;if(weather==="Storm")bonus-=.05;
- let title="Fishing Result",body="";
- if(roll<.42+bonus){
-   let catches=["River Fish","Silverfin","Marsh Eel","Shellfish"],item=spin(catches),qty=1+rnd(3);
-   qty=Math.max(1,Math.floor(qty*masteryRewardMult()));
-   s.materials[item]=(s.materials[item]||0)+qty;gainRegionMastery(2);
-   body="<div class='actionResultGrid'><div class='item'><div class='small'>CATCH</div><b>"+item+"</b></div><div class='item'><div class='small'>AMOUNT</div><b>x"+qty+"</b></div><div class='item'><div class='small'>REGION</div><b>"+area().name+"</b></div><div class='item'><div class='small'>WEATHER</div><b>"+weather+"</b></div></div><p class='small'>Region Mastery +2.</p>";
-   log("Fishing: you catch "+qty+" "+item+".");
- }else if(roll<.50+bonus){
-   let g=12+s.level*3;s.gold+=g;
-   body="<div class='actionResultGrid'><div class='item'><div class='small'>FOUND</div><b>Lost Purse</b></div><div class='item'><div class='small'>GOLD</div><b>+"+g+"g</b></div></div><p class='small'>Apparently somebody upstream had a much worse afternoon.</p>";
-   log("Fishing: you hook a lost purse containing "+g+" gold.");
- }else{
-   body="<div class='item'><b>No Catch</b><div class='small'>Nothing bites. Weather: "+weather+". Water-friendly region bonus: "+(wet?"Yes":"No")+".</div></div>";
-   log("Fishing: nothing bites.");
- }
- showActionPopup(title,body);save();render();
+
+let fishingGame=null,fishingAnim=null,cookingGame=null,cookingAnim=null;
+const fishTable=[
+ {name:"River Fish",strength:1,base:.76,desc:"Common and steady."},
+ {name:"Shellfish",strength:1,base:.82,desc:"Easy catch near shallow water."},
+ {name:"Marsh Eel",strength:2,base:.62,desc:"Slippery and erratic."},
+ {name:"Silverfin",strength:3,base:.50,desc:"Fast, valuable and difficult."},
+ {name:"Storm Pike",strength:4,base:.38,desc:"A powerful fish that appears during rough weather."},
+ {name:"Frost Char",strength:4,base:.40,desc:"A stubborn cold-water fish."},
+ {name:"Golden Koi",strength:5,base:.26,desc:"Extremely rare and difficult to control."}
+];
+function chooseFish(){
+ let wet=/coast|mire|marsh|river|frost/i.test(area().name),w=worldWeatherFor(area().name),pool=[...fishTable.slice(0,4)];
+ if(w==="Storm"||w==="Rain")pool.push(fishTable[4]);if(/frost/i.test(area().name)||w==="Snow")pool.push(fishTable[5]);if(Math.random()<.08)pool.push(fishTable[6]);
+ let f={...spin(pool)};if(!wet&&f.strength>3)f={...fishTable[0]};return f;
 }
+function startFishingGame(){
+ if(currentTown()){showActionPopup("Fishing","<p class='small'>Leave town to find proper water first.</p>");return}
+ if(fishingGame)return;
+ let fish=chooseFish(),zoneWidth=Math.max(8,30-fish.strength*4),target=35+Math.random()*30;
+ fishingGame={fish,zoneWidth,target,dir:Math.random()<.5?-1:1,speed:.020+fish.strength*.006,slider:50,insideMs:0,last:performance.now(),started:performance.now()};
+ $("skillGameContent").innerHTML=`<div class="row"><b>🎣 Hooked: ${fish.name}</b><span class="pill">Strength ${fish.strength}/5</span></div><div class="small">${fish.desc} Keep your slider inside the moving green zone for a total of 5 seconds. Stronger fish have a smaller, faster zone.</div><div class="fishDifficulty"><span class="pill">Weather: ${worldWeatherFor(area().name)}</span><span class="pill">Target: 5.0 sec</span></div><div class="fishTrack"><div id="fishTarget" class="fishTarget"></div><div id="fishNeedle" class="fishNeedle"></div></div><input id="fishControl" class="fishSlider" type="range" min="0" max="100" value="50"><div class="skillProgress"><span id="fishProgress" style="width:0%"></span></div><div id="fishStatus" class="fishStatus">Keep the gold marker inside the green zone.</div><button class="secondary" data-a="cancelFishing">CUT LINE</button>`;
+ $("skillGameModal").classList.add("open");
+ $("fishControl").addEventListener("input",e=>{if(fishingGame)fishingGame.slider=Number(e.target.value)});
+ fishingAnim=requestAnimationFrame(fishingFrame);
+}
+function fishingFrame(now){
+ if(!fishingGame)return;let g=fishingGame,dt=Math.min(50,now-g.last);g.last=now;
+ g.target+=g.dir*g.speed*dt;if(g.target<g.zoneWidth/2){g.target=g.zoneWidth/2;g.dir=1}else if(g.target>100-g.zoneWidth/2){g.target=100-g.zoneWidth/2;g.dir=-1}
+ let inside=Math.abs(g.slider-g.target)<=g.zoneWidth/2;if(inside)g.insideMs+=dt;
+ let t=$("fishTarget"),n=$("fishNeedle"),p=$("fishProgress"),st=$("fishStatus");
+ if(t){t.style.left=(g.target-g.zoneWidth/2)+"%";t.style.width=g.zoneWidth+"%"}if(n)n.style.left=g.slider+"%";if(p)p.style.width=Math.min(100,g.insideMs/5000*100)+"%";if(st)st.textContent=inside?"Holding tension… "+(g.insideMs/1000).toFixed(1)+"/5.0 sec":"Fish is pulling away!";
+ if(g.insideMs>=5000){finishFishingGame(true);return}
+ if(now-g.started>18000){finishFishingGame(false);return}
+ fishingAnim=requestAnimationFrame(fishingFrame);
+}
+function finishFishingGame(success){
+ let g=fishingGame;if(!g)return;cancelAnimationFrame(fishingAnim);fishingGame=null;fishingAnim=null;
+ let fish=g.fish,weather=worldWeatherFor(area().name);
+ if(success){
+   let qty=1+(fish.strength<=2&&Math.random()<.25?1:0);s.materials[fish.name]=(s.materials[fish.name]||0)+qty;gainRegionMastery(2+Math.floor(fish.strength/2));
+   $("skillGameModal").classList.remove("open");showActionPopup("Fishing Success",`<div class="actionResultGrid"><div class="item"><div class="small">CATCH</div><b>${fish.name}</b></div><div class="item"><div class="small">AMOUNT</div><b>x${qty}</b></div><div class="item"><div class="small">STRENGTH</div><b>${fish.strength}/5</b></div><div class="item"><div class="small">WEATHER</div><b>${weather}</b></div></div><p class="small">You maintained tension for 5 seconds. ${fish.name} can now be sold or cooked if a recipe uses it.</p>`);
+   log("Fishing skill check succeeded: "+qty+" "+fish.name+".");
+ }else{
+   $("skillGameModal").classList.remove("open");showActionPopup("The Fish Escaped",`<div class="item"><b>${fish.name} broke free.</b><div class="small">You needed 5 seconds of controlled tension before the 18 second limit.</div></div>`);log("Fishing: "+fish.name+" escapes.");
+ }
+ save();render();
+}
+function cancelFishingGame(){if(fishingAnim)cancelAnimationFrame(fishingAnim);fishingGame=null;fishingAnim=null;$("skillGameModal").classList.remove("open")}
+function startCookingGame(name){
+ let r=mealRecipes[name];if(!r||!canCook(r)){showActionPopup("Cooking","<p class='small'>You lack the ingredients for "+name+".</p>");return}
+ if(cookingGame)return;
+ cookingGame={name,position:0,dir:1,speed:.075+Math.random()*.025,zoneStart:28+rnd(26),zoneWidth:24,hits:0,misses:0,last:performance.now()};
+ $("skillGameContent").innerHTML=`<div class="row"><b>🍳 Cooking ${name}</b><span class="pill">Heat Control</span></div><div class="small">Tap STIR while the gold heat marker is inside the green cooking zone. Land 3 good stirs. Misses lower the final quality.</div><div class="cookTrack"><div id="cookTarget" class="cookTarget"></div><div id="cookNeedle" class="cookNeedle"></div></div><div id="cookStatus" class="cookStatus">Good stirs: 0 / 3</div><button data-a="cookStir">STIR NOW</button><button class="secondary" data-a="cancelCooking">CANCEL</button>`;
+ $("skillGameModal").classList.add("open");cookingAnim=requestAnimationFrame(cookingFrame);
+}
+function cookingFrame(now){
+ if(!cookingGame)return;let g=cookingGame,dt=Math.min(50,now-g.last);g.last=now;g.position+=g.dir*g.speed*dt;if(g.position>=100){g.position=100;g.dir=-1}else if(g.position<=0){g.position=0;g.dir=1}
+ let z=$("cookTarget"),n=$("cookNeedle");if(z){z.style.left=g.zoneStart+"%";z.style.width=g.zoneWidth+"%"}if(n)n.style.left=g.position+"%";cookingAnim=requestAnimationFrame(cookingFrame);
+}
+function cookingStir(){
+ let g=cookingGame;if(!g)return;let good=g.position>=g.zoneStart&&g.position<=g.zoneStart+g.zoneWidth;if(good){g.hits++;g.zoneStart=12+rnd(62);g.zoneWidth=Math.max(14,g.zoneWidth-3)}else g.misses++;
+ if($("cookStatus"))$("cookStatus").textContent=(good?"Perfect stir! ":"Too hot/cold! ")+"Good stirs: "+g.hits+" / 3";
+ if(g.hits>=3)finishCookingGame();
+}
+function finishCookingGame(){
+ let g=cookingGame;if(!g)return;cancelAnimationFrame(cookingAnim);cookingGame=null;cookingAnim=null;let r=mealRecipes[g.name];
+ for(const [k,v] of Object.entries(r.need))s.materials[k]-=v;
+ let quality=g.misses===0?"Perfect":g.misses<=2?"Good":"Rough",bonus=g.misses===0&&Math.random()<.5?1:0;s.meals[g.name]=(s.meals[g.name]||0)+1+bonus;
+ $("skillGameModal").classList.remove("open");showActionPopup("Meal Cooked",`<div class="actionResultGrid"><div class="item"><div class="small">MEAL</div><b>${g.name}</b></div><div class="item"><div class="small">QUALITY</div><b class="foodQuality">${quality}</b></div><div class="item"><div class="small">GOOD STIRS</div><b>3 / 3</b></div><div class="item"><div class="small">YIELD</div><b>x${1+bonus}</b></div></div><p class="small">${r.desc}${bonus?" Perfect technique produced an extra serving.":""}</p>`);
+ gainCompanionAffinity(1,"cooking together");log("You cook "+g.name+" ("+quality+").");save();render();
+}
+function cancelCookingGame(){if(cookingAnim)cancelAnimationFrame(cookingAnim);cookingGame=null;cookingAnim=null;$("skillGameModal").classList.remove("open")}
+// ---------- Feature 3: Fishing ----------
+function fish(){startFishingGame();}
 
 // ---------- Feature 4: Monster Trophies ----------
 function awardTrophy(dead){
@@ -2610,7 +2736,7 @@ function renderMiniHud(){
 const buttonIcons={
  attack:"⚔",defend:"🛡",castSpell:"✦",dungeonAttack:"⚔",dungeonDefend:"🛡",dungeonSpell:"✦",
  explore:"⌖",travel:"🧭",dungeon:"⛩",camp:"⛺",harvestRegion:"⛏",searchTreasureMap:"🗺",cookMeal:"🍲",fish:"🎣",
- openJobs:"📜",openMarket:"🪙",openGambling:"🎲",openPotionHouse:"⚗",openTavern:"🍺",openRumors:"🗣",
+ openJobs:"📜",openMarket:"🪙",closeMarketModal:"✕",cancelFishing:"✕",cookStir:"🍳",cancelCooking:"✕",openGambling:"🎲",openPotionHouse:"⚗",openTavern:"🍺",openRumors:"🗣",
  dungeonExplore:"🚪",dungeonSkill:"✹",dungeonPotion:"✚",dungeonClassSkill:"◆",
  useQuickPotion:"⚗",useQuickPotionDungeon:"⚗",toggleQuickPotionPicker:"▾",toggleQuickPotionPickerDungeon:"▾",
  worldMapCenter:"◎",worldMapZoomIn:"＋",worldMapZoomOut:"−",worldMapToggleLabels:"◫",worldMapReroll:"⟳",
@@ -2755,6 +2881,12 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.study){studyTome(b.dataset.study);return}
  if(b.dataset.castspell){castKnownSpell(b.dataset.castspell,false);return}
  if(b.dataset.castdungeon){castKnownSpell(b.dataset.castdungeon,true);return}
+ if(b.dataset.markettab){s.marketTab=b.dataset.markettab;save();renderMarketPopup();return}
+ if(b.dataset.buyfood){buyFood(b.dataset.buyfood,b.dataset.foodcost);return}
+ if(b.dataset.sellfood){sellFood(b.dataset.sellfood,b.dataset.foodcost);return}
+ if(b.dataset.sellmeal){sellMealMarket(b.dataset.sellmeal,b.dataset.mealvalue);return}
+ if(b.dataset.buygeneric){buyGeneric(b.dataset.buygeneric,b.dataset.genericcost);return}
+ if(b.dataset.sellgeneric){sellGeneric(b.dataset.sellgeneric,b.dataset.genericcost);return}
  if(b.dataset.npcquestion){answerNpcQuestion(b.dataset.npcquestion);return}
  if(b.dataset.npcaccept){acceptNpcQuest(b.dataset.npcaccept);return}
  if(b.dataset.npcdecline){declineNpcQuest(b.dataset.npcdecline);return}
@@ -2792,6 +2924,10 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.dir){moveDungeon(b.dataset.dir);return}
  if(b.dataset.equip){equip(b.dataset.equip);return}if(b.dataset.upitem){upgradeItem(b.dataset.upitem);return}if(b.dataset.stat){let k=b.dataset.stat,c=30+s.upgrade[k]*30;if(s.gold>=c){s.gold-=c;s.upgrade[k]++;s.hp=Math.min(maxHp(),s.hp+(k==="hp"?10:0));save();render()}return}
  switch(b.dataset.a){
+ case"closeMarketModal":$("marketModal").classList.remove("open");break;
+ case"cancelFishing":cancelFishingGame();break;
+ case"cookStir":cookingStir();break;
+ case"cancelCooking":cancelCookingGame();break;
  case"closeNpcChat":$("npcModal").classList.remove("open");s.activeNpcChat=null;save();break;
  case"closeBossRewards":$("bossRewardModal").classList.remove("open");break;
  case"openCodex":$("codexModal").classList.add("open");renderCodex();break;
@@ -2831,7 +2967,7 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  case"talkNPC":talkToNPC();break;
  case"finalBoss":spawnFinalBoss();break;
  case"openJobs":s.townPanel=s.townPanel==="jobs"?null:"jobs";save();render();break;
- case"openMarket":s.townPanel=s.townPanel==="market"?null:"market";save();render();break;
+ case"openMarket":openMarketPopup();break;
  case"openGambling":s.townPanel=s.townPanel==="gambling"?null:"gambling";save();render();break;
  case"openPotionHouse":s.townPanel=s.townPanel==="potions"?null:"potions";save();render();break;
  case"customForge":customForge();break;
