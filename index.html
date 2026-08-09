@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG v2.7</title>
+<title>Wayfarer: Wheel & Dice RPG v2.7.1</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
@@ -80,7 +80,7 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 .mapLocationInfo{margin-top:9px;background:#1b212c;border:1px solid var(--line);border-radius:12px;padding:10px;min-height:82px}
 .mapLocationInfo h3{margin:0 0 5px;font-size:16px}
 .mapLocationInfo p{margin:3px 0;color:var(--muted);font-size:12px}
-.mapLocked{opacity:.35}
+.mapLocked{opacity:.38}
 @media(max-width:600px){.worldMapViewport{height:66vh;min-height:480px}.worldMapToolbar button{padding:8px 9px;font-size:11px}}
 </style></head>
 <body><div id="campModal" class="campModal"><div class="campModalCard"><b id="campModalTitle">Camp Result</b><div class="small" id="campModalText" style="margin:10px 0"></div><button data-a="closeCampModal">CONTINUE</button></div></div>
@@ -142,34 +142,7 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 <div class="combatSpellPicker" id="worldSpellPicker"></div>
 <div class="combatSpellRow"><button data-a="worldClassSkill" id="worldClassSkillBtn">USE SKILL</button><button class="secondary" data-a="toggleWorldSkillPicker" id="worldSkillSelectBtn">SELECT SKILL</button></div>
 <div class="combatSpellPicker" id="worldSkillPicker"></div>
-<div class="combatSpellRow"><butt<section id="mapTab" class="hidden">
-<div class="card"><b>World Map</b><div class="small">Drag to pan, pinch or use +/- to zoom. Discovered locations are bright; undiscovered regions remain muted until you find a route.</div></div>
-<div class="worldMapShell">
-  <div class="worldMapToolbar">
-    <button class="primary" data-a="worldMapCenter">CENTER</button>
-    <button data-a="worldMapZoomIn">＋</button>
-    <button data-a="worldMapZoomOut">－</button>
-    <button class="secondary" data-a="worldMapToggleLabels" id="worldMapLabelsBtn">LABELS: ON</button>
-    <div class="spacer"></div>
-    <span class="pill" id="worldMapSeedLabel">WORLD</span>
-  </div>
-  <div class="worldMapViewport" id="worldMapViewport">
-    <canvas id="worldCanvas"></canvas>
-    <div class="worldMapLegend">
-      <div><span class="mapDot" style="background:#e7bc5a"></span>Town</div>
-      <div><span class="mapDot" style="background:#74b3e8"></span>Wild</div>
-      <div><span class="mapDot" style="background:#9b72d6"></span>Landmark</div>
-      <div><span class="mapDot" style="background:#dc6671"></span>Danger</div>
-    </div>
-    <div class="worldMapHud" id="worldMapHud">Drag to pan • pinch/± to zoom</div>
-  </div>
-  <div class="mapLocationInfo" id="worldMapInfo">
-    <h3>Select a location</h3>
-    <p>Tap a discovered marker to inspect it and fast travel there.</p>
-  </div>
-</div>
-<div class="card"><b>Known Routes</b><div id="worldList"></div></div>
-</section></button></div>
+<div class="combatSpellRow"><button class="secondary" data-a="useQuickPotion" id="worldQuickPotionBtn">USE POTION</button><button class="secondary" data-a="toggleQuickPotionPicker" id="worldQuickPotionSelectBtn">SELECT POTION</button></div>
 <div class="combatSpellPicker" id="quickPotionPicker"></div>
 </div>
 <div class="card"><b>Combat Log</b><div class="log" id="combatLog"></div></div>
@@ -187,7 +160,38 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 
 
 <section id="mapTab" class="hidden">
-<div class="card"><b>World Map</b><div class="small">Every known region, town, and major route in Valedorn.</div><div id="worldMap"></div></div>
+<div class="card"><b>World Map</b><div class="small">Drag to pan. Pinch or use +/- to zoom. Discovered locations are visible and usable; locked regions stay muted until you uncover a route.</div></div>
+
+<div class="worldMapShell">
+  <div class="worldMapToolbar">
+    <button class="primary" data-a="worldMapCenter">CENTER</button>
+    <button data-a="worldMapZoomIn">＋</button>
+    <button data-a="worldMapZoomOut">－</button>
+    <button class="secondary" data-a="worldMapToggleLabels" id="worldMapLabelsBtn">LABELS: ON</button>
+    <div class="spacer"></div>
+    <span class="pill" id="worldMapSeedLabel">WORLD</span>
+  </div>
+
+  <div class="worldMapViewport" id="worldMapViewport">
+    <canvas id="worldCanvas"></canvas>
+
+    <div class="worldMapLegend">
+      <div><span class="mapDot" style="background:#e7bc5a"></span>Town</div>
+      <div><span class="mapDot" style="background:#74b3e8"></span>Wild</div>
+      <div><span class="mapDot" style="background:#9b72d6"></span>Landmark</div>
+      <div><span class="mapDot" style="background:#dc6671"></span>Danger</div>
+    </div>
+
+    <div class="worldMapHud" id="worldMapHud">Drag to pan • pinch/± to zoom</div>
+  </div>
+
+  <div class="mapLocationInfo" id="worldMapInfo">
+    <h3>Select a location</h3>
+    <p>Tap a discovered marker to inspect it and fast travel there.</p>
+  </div>
+</div>
+
+<div class="card"><b>Known Routes</b><div id="worldList"></div></div>
 </section>
 
 <section id="materialsTab" class="hidden">
@@ -1003,7 +1007,7 @@ function storyCheck(){let gates=[0,3,7,12,18,25];while(s.story<gates.length-1&&s
 function forge(kind){let cost=3+s.level/5|0,g=25+s.level*4;if(s.ore<cost||s.gold<g){log("Forging requires "+cost+" ore and "+g+" gold.");return}s.ore-=cost;s.gold-=g;let it=makeItem(kind,3);s.inventory.push(it);log("Forged "+it.rarity+" "+it.name+" with "+it.attr.name+".");save();render()}
 function upgradeItem(id){let it=s.inventory.find(x=>String(x.id)===String(id));if(!it)return;let c=20+(it.up+1)*20;if(s.gold<c)return;s.gold-=c;it.up++;it.stat=Math.floor(it.stat*1.12)+1;log(it.name+" upgraded to +"+it.up+". Its random attribute also grows stronger.");save();render()}
 function equip(id){let it=s.inventory.find(x=>String(x.id)===String(id));if(!it)return;s[it.kind]=it;save();render()}
-function showTab(id){document.querySelectorAll("section").forEach(x=>x.classList.add("hidden"));$(id).classList.remove("hidden");document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab===id));const tc=document.querySelector(".topCharacterBtn");if(tc)tc.classList.toggle("active",id==="characterTab");if(id==="mapTab")setTimeout(()=>{renderWorldMap();if(!worldMapReady)generateWayfarerWorldMap()},0)}
+function showTab(id){document.querySelectorAll("section").forEach(x=>x.classList.add("hidden"));$(id).classList.remove("hidden");document.querySelectorAll(".tabs button").forEach(x=>x.classList.toggle("active",x.dataset.tab===id));const tc=document.querySelector(".topCharacterBtn");if(tc)tc.classList.toggle("active",id==="characterTab");if(id==="mapTab")setTimeout(()=>{if(!worldMapReady)generateWayfarerWorldMap();centerWorldCanvas();renderWorldMap()},0)}
 
 let creatorState={race:"Human",className:"Warrior",backstory:"farm"};
 
@@ -1417,78 +1421,262 @@ function mapTravel(idx){
 
 const WORLD_MAP_W=2200,WORLD_MAP_H=1500;
 let worldMapZoom=.62,worldMapCX=WORLD_MAP_W/2,worldMapCY=WORLD_MAP_H/2,worldMapLabels=true;
-let worldMapLand=[],worldMapRoads=[],worldMapLocPoints=[],worldMapReady=false,worldMapPointers=new Map(),worldMapSingle=null,worldMapPinch=null;
+let worldMapLand=[],worldMapRoads=[],worldMapLocPoints=[],worldMapReady=false;
+let worldMapPointers=new Map(),worldMapSingle=null,worldMapPinch=null;
 
-function wmPRNG(a){return function(){let t=a+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296}}
-function wmGenerateCoast(cx,cy,rx,ry,n,rng){let p=[];for(let i=0;i<n;i++){let a=i/n*Math.PI*2,m=1+Math.sin(a*3+rng()*.8)*.11+Math.sin(a*7+rng()*.8)*.06+(rng()-.5)*.18;p.push({x:cx+Math.cos(a)*rx*m,y:cy+Math.sin(a)*ry*m})}return p}
-function wmBounds(p){return{minX:Math.min(...p.map(q=>q.x)),maxX:Math.max(...p.map(q=>q.x)),minY:Math.min(...p.map(q=>q.y)),maxY:Math.max(...p.map(q=>q.y))}}
-function wmInside(px,py,p){let z=false;for(let i=0,j=p.length-1;i<p.length;j=i++){let a=p[i],b=p[j];if(((a.y>py)!=(b.y>py))&&(px<(b.x-a.x)*(py-a.y)/(b.y-a.y)+a.x))z=!z}return z}
-function wmPointInLand(L,rng){for(let n=0;n<700;n++){let x=L.b.minX+35+rng()*(L.b.maxX-L.b.minX-70),y=L.b.minY+35+rng()*(L.b.maxY-L.b.minY-70);if(wmInside(x,y,L.p))return{x,y}}return{x:(L.b.minX+L.b.maxX)/2,y:(L.b.minY+L.b.maxY)/2}}
+function wmPRNG(a){
+ return function(){
+   let t=a+=0x6D2B79F5;
+   t=Math.imul(t^t>>>15,t|1);
+   t^=t+Math.imul(t^t>>>7,t|61);
+   return((t^t>>>14)>>>0)/4294967296;
+ }
+}
+function wmCoast(cx,cy,rx,ry,n,rng){
+ let p=[];
+ for(let i=0;i<n;i++){
+   let a=i/n*Math.PI*2;
+   let m=1+Math.sin(a*3+rng()*.8)*.11+Math.sin(a*7+rng()*.8)*.06+(rng()-.5)*.18;
+   p.push({x:cx+Math.cos(a)*rx*m,y:cy+Math.sin(a)*ry*m});
+ }
+ return p;
+}
+function wmBounds(p){
+ return{minX:Math.min(...p.map(q=>q.x)),maxX:Math.max(...p.map(q=>q.x)),minY:Math.min(...p.map(q=>q.y)),maxY:Math.max(...p.map(q=>q.y))}
+}
+function wmInside(px,py,p){
+ let z=false;
+ for(let i=0,j=p.length-1;i<p.length;j=i++){
+   let a=p[i],b=p[j];
+   if(((a.y>py)!=(b.y>py))&&(px<(b.x-a.x)*(py-a.y)/(b.y-a.y)+a.x))z=!z;
+ }
+ return z;
+}
+function wmPoint(L,rng){
+ for(let n=0;n<700;n++){
+   let x=L.b.minX+35+rng()*(L.b.maxX-L.b.minX-70);
+   let y=L.b.minY+35+rng()*(L.b.maxY-L.b.minY-70);
+   if(wmInside(x,y,L.p))return{x,y};
+ }
+ return{x:(L.b.minX+L.b.maxX)/2,y:(L.b.minY+L.b.maxY)/2};
+}
 function generateWayfarerWorldMap(){
- const rng=wmPRNG((s.worldMapSeed||482731)>>>0);worldMapLand=[];worldMapLocPoints=[];worldMapRoads=[];
+ const rng=wmPRNG((s.worldMapSeed||482731)>>>0);
+ worldMapLand=[];worldMapLocPoints=[];worldMapRoads=[];
+
  const centers=[{x:690,y:760},{x:1490,y:650},{x:1290,y:1160}];
- for(let i=0;i<3;i++){let p=wmGenerateCoast(centers[i].x,centers[i].y,350+rng()*170,255+rng()*130,64,rng);worldMapLand.push({p,b:wmBounds(p),idx:i})}
- for(let i=0;i<8;i++){let p=wmGenerateCoast(160+rng()*(WORLD_MAP_W-320),130+rng()*(WORLD_MAP_H-260),55+rng()*95,40+rng()*70,34,rng);worldMapLand.push({p,b:wmBounds(p),idx:3+i})}
- for(let i=0;i<areas.length;i++){let L=worldMapLand[i%worldMapLand.length],q=wmPointInLand(L,rng);worldMapLocPoints.push({idx:i,x:q.x,y:q.y})}
- for(let i=0;i<areas.length;i++){let a=areas[i],pa=worldMapLocPoints[i],links=worldConnections[a.name]||[];for(const n of links){let j=areas.findIndex(z=>z.name===n);if(j<0||j<=i)continue;worldMapRoads.push({a:pa,b:worldMapLocPoints[j]})}}
+ for(let i=0;i<3;i++){
+   let p=wmCoast(centers[i].x,centers[i].y,350+rng()*170,255+rng()*130,64,rng);
+   worldMapLand.push({p,b:wmBounds(p)});
+ }
+ for(let i=0;i<8;i++){
+   let p=wmCoast(160+rng()*(WORLD_MAP_W-320),130+rng()*(WORLD_MAP_H-260),55+rng()*95,40+rng()*70,34,rng);
+   worldMapLand.push({p,b:wmBounds(p)});
+ }
+
+ for(let i=0;i<areas.length;i++){
+   let L=worldMapLand[i%worldMapLand.length];
+   let q=wmPoint(L,rng);
+   worldMapLocPoints.push({idx:i,x:q.x,y:q.y});
+ }
+
+ for(let i=0;i<areas.length;i++){
+   let a=areas[i],pa=worldMapLocPoints[i],links=worldConnections[a.name]||[];
+   for(const n of links){
+     let j=areas.findIndex(z=>z.name===n);
+     if(j<0||j<=i)continue;
+     worldMapRoads.push({a:pa,b:worldMapLocPoints[j]});
+   }
+ }
  worldMapReady=true;
 }
-function wmScreen(x,y){const v=$("worldMapViewport");if(!v)return{x:0,y:0};let r=v.getBoundingClientRect();return{x:(x-worldMapCX)*worldMapZoom+r.width/2,y:(y-worldMapCY)*worldMapZoom+r.height/2}}
-function wmWorld(x,y){const v=$("worldMapViewport");if(!v)return{x:0,y:0};let r=v.getBoundingClientRect();return{x:(x-r.width/2)/worldMapZoom+worldMapCX,y:(y-r.height/2)/worldMapZoom+worldMapCY}}
-function centerWorldCanvas(){let v=$("worldMapViewport");if(!v)return;worldMapCX=WORLD_MAP_W/2;worldMapCY=WORLD_MAP_H/2;worldMapZoom=Math.max(.34,Math.min(1.05,Math.min(v.clientWidth/WORLD_MAP_W,v.clientHeight/WORLD_MAP_H)*1.5));drawWorldCanvas()}
-function zoomWorldCanvas(sx,sy,f){let before=wmWorld(sx,sy);worldMapZoom=Math.max(.28,Math.min(2.6,worldMapZoom*f));let after=wmWorld(sx,sy);worldMapCX+=before.x-after.x;worldMapCY+=before.y-after.y;drawWorldCanvas()}
+function wmScreen(x,y){
+ const v=$("worldMapViewport");if(!v)return{x:0,y:0};
+ let r=v.getBoundingClientRect();
+ return{x:(x-worldMapCX)*worldMapZoom+r.width/2,y:(y-worldMapCY)*worldMapZoom+r.height/2};
+}
+function wmWorld(x,y){
+ const v=$("worldMapViewport");if(!v)return{x:0,y:0};
+ let r=v.getBoundingClientRect();
+ return{x:(x-r.width/2)/worldMapZoom+worldMapCX,y:(y-r.height/2)/worldMapZoom+worldMapCY};
+}
+function centerWorldCanvas(){
+ let v=$("worldMapViewport");if(!v||v.clientWidth===0)return;
+ worldMapCX=WORLD_MAP_W/2;worldMapCY=WORLD_MAP_H/2;
+ worldMapZoom=Math.max(.34,Math.min(1.05,Math.min(v.clientWidth/WORLD_MAP_W,v.clientHeight/WORLD_MAP_H)*1.5));
+ drawWorldCanvas();
+}
+function zoomWorldCanvas(sx,sy,f){
+ let before=wmWorld(sx,sy);
+ worldMapZoom=Math.max(.28,Math.min(2.6,worldMapZoom*f));
+ let after=wmWorld(sx,sy);
+ worldMapCX+=before.x-after.x;worldMapCY+=before.y-after.y;
+ drawWorldCanvas();
+}
 function drawWorldCanvas(){
- const cv=$("worldCanvas"),v=$("worldMapViewport");if(!cv||!v)return;if(!worldMapReady)generateWayfarerWorldMap();
- let r=v.getBoundingClientRect(),d=Math.max(1,Math.min(2,window.devicePixelRatio||1)),ctx=cv.getContext("2d");
- if(cv.width!==Math.floor(r.width*d)||cv.height!==Math.floor(r.height*d)){cv.width=Math.floor(r.width*d);cv.height=Math.floor(r.height*d);cv.style.width=r.width+"px";cv.style.height=r.height+"px"}
- ctx.setTransform(d,0,0,d,0,0);ctx.clearRect(0,0,r.width,r.height);ctx.fillStyle="#0b1a26";ctx.fillRect(0,0,r.width,r.height);
- ctx.strokeStyle="#153143";ctx.lineWidth=1;
- for(let gx=-((worldMapCX*worldMapZoom)%100);gx<r.width;gx+=100){ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,r.height);ctx.stroke()}
- for(let gy=-((worldMapCY*worldMapZoom)%100);gy<r.height;gy+=100){ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(r.width,gy);ctx.stroke()}
- for(const L of worldMapLand){
-   let p=L.p;if(!p.length)continue;
-   ctx.beginPath();let q=wmScreen(p[0].x,p[0].y);ctx.moveTo(q.x,q.y);
-   for(let i=1;i<p.length;i++){q=wmScreen(p[i].x,p[i].y);ctx.lineTo(q.x,q.y)}
-   ctx.closePath();ctx.fillStyle="#5c6f52";ctx.fill();ctx.strokeStyle="#c8c1a6";ctx.lineWidth=2.1;ctx.stroke();
+ const cv=$("worldCanvas"),v=$("worldMapViewport");
+ if(!cv||!v||v.clientWidth===0)return;
+ if(!worldMapReady)generateWayfarerWorldMap();
+
+ let r=v.getBoundingClientRect();
+ let d=Math.max(1,Math.min(2,window.devicePixelRatio||1));
+ let ctx=cv.getContext("2d");
+
+ let targetW=Math.floor(r.width*d),targetH=Math.floor(r.height*d);
+ if(cv.width!==targetW||cv.height!==targetH){
+   cv.width=targetW;cv.height=targetH;
+   cv.style.width=r.width+"px";cv.style.height=r.height+"px";
  }
+ ctx.setTransform(d,0,0,d,0,0);
+ ctx.clearRect(0,0,r.width,r.height);
+ ctx.fillStyle="#0b1a26";ctx.fillRect(0,0,r.width,r.height);
+
+ ctx.strokeStyle="#153143";ctx.lineWidth=1;
+ for(let gx=-((worldMapCX*worldMapZoom)%100);gx<r.width;gx+=100){
+   ctx.beginPath();ctx.moveTo(gx,0);ctx.lineTo(gx,r.height);ctx.stroke();
+ }
+ for(let gy=-((worldMapCY*worldMapZoom)%100);gy<r.height;gy+=100){
+   ctx.beginPath();ctx.moveTo(0,gy);ctx.lineTo(r.width,gy);ctx.stroke();
+ }
+
+ for(const L of worldMapLand){
+   let p=L.p;
+   if(!p.length)continue;
+   ctx.beginPath();
+   let q=wmScreen(p[0].x,p[0].y);ctx.moveTo(q.x,q.y);
+   for(let i=1;i<p.length;i++){q=wmScreen(p[i].x,p[i].y);ctx.lineTo(q.x,q.y);}
+   ctx.closePath();
+   ctx.fillStyle="#5c6f52";ctx.fill();
+   ctx.strokeStyle="#c8c1a6";ctx.lineWidth=2.1;ctx.stroke();
+ }
+
  ctx.setLineDash([6,5]);ctx.lineCap="round";
  for(const rd of worldMapRoads){
    if(!(s.discoveredLocations||[]).includes(rd.a.idx)||!(s.discoveredLocations||[]).includes(rd.b.idx))continue;
-   let a=wmScreen(rd.a.x,rd.a.y),b=wmScreen(rd.b.x,rd.b.y);ctx.strokeStyle="#bea772";ctx.lineWidth=Math.max(1,2*worldMapZoom);ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.quadraticCurveTo((a.x+b.x)/2,(a.y+b.y)/2,b.x,b.y);ctx.stroke()
+   let a=wmScreen(rd.a.x,rd.a.y),b=wmScreen(rd.b.x,rd.b.y);
+   ctx.strokeStyle="#bea772";ctx.lineWidth=Math.max(1,2*worldMapZoom);
+   ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.quadraticCurveTo((a.x+b.x)/2,(a.y+b.y)/2,b.x,b.y);ctx.stroke();
  }
  ctx.setLineDash([]);
+
  for(const p of worldMapLocPoints){
-   let a=areas[p.idx],discovered=(s.discoveredLocations||[0,1,2,3]).includes(p.idx),current=p.idx===s.location,sp=wmScreen(p.x,p.y);
+   let a=areas[p.idx];
+   let discovered=(s.discoveredLocations||[0,1,2,3]).includes(p.idx);
+   let current=p.idx===s.location;
+   let sp=wmScreen(p.x,p.y);
    if(sp.x<-60||sp.y<-60||sp.x>r.width+60||sp.y>r.height+60)continue;
+
    let col=a.type==="town"?"#e7bc5a":/Demon|Catacomb/.test(a.name)?"#dc6671":"#74b3e8";
-   ctx.globalAlpha=discovered?1:.22;ctx.beginPath();ctx.arc(sp.x,sp.y,Math.max(5,7*worldMapZoom),0,Math.PI*2);ctx.fillStyle=col;ctx.fill();ctx.strokeStyle=current?"#fff":"#101010";ctx.lineWidth=current?3:1.4;ctx.stroke();
-   if(worldMapLabels&&worldMapZoom>.42){ctx.font=Math.max(10,12*worldMapZoom)+"px system-ui";ctx.textAlign="center";ctx.textBaseline="top";ctx.fillStyle=discovered?"#f3f0e8":"#7a8390";ctx.strokeStyle="#0b0e13";ctx.lineWidth=3;let label=discovered?a.name:"Unknown";ctx.strokeText(label,sp.x,sp.y+10);ctx.fillText(label,sp.x,sp.y+10)}
+   ctx.globalAlpha=discovered?1:.22;
+   ctx.beginPath();ctx.arc(sp.x,sp.y,Math.max(5,7*worldMapZoom),0,Math.PI*2);
+   ctx.fillStyle=col;ctx.fill();
+   ctx.strokeStyle=current?"#fff":"#101010";ctx.lineWidth=current?3:1.4;ctx.stroke();
+
+   if(worldMapLabels&&worldMapZoom>.42){
+     ctx.font=Math.max(10,12*worldMapZoom)+"px system-ui";
+     ctx.textAlign="center";ctx.textBaseline="top";
+     ctx.fillStyle=discovered?"#f3f0e8":"#7a8390";
+     ctx.strokeStyle="#0b0e13";ctx.lineWidth=3;
+     let label=discovered?a.name:"Unknown";
+     ctx.strokeText(label,sp.x,sp.y+10);ctx.fillText(label,sp.x,sp.y+10);
+   }
    ctx.globalAlpha=1;
  }
+
  $("worldMapHud").textContent="X "+Math.round(worldMapCX)+"  Y "+Math.round(worldMapCY)+" • "+worldMapZoom.toFixed(2)+"x • "+(s.discoveredLocations||[]).length+"/"+areas.length+" discovered";
- $("worldMapSeedLabel").textContent="SEED "+(s.worldMapSeed||482731);if($("worldMapLabelsBtn"))$("worldMapLabelsBtn").textContent="LABELS: "+(worldMapLabels?"ON":"OFF");
+ $("worldMapSeedLabel").textContent="SEED "+(s.worldMapSeed||482731);
+ if($("worldMapLabelsBtn"))$("worldMapLabelsBtn").textContent="LABELS: "+(worldMapLabels?"ON":"OFF");
 }
 function selectWorldMapLocation(px,py){
- let q=wmWorld(px,py),best=30/worldMapZoom,found=null;for(const p of worldMapLocPoints){let d=Math.hypot(p.x-q.x,p.y-q.y);if(d<best){best=d;found=p}}if(!found)return;
- let a=areas[found.idx],discovered=(s.discoveredLocations||[]).includes(found.idx),current=found.idx===s.location;
- if(!discovered){$("worldMapInfo").innerHTML="<h3>Undiscovered Region</h3><p>Explore connected areas to reveal a route here.</p>";return}
- let lms=(typeof landmarks!=="undefined"&&landmarks[a.name]?landmarks[a.name].filter(x=>s.landmarksFound[a.name+"|"+x]):[]);
- $("worldMapInfo").innerHTML='<h3>'+a.name+'</h3><p>'+a.desc+'</p><span class="pill">'+a.type.toUpperCase()+'</span><span class="pill">Recommended Lv '+a.min+'</span><span class="pill">'+(lms.length?lms.length+" landmarks":"No landmarks found")+'</span>'+(current?'<p><b>Current location</b></p>':'<button data-maptravel="'+found.idx+'">FAST TRAVEL</button>');
+ let q=wmWorld(px,py),best=30/worldMapZoom,found=null;
+ for(const p of worldMapLocPoints){
+   let d=Math.hypot(p.x-q.x,p.y-q.y);
+   if(d<best){best=d;found=p;}
+ }
+ if(!found)return;
+
+ let a=areas[found.idx];
+ let discovered=(s.discoveredLocations||[]).includes(found.idx);
+ let current=found.idx===s.location;
+
+ if(!discovered){
+   $("worldMapInfo").innerHTML="<h3>Undiscovered Region</h3><p>Explore connected areas to reveal a route here.</p>";
+   return;
+ }
+
+ let lms=(typeof landmarks!=="undefined"&&landmarks[a.name])?landmarks[a.name].filter(x=>s.landmarksFound[a.name+"|"+x]):[];
+ $("worldMapInfo").innerHTML=
+   '<h3>'+a.name+'</h3>'+
+   '<p>'+a.desc+'</p>'+
+   '<span class="pill">'+a.type.toUpperCase()+'</span>'+
+   '<span class="pill">Recommended Lv '+a.min+'</span>'+
+   '<span class="pill">'+(lms.length?lms.length+" landmarks":"No landmarks found")+'</span>'+
+   (current?'<p><b>Current location</b></p>':'<button data-maptravel="'+found.idx+'">FAST TRAVEL</button>');
 }
 function initWorldCanvasInteractions(){
- const cv=$("worldCanvas");if(!cv||cv.dataset.ready)return;cv.dataset.ready="1";
- cv.addEventListener("pointerdown",e=>{cv.setPointerCapture(e.pointerId);worldMapPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(worldMapPointers.size===1)worldMapSingle={x:e.clientX,y:e.clientY,m:false}});
- cv.addEventListener("pointermove",e=>{if(!worldMapPointers.has(e.pointerId))return;let old=worldMapPointers.get(e.pointerId);worldMapPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});if(worldMapPointers.size===1&&worldMapSingle){worldMapCX-=(e.clientX-old.x)/worldMapZoom;worldMapCY-=(e.clientY-old.y)/worldMapZoom;if(Math.abs(e.clientX-worldMapSingle.x)+Math.abs(e.clientY-worldMapSingle.y)>6)worldMapSingle.m=true;drawWorldCanvas()}else if(worldMapPointers.size===2){let pts=[...worldMapPointers.values()],dist=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);if(worldMapPinch){let rr=cv.getBoundingClientRect();zoomWorldCanvas((pts[0].x+pts[1].x)/2-rr.left,(pts[0].y+pts[1].y)/2-rr.top,dist/worldMapPinch)}worldMapPinch=dist}});
- cv.addEventListener("pointerup",e=>{let tap=worldMapPointers.size===1&&worldMapSingle&&!worldMapSingle.m,rr=cv.getBoundingClientRect();worldMapPointers.delete(e.pointerId);if(worldMapPointers.size<2)worldMapPinch=null;if(tap)selectWorldMapLocation(e.clientX-rr.left,e.clientY-rr.top);worldMapSingle=null});
- cv.addEventListener("pointercancel",e=>{worldMapPointers.delete(e.pointerId);worldMapPinch=null;worldMapSingle=null});
- cv.addEventListener("wheel",e=>{e.preventDefault();let rr=cv.getBoundingClientRect();zoomWorldCanvas(e.clientX-rr.left,e.clientY-rr.top,e.deltaY<0?1.12:.89)},{passive:false});
+ const cv=$("worldCanvas");
+ if(!cv||cv.dataset.ready)return;
+ cv.dataset.ready="1";
+
+ cv.addEventListener("pointerdown",e=>{
+   cv.setPointerCapture(e.pointerId);
+   worldMapPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+   if(worldMapPointers.size===1)worldMapSingle={x:e.clientX,y:e.clientY,m:false};
+ });
+ cv.addEventListener("pointermove",e=>{
+   if(!worldMapPointers.has(e.pointerId))return;
+   let old=worldMapPointers.get(e.pointerId);
+   worldMapPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+
+   if(worldMapPointers.size===1&&worldMapSingle){
+     worldMapCX-=(e.clientX-old.x)/worldMapZoom;
+     worldMapCY-=(e.clientY-old.y)/worldMapZoom;
+     if(Math.abs(e.clientX-worldMapSingle.x)+Math.abs(e.clientY-worldMapSingle.y)>6)worldMapSingle.m=true;
+     drawWorldCanvas();
+   }else if(worldMapPointers.size===2){
+     let pts=[...worldMapPointers.values()];
+     let dist=Math.hypot(pts[0].x-pts[1].x,pts[0].y-pts[1].y);
+     if(worldMapPinch){
+       let rr=cv.getBoundingClientRect();
+       zoomWorldCanvas((pts[0].x+pts[1].x)/2-rr.left,(pts[0].y+pts[1].y)/2-rr.top,dist/worldMapPinch);
+     }
+     worldMapPinch=dist;
+   }
+ });
+ cv.addEventListener("pointerup",e=>{
+   let tap=worldMapPointers.size===1&&worldMapSingle&&!worldMapSingle.m;
+   let rr=cv.getBoundingClientRect();
+   worldMapPointers.delete(e.pointerId);
+   if(worldMapPointers.size<2)worldMapPinch=null;
+   if(tap)selectWorldMapLocation(e.clientX-rr.left,e.clientY-rr.top);
+   worldMapSingle=null;
+ });
+ cv.addEventListener("pointercancel",e=>{
+   worldMapPointers.delete(e.pointerId);
+   worldMapPinch=null;
+   worldMapSingle=null;
+ });
+ cv.addEventListener("wheel",e=>{
+   e.preventDefault();
+   let rr=cv.getBoundingClientRect();
+   zoomWorldCanvas(e.clientX-rr.left,e.clientY-rr.top,e.deltaY<0?1.12:.89);
+ },{passive:false});
 }
+
 function renderWorldMap(){
- initWorldCanvasInteractions();drawWorldCanvas();
+ initWorldCanvasInteractions();
+ drawWorldCanvas();
+
  if($("worldList")){
    $("worldList").innerHTML=areas.map((a,idx)=>{
-     let discovered=(s.discoveredLocations||[0,1,2,3]).includes(idx),current=idx===s.location,cons=worldConnections[a.name]||[];
-     return '<div class="item '+(discovered?'':'mapLocked')+'"><div class="row"><b>'+(discovered?a.name:"Unknown Region")+'</b><span class="pill">'+(current?"HERE":discovered?"DISCOVERED":"LOCKED")+'</span></div><div class="small">'+(discovered?a.desc:"Explore connected regions to reveal this location.")+'</div><div class="small">Routes: '+(discovered?cons.join(", "):"Unknown")+'</div></div>';
+     let discovered=(s.discoveredLocations||[0,1,2,3]).includes(idx);
+     let current=idx===s.location;
+     let cons=worldConnections[a.name]||[];
+     return '<div class="item '+(discovered?'':'mapLocked')+'">'+
+       '<div class="row"><b>'+(discovered?a.name:"Unknown Region")+'</b><span class="pill">'+(current?"HERE":discovered?"DISCOVERED":"LOCKED")+'</span></div>'+
+       '<div class="small">'+(discovered?a.desc:"Explore connected regions to reveal this location.")+'</div>'+
+       '<div class="small">Routes: '+(discovered?(cons.length?cons.join(", "):"None"):"Unknown")+'</div>'+
+     '</div>';
    }).join("");
  }
 }
@@ -1869,5 +2057,5 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
 });render();
 })();
 
-window.addEventListener("resize",()=>{if($("worldCanvas"))drawWorldCanvas()});
+window.addEventListener("resize",()=>{if($("worldCanvas")&&!$("mapTab").classList.contains("hidden"))drawWorldCanvas()});
 </script></body></html>
