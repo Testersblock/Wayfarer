@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG v2.9</title>
+<title>Wayfarer: Wheel & Dice RPG v3.0</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
@@ -95,6 +95,13 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 .harvestResultGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.harvestResultGrid .item{margin:0}
 .worldAlert{border-left:3px solid #c28b55;padding-left:9px}.dangerMeter{height:8px;background:#242a34;border-radius:999px;overflow:hidden;margin-top:5px}.dangerMeter>span{display:block;height:100%;background:#a66f55}
 @media(max-width:420px){.harvestResultGrid{grid-template-columns:1fr}}
+
+.companionCard{border-left:3px solid #6fa8a1;padding-left:8px}
+.masteryBar{height:8px;background:#252b36;border-radius:999px;overflow:hidden;margin-top:5px}
+.masteryBar>span{display:block;height:100%;background:#758cbb}
+.recipeCard{border-left:3px solid #b28a59;padding-left:8px}
+.trophyGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+@media(max-width:430px){.trophyGrid{grid-template-columns:1fr}}
 </style></head>
 <body><div id="harvestModal" class="harvestModal"><div class="harvestModalCard"><b id="harvestModalTitle">Harvest Result</b><div id="harvestModalBody"></div><button data-a="closeHarvestModal">CONTINUE</button></div></div>
 <div id="campModal" class="campModal"><div class="campModalCard"><b id="campModalTitle">Camp Result</b><div class="small" id="campModalText" style="margin:10px 0"></div><button data-a="closeCampModal">CONTINUE</button></div></div>
@@ -133,11 +140,11 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 
 <section id="worldTab">
 <div class="card"><b>World Activity</b><div id="worldActivityPanel" class="small">The roads are quiet.</div></div>
-<div class="card"><b>Current Area</b><div class="wheel" id="areaTitle"></div><div class="small" id="areaDesc"></div><div class="grid"><button data-a="explore">EXPLORE</button><button class="secondary" data-a="travel">TRAVEL</button></div><button class="blue" data-a="dungeon">SEARCH FOR DUNGEON</button><button class="secondary" data-a="camp">MAKE CAMP</button><button class="secondary" data-a="harvestRegion">HARVEST REGION</button><button class="secondary" data-a="searchTreasureMap">SEARCH TREASURE MAP</button></div>
+<div class="card"><b>Current Area</b><div class="wheel" id="areaTitle"></div><div class="small" id="areaDesc"></div><div class="grid"><button data-a="explore">EXPLORE</button><button class="secondary" data-a="travel">TRAVEL</button></div><button class="blue" data-a="dungeon">SEARCH FOR DUNGEON</button><button class="secondary" data-a="camp">MAKE CAMP</button><button class="secondary" data-a="harvestRegion">HARVEST REGION</button><button class="secondary" data-a="searchTreasureMap">SEARCH TREASURE MAP</button><div class="grid"><button class="secondary" data-a="cookMeal">COOK MEAL</button><button class="secondary" data-a="fish">FISH</button></div><div id="cookPanel" class="hidden"></div></div>
 <div class="card" id="townServices">
 <b>Town Services</b>
 <div class="small">Jobs and merchants are only available while you are in a town.</div>
-<div class="grid"><button data-a="openJobs">JOB BOARD</button><button class="secondary" data-a="openMarket">MARKET</button></div><button class="secondary" data-a="openGambling">GAMBLING HALL</button><button class="secondary" data-a="openPotionHouse">POTION HOUSE</button>
+<div class="grid"><button data-a="openJobs">JOB BOARD</button><button class="secondary" data-a="openMarket">MARKET</button></div><button class="secondary" data-a="openGambling">GAMBLING HALL</button><button class="secondary" data-a="openPotionHouse">POTION HOUSE</button><div class="grid"><button class="secondary" data-a="openTavern">TAVERN</button><button class="secondary" data-a="openRumors">RUMOR BOARD</button></div>
 <div id="townPanel"></div>
 </div>
 <div class="card" id="npcCard"><b>NPCs & Quests</b><div id="npcPanel"></div>
@@ -210,7 +217,7 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 </section>
 
 <section id="materialsTab" class="hidden">
-<div class="card"><b>Material Inventory</b><div class="small">All crafting resources, monster components, and rare materials.</div><div id="materialInventory"></div></div><div class="card"><b>Potions</b><div id="potionInventory"></div></div>
+<div class="card"><b>Material Inventory</b><div class="small">All crafting resources, monster components, and rare materials.</div><div id="materialInventory"></div></div><div class="card"><b>Potions</b><div id="potionInventory"></div></div><div class="card"><b>Meals</b><div class="small">Cooked meals provide temporary adventuring bonuses.</div><div id="mealInventory"></div></div>
 <div class="card"><b>Soul Crystals</b><div class="small">Equip one empty Soul Crystal. The next creature you kill has its soul captured inside, inheriting a rarity based on the creature.</div><div id="soulCrystalInventory"></div></div>
 </section>
 
@@ -248,7 +255,9 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 <div class="row"><span>Class Level</span><span class="pill" id="classLevelLabel">1</span></div>
 <div id="classSkills"></div></div>
 
-<div class="card"><b>Bestiary</b><div class="small">Identified monsters are recorded permanently.</div><div id="bestiaryList"></div></div><div class="card"><b>Achievements & Title</b><div class="small">Current title: <b id="titleLabel"></b></div><div id="achievementList"></div></div><div class="card"><b>Factions</b><div class="small">Your actions can improve standing with groups across the world.</div><div id="factionPanel" class="factionGrid"></div></div>
+<div class="card"><b>Companions</b><div class="small">Recruit allies in town taverns. One active companion can assist in combat.</div><div id="companionPanel"></div></div>
+<div class="card"><b>Region Mastery</b><div class="small">Exploring, harvesting, and fighting in a region raises mastery and improves rewards there.</div><div id="masteryPanel"></div></div>
+<div class="card"><b>Monster Trophies</b><div class="small">Elite monsters and bosses can leave permanent trophies.</div><div id="trophyPanel" class="trophyGrid"></div></div><div class="card"><b>Bestiary</b><div class="small">Identified monsters are recorded permanently.</div><div id="bestiaryList"></div></div><div class="card"><b>Achievements & Title</b><div class="small">Current title: <b id="titleLabel"></b></div><div id="achievementList"></div></div><div class="card"><b>Factions</b><div class="small">Your actions can improve standing with groups across the world.</div><div id="factionPanel" class="factionGrid"></div></div>
 <div class="card"><b>Bounties</b><div class="small">Dynamic contracts refresh as you travel and level.</div><div id="bountyPanel"></div></div><div class="card"><b id="questTitle">Journal</b><div id="quests"></div></div>
 <div class="card"><b>World</b><div id="worldList"></div></div>
 <div class="card">
@@ -584,7 +593,7 @@ function makeDungeonEncounter(){
   pack.forEach(e=>rollEnemyAffix(e));s.dungeon.encounter=pack;
   dlog("Dungeon encounter: "+pack.map(x=>x.name).join(", ")+".");
 }
-function dungeonEnemyTurn(){tickStatuses();summonTurn(true);if(s.dungeon.encounter&&s.dungeon.encounter.every(x=>x.hp<=0)){clearDungeonEncounter();return}
+function dungeonEnemyTurn(){tickStatuses();summonTurn(true);companionTurn(true);if(s.dungeon.encounter&&s.dungeon.encounter.every(x=>x.hp<=0)){clearDungeonEncounter();return}
   if(!s.dungeon.encounter||!s.dungeon.encounter.length)return;
   for(const e of s.dungeon.encounter){
     if(e.hp<=0)continue;
@@ -612,7 +621,7 @@ function awardDungeonXP(pack,wasBoss){
  dlog("Dungeon XP: +"+total+" XP.");
  levelUp();
 }
-function clearDungeonEncounter(){
+function clearDungeonEncounter(){gainRegionMastery(2);
   if(!s.dungeon.encounter)return;
   const deadPack=s.dungeon.encounter.map(x=>({...x}));
   const wasBoss=s.dungeon.encounter.some(x=>x.boss);
@@ -753,9 +762,9 @@ const effortDefs={
 };
 const armorNames=["Leather Coat","Chainmail","Iron Plate","Ranger Cloak","Scale Armor","Knight Plate","Runed Robes","Brigandine","Warden Mail","Dragonhide"];
 function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:55,baseHp:55,mana:60,baseMana:60,atk:4,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,materials:{Iron:3,Steel:0,Silver:0,Hardwood:0,Crystal:0,"Drake Scale":0,Sunstone:0,"Frost Crystal":0,Hellstone:0,Leather:0,Herb:0,Flax:0,Clay:0,"Wild Honey":0,Silk:0,Moonleaf:0,Resin:0,"Living Bark":0,Coal:0,"Adamant Shard":0,Quartz:0,Sulfur:0,"Venom Sac":0,"Black Herb":0,"Spirit Water":0,"Bog Iron":0,Rotroot:0,"Ghost Reed":0,"Hydra Scale":0,"Glass Shard":0,"Gold Ore":0,"Desert Rose":0,"Scorpion Chitin":0,"Star Sand":0,Obsidian:0,"Wyrm Hide":0,Iceglass:0,"White Fur":0,"Frozen Core":0,"Blue Quartz":0,"Demon Horn":0,"Blood Crystal":0,"Infernal Iron":0,"Ash Pearl":0,"Soul Ash":0,Demonhide:0,"Ancient Parchment":0,"Arcane Dust":0,"Beast Fang":0,"Glowcap":0,"Dryad Sap":0,"Black Timber":0,"Shadow Moss":0,"Wolf Pelt":0,"Mist Pearl":0,"Dark Resin":0,"Ironwood":0,"Mithril Flake":0,"Swamp Amber":0,"Sea Crystal":0,"Pearl":0,"Saltstone":0,"Coral":0,"Siren Scale":0,"Tideglass":0,"Djinn Ash":0,"Stormglass":0,"Cloud Feather":0,"Sky Iron":0,"Giant Bone":0,"Lightning Core":0,"Wind Silk":0,"Everfrost":0,"Bone Dust":0,"Grave Wax":0,"Black Iron":0,"Crypt Amber":0,"Death Silk":0,"Hellglass":0,"Cursed Steel":0,"Abyssal Alloy":0,"Demon Heart":0,"Black Crystal":0,"Royal Hellstone":0,"Soulsteel":0,"Infernal Ruby":0},
-soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,randomNPCs:{},sideQuests:[],renown:0,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,selectedClassSkill:null,activeSummon:null,tempAttackBuff:0,tempDefenseBuff:0,tempHaste:0,skipEnemyTurn:false,potions:{},statuses:[],bestiary:{},reputation:{},activeWorldEvent:null,campCooldown:0,timeOfDay:8,daysPassed:1,landmarksFound:{},achievements:{},title:"Wayfarer",selectedQuickPotion:null,discoveredLocations:[0,1,2,3],worldMapSeed:482731,weather:{},factions:{Wardens:0,Arcanists:0,Merchants:0,Freeblades:0},bounties:[],minorSites:{},regionalHarvest:{},travelingMerchant:null,worldBosses:[],regionDanger:{},treasureMaps:[],townFestivals:{},location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
+soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,randomNPCs:{},sideQuests:[],renown:0,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,selectedClassSkill:null,activeSummon:null,tempAttackBuff:0,tempDefenseBuff:0,tempHaste:0,skipEnemyTurn:false,potions:{},statuses:[],bestiary:{},reputation:{},activeWorldEvent:null,campCooldown:0,timeOfDay:8,daysPassed:1,landmarksFound:{},achievements:{},title:"Wayfarer",selectedQuickPotion:null,discoveredLocations:[0,1,2,3],worldMapSeed:482731,weather:{},factions:{Wardens:0,Arcanists:0,Merchants:0,Freeblades:0},bounties:[],minorSites:{},regionalHarvest:{},travelingMerchant:null,worldBosses:[],regionDanger:{},treasureMaps:[],townFestivals:{},companions:[],activeCompanion:null,meals:{},trophies:{},regionMastery:{},rumors:{},restedXP:0,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
 dungeon:{active:false,name:null,roomsEntered:0,targetRooms:0,blocked:null,bossReady:false,bossDefeated:false,encounter:null,boss:null,clearedRooms:0}}}
-let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.potions=Object.assign({},x.potions||{});s.bestiary=Object.assign({},x.bestiary||{});s.reputation=Object.assign({},x.reputation||{});s.statuses=Array.isArray(x.statuses)?x.statuses:[];s.landmarksFound=Object.assign({},x.landmarksFound||{});s.achievements=Object.assign({},x.achievements||{});if(typeof x.timeOfDay==="number")s.timeOfDay=x.timeOfDay;if(typeof x.daysPassed==="number")s.daysPassed=x.daysPassed;if(typeof x.title==="string")s.title=x.title;if(typeof x.selectedQuickPotion==="string")s.selectedQuickPotion=x.selectedQuickPotion;if(typeof x.worldMapSeed==="number")s.worldMapSeed=x.worldMapSeed;s.weather=Object.assign({},x.weather||{});s.factions=Object.assign({Wardens:0,Arcanists:0,Merchants:0,Freeblades:0},x.factions||{});s.bounties=Array.isArray(x.bounties)?x.bounties:[];s.minorSites=Object.assign({},x.minorSites||{});s.regionalHarvest=Object.assign({},x.regionalHarvest||{});s.travelingMerchant=x.travelingMerchant||null;s.worldBosses=Array.isArray(x.worldBosses)?x.worldBosses:[];s.regionDanger=Object.assign({},x.regionDanger||{});s.treasureMaps=Array.isArray(x.treasureMaps)?x.treasureMaps:[];s.townFestivals=Object.assign({},x.townFestivals||{});s.discoveredLocations=Array.isArray(x.discoveredLocations)&&x.discoveredLocations.length?x.discoveredLocations:[0,1,2,3];s.questProgress=Object.assign({},x.questProgress||{});s.randomNPCs=Object.assign({},x.randomNPCs||{});s.sideQuests=Array.isArray(x.sideQuests)?x.sideQuests:[];if(typeof x.renown==="number")s.renown=x.renown;s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
+let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.potions=Object.assign({},x.potions||{});s.bestiary=Object.assign({},x.bestiary||{});s.reputation=Object.assign({},x.reputation||{});s.statuses=Array.isArray(x.statuses)?x.statuses:[];s.landmarksFound=Object.assign({},x.landmarksFound||{});s.achievements=Object.assign({},x.achievements||{});if(typeof x.timeOfDay==="number")s.timeOfDay=x.timeOfDay;if(typeof x.daysPassed==="number")s.daysPassed=x.daysPassed;if(typeof x.title==="string")s.title=x.title;if(typeof x.selectedQuickPotion==="string")s.selectedQuickPotion=x.selectedQuickPotion;if(typeof x.worldMapSeed==="number")s.worldMapSeed=x.worldMapSeed;s.weather=Object.assign({},x.weather||{});s.factions=Object.assign({Wardens:0,Arcanists:0,Merchants:0,Freeblades:0},x.factions||{});s.bounties=Array.isArray(x.bounties)?x.bounties:[];s.minorSites=Object.assign({},x.minorSites||{});s.regionalHarvest=Object.assign({},x.regionalHarvest||{});s.travelingMerchant=x.travelingMerchant||null;s.worldBosses=Array.isArray(x.worldBosses)?x.worldBosses:[];s.regionDanger=Object.assign({},x.regionDanger||{});s.treasureMaps=Array.isArray(x.treasureMaps)?x.treasureMaps:[];s.townFestivals=Object.assign({},x.townFestivals||{});s.companions=Array.isArray(x.companions)?x.companions:[];s.activeCompanion=x.activeCompanion||null;s.meals=Object.assign({},x.meals||{});s.trophies=Object.assign({},x.trophies||{});s.regionMastery=Object.assign({},x.regionMastery||{});s.rumors=Object.assign({},x.rumors||{});s.restedXP=Number(x.restedXP||0);s.discoveredLocations=Array.isArray(x.discoveredLocations)&&x.discoveredLocations.length?x.discoveredLocations:[0,1,2,3];s.questProgress=Object.assign({},x.questProgress||{});s.randomNPCs=Object.assign({},x.randomNPCs||{});s.sideQuests=Array.isArray(x.sideQuests)?x.sideQuests:[];if(typeof x.renown==="number")s.renown=x.renown;s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
 if(!s.flags.soulCrystalObjectMigration){
   let legacyFilled=Number((x.materials||{})["Soul Crystal (Filled)"]||0);
   let legacyEmpty=Number((x.materials||{})["Soul Crystal (Empty)"]||0);
@@ -792,8 +801,8 @@ function enemy(){
  if(typeof rollEnemyAffix==="function")rollEnemyAffix(s.enemy);
 }
 function levelUp(){while(s.xp>=s.xpNeed){s.xp-=s.xpNeed;s.level++;s.xpNeed=Math.floor(s.xpNeed*1.28);s.baseHp+=3;s.hp=maxHp();s.mana=maxMana();log("Level up! You are now level "+s.level+". HP and mana restored.")}}
-function loot(mult=1){let g=Math.floor((8+s.level*3)*mult*(1+attrsTotal("gold"))),xp=Math.floor((12+s.level*3)*mult*(1+attrsTotal("xp")+s.bonusXP));s.gold+=g;s.xp+=xp;if(Math.random()<.35){s.ore+=1+rnd(2);log("You recover forging ore.")}if(Math.random()<.16){let it=makeItem(Math.random()<.55?"weapon":"armor",2);s.inventory.push(it);log("Loot wheel: "+it.rarity+" "+it.name+" ["+it.attr.name+"].")}log("Reward: "+g+" gold, "+xp+" XP.");levelUp()}
-function win(){let dead={...s.enemy};updateBounties(dead.name);modifyRegionDanger(area().name,-2);if(dead.worldBossId){let wb=s.worldBosses.find(x=>x.id===dead.worldBossId);if(wb){wb.defeated=true;s.gold+=100+wb.level*10;s.renown+=3;log("World Boss defeated! Renown +3 and a massive bounty paid.")}}let roadDestination=dead.roadAmbush?dead.pendingDestination:null;s.kills++;s.questProgress["kills_"+area().name]=Number(s.questProgress["kills_"+area().name]||0)+1;
+function loot(mult=1){mult*=masteryRewardMult();let g=Math.floor((8+s.level*3)*mult*(1+attrsTotal("gold"))),xp=Math.floor((12+s.level*3)*mult*(1+attrsTotal("xp")+s.bonusXP)),restBonus=consumeRestedXP(xp);xp+=restBonus;s.gold+=g;s.xp+=xp;if(restBonus)log("Rested XP bonus: +"+restBonus+" XP.");if(Math.random()<.35){s.ore+=1+rnd(2);log("You recover forging ore.")}if(Math.random()<.16){let it=makeItem(Math.random()<.55?"weapon":"armor",2);s.inventory.push(it);log("Loot wheel: "+it.rarity+" "+it.name+" ["+it.attr.name+"].")}log("Reward: "+g+" gold, "+xp+" XP.");levelUp()}
+function win(){let dead={...s.enemy};awardTrophy(dead);gainRegionMastery(dead.elite?3:1);updateBounties(dead.name);modifyRegionDanger(area().name,-2);if(dead.worldBossId){let wb=s.worldBosses.find(x=>x.id===dead.worldBossId);if(wb){wb.defeated=true;s.gold+=100+wb.level*10;s.renown+=3;log("World Boss defeated! Renown +3 and a massive bounty paid.")}}let roadDestination=dead.roadAmbush?dead.pendingDestination:null;s.kills++;s.questProgress["kills_"+area().name]=Number(s.questProgress["kills_"+area().name]||0)+1;
  if(s.mode==="campaign"){if(dead.finalBoss){s.finalBossDefeated=true;log("Demon Lord Malachar is defeated. Valedorn survives.");}}
  captureSoul(dead,false);if(dead.elite&&/(Wandering Champion|Ancient Beast|Monster Nest)/.test(dead.name)){s.gold+=25+s.level*4;s.renown++;s.activeWorldEvent=null;log("Elite hunt complete. Bonus gold and Renown +1.")}loot((s.enemy.elite?1.8:1)*(dead.lootMult||1));s.enemy=null;
  if(roadDestination!==null&&areas[roadDestination]){
@@ -804,10 +813,10 @@ function win(){let dead={...s.enemy};updateBounties(dead.name);modifyRegionDange
    if(area().type==="town"&&old.type!=="town"){s.jobShifts=3;s.jobChallenge=null;}
    log("The road is clear. You continue onward to "+area().name+".");
  }if(dead.finalBoss)advanceCampaign();save();render()}
-function enemyTurn(){tickStatuses();summonTurn(false);if(s.enemy&&s.enemy.hp<=0){win();return}if(!s.enemy)return;if(Math.random()<.12+attrsTotal("dodge")+s.bonusDodge){log(s.enemy.name+" misses.",true);return}let hit=Math.max(1,s.enemy.atk-def()-(s.turnDefend?Math.floor(def()*.7):0)+rnd(5));s.turnDefend=false;s.hp-=hit;log(s.enemy.name+" deals "+hit+" damage.",true);if(s.hp<=0){s.hp=maxHp();s.gold=Math.floor(s.gold*.8);s.enemy=null;log("You are defeated and wake in "+areas[1].name+". You lose 20% of your gold.");s.location=1}}
+function enemyTurn(){tickStatuses();summonTurn(false);companionTurn(false);if(s.enemy&&s.enemy.hp<=0){win();return}if(!s.enemy)return;if(Math.random()<.12+attrsTotal("dodge")+s.bonusDodge){log(s.enemy.name+" misses.",true);return}let hit=Math.max(1,s.enemy.atk-def()-(s.turnDefend?Math.floor(def()*.7):0)+rnd(5));s.turnDefend=false;s.hp-=hit;log(s.enemy.name+" deals "+hit+" damage.",true);if(s.hp<=0){s.hp=maxHp();s.gold=Math.floor(s.gold*.8);s.enemy=null;log("You are defeated and wake in "+areas[1].name+". You lose 20% of your gold.");s.location=1}}
 function rollWorldEvent(){if(area().type==="town"||s.activeWorldEvent||Math.random()>.10)return false;let type=spin(["Wandering Champion","Ancient Beast","Lost Treasure Caravan","Arcane Storm","Monster Nest"]);s.activeWorldEvent={type,area:area().name};if(type==="Lost Treasure Caravan"){let g=35+s.level*6;s.gold+=g;log("Rare event: lost caravan. You recover "+g+" gold.");s.activeWorldEvent=null}else if(type==="Arcane Storm"){let mm=Math.floor(maxMana()*.5);s.mana=Math.min(maxMana(),s.mana+mm);s.materials["Arcane Dust"]=(s.materials["Arcane Dust"]||0)+1;log("Rare event: Arcane Storm restores mana and leaves Arcane Dust.");s.activeWorldEvent=null}else{log("Rare event: "+type+" appears.");enemy();if(s.enemy){s.enemy.elite=true;if(!s.enemy.name.startsWith("Elite "))s.enemy.name="Elite "+s.enemy.name;s.enemy.hp=Math.floor(s.enemy.hp*1.45);s.enemy.max=s.enemy.hp;s.enemy.atk=Math.floor(s.enemy.atk*1.2)}if(s.enemy){s.enemy.name=type+" "+s.enemy.name;s.enemy.elite=true;s.enemy.hp=Math.floor(s.enemy.hp*1.5);s.enemy.max=s.enemy.hp;s.enemy.atk=Math.floor(s.enemy.atk*1.25)}}save();return true}
 function explore(){
- advanceTime(1);maybeShiftWeather();
+ advanceTime(1);maybeShiftWeather();gainRegionMastery(1);
  s.campCooldown=0;
  let a=area();
 
@@ -816,7 +825,7 @@ function explore(){
    $("result").textContent="Town wheel: "+r.toUpperCase();
    if(r==="inn"){
      let c=10+s.level*2;
-     if(s.gold>=c){s.gold-=c;s.hp=maxHp();s.mana=maxMana();log("You rest at the inn for "+c+" gold. HP and mana fully restored.");}
+     if(s.gold>=c){s.gold-=c;s.hp=maxHp();s.mana=maxMana();grantRestedXP(5);log("You rest at the inn for "+c+" gold. HP and mana fully restored. Rested XP gained.");}
      else log("You find an inn but cannot afford a room.");
    }else if(r==="market"){
      s.townPanel="market";
@@ -876,7 +885,7 @@ function camp(){
  if(s.campCooldown>0){showCampPopup("Camp Failed","You need to explore or travel before camping again.");return}
  advanceTime(8);
  if(Math.random()<.22){showCampPopup("Ambushed!","Something found your camp. Prepare for combat.");log("Your camp attracts trouble.");enemy();s.campCooldown=1;save();render();return}
- let h=Math.floor(maxHp()*.35),mm=Math.floor(maxMana()*.35);s.hp=Math.min(maxHp(),s.hp+h);s.mana=Math.min(maxMana(),s.mana+mm);s.campCooldown=1;let text="You rest until "+timeLabel()+". Restored "+h+" HP and "+mm+" mana.";showCampPopup("Camp Rest",text);log(text);save();render();
+ let h=Math.floor(maxHp()*.35),mm=Math.floor(maxMana()*.35);s.hp=Math.min(maxHp(),s.hp+h);s.mana=Math.min(maxMana(),s.mana+mm);s.campCooldown=1;grantRestedXP(3);let text="You rest until "+timeLabel()+". Restored "+h+" HP and "+mm+" mana.";showCampPopup("Camp Rest",text);log(text);save();render();
 }
 
 function unlockLocation(idx){
@@ -1240,6 +1249,13 @@ function renderTownPanel(){
    '<div class="item"><b>Roulette</b><div class="small">Red/Black pays 2×. Green pays 14×.</div><div class="grid"><button class="red" data-gamble="roulette_red">RED 20g</button><button class="secondary" data-gamble="roulette_black">BLACK 20g</button></div><button data-gamble="roulette_green">GREEN 20g</button></div>';
  }else if(s.townPanel==="potions"){
  panel.innerHTML='<div class="item"><b>Potion House</b><div class="small">Brew potions from ingredients you carry.</div></div>'+Object.entries(potionRecipes).map(([n,r])=>'<div class="item"><div class="row"><b>'+n+'</b><span class="pill">'+(s.potions[n]||0)+' owned</span></div><div class="small">'+r.desc+'</div><div class="small">Ingredients: '+Object.entries(r.ingredients).map(([k,v])=>v+' '+k).join(", ")+'</div><button data-brew="'+n+'" '+(!hasIngredients(r)?'disabled':'')+'>BREW</button></div>').join("");
+ }else if(s.townPanel==="tavern"){
+   let opts=tavernRecruitOptions();
+   panel.innerHTML='<div class="item"><b>Tavern Recruits</b><div class="small">Recruit permanent allies. One companion can be active at a time.</div></div>'+
+   opts.map(c=>'<div class="item companionCard"><div class="row"><b>'+c.name+'</b><span class="pill">'+c.role+'</span></div><div class="small">'+c.desc+'</div><div class="small">Hire: '+c.cost+'g</div><button data-recruit="'+c.id+'">RECRUIT</button></div>').join("");
+ }else if(s.townPanel==="rumors"){
+   let rumor=s.rumors[area().name]||generateRumor();
+   panel.innerHTML='<div class="item"><b>Rumor Board</b><div class="small">'+rumor+'</div><button data-refresh-rumor="1">ASK AROUND • 5g</button></div>';
  }else panel.innerHTML="";
 }
 function renderForgeOptions(){
@@ -1583,7 +1599,7 @@ function regionalSpecialty(a){
 }
 function harvestRegion(){
  if(area().type==="town"){$("harvestModalTitle").textContent="Nothing to Harvest";$("harvestModalBody").innerHTML='<p class="small">You are inside '+area().name+'. Head into the wilderness to gather regional resources.</p>';$("harvestModal").classList.add("open");return}
- let spec=regionalSpecialty(area()),item=spin(spec),mods=weatherCombatMods(),qty=Math.max(1,Math.floor((1+rnd(3))*mods.gather)),bonus="";if(Math.random()<.08){qty+=2;bonus="Rich deposit! "}s.materials[item]=(s.materials[item]||0)+qty;s.regionalHarvest[area().name]=(s.regionalHarvest[area().name]||0)+qty;
+ let spec=regionalSpecialty(area()),item=spin(spec),mods=weatherCombatMods(),qty=Math.max(1,Math.floor((1+rnd(3))*mods.gather)),bonus="";if(Math.random()<.08){qty+=2;bonus="Rich deposit! "}s.materials[item]=(s.materials[item]||0)+qty;s.regionalHarvest[area().name]=(s.regionalHarvest[area().name]||0)+qty;gainRegionMastery(2);
  $("harvestModalTitle").textContent="Harvested "+area().name;$("harvestModalBody").innerHTML='<div class="harvestResultGrid"><div class="item"><div class="small">MATERIAL</div><b>'+item+'</b></div><div class="item"><div class="small">AMOUNT</div><b>x'+qty+'</b></div><div class="item"><div class="small">WEATHER</div><b>'+worldWeatherFor(area().name)+'</b></div><div class="item"><div class="small">TOTAL HARVESTED HERE</div><b>'+s.regionalHarvest[area().name]+'</b></div></div><p class="small">'+bonus+'Regional specialties: '+spec.join(', ')+'.</p>';$("harvestModal").classList.add("open");log("Regional harvest: "+qty+" "+item+".");save();render();
 }
 
@@ -1830,6 +1846,7 @@ function renderWorldMap(){
 function renderMaterialsTab(){
  const all=Object.entries(s.materials).filter(([k,v])=>Number(v)>0);
  $("materialInventory").innerHTML=all.length?all.map(([k,v])=>'<div class="item"><div class="row"><b>'+k+'</b><span class="pill">x'+v+'</span></div></div>').join(""):'<p class="small">No materials currently carried.</p>';
+ if($("mealInventory"))$("mealInventory").innerHTML=Object.entries(s.meals).filter(([n,v])=>v>0).map(([n,v])=>'<div class="item recipeCard"><div class="row"><b>'+n+'</b><span class="pill">x'+v+'</span></div><div class="small">'+mealRecipes[n].desc+'</div><button data-eatmeal="'+n+'">EAT</button></div>').join("")||'<p class="small">No cooked meals.</p>';
  $("potionInventory").innerHTML=Object.entries(s.potions).filter(([k,v])=>v>0).map(([n,v])=>'<div class="item"><div class="row"><b>'+n+'</b><span class="pill">x'+v+'</span></div><div class="small">'+potionRecipes[n].desc+'</div><button data-usepotion="'+n+'">USE</button></div>').join("")||'<p class="small">No potions carried.</p>';
  $("soulCrystalInventory").innerHTML=s.soulCrystals.length?s.soulCrystals.map(c=>'<div class="item soul '+(String(s.equippedSoulCrystal)===String(c.id)?'soulEquipped':'')+'"><div class="row"><b>'+c.rarity+' Soul Crystal</b><span class="pill">'+(c.filled?'FILLED':'EMPTY')+'</span></div><div class="small">'+(c.filled?('Soul: '+c.soul.rarity+' '+c.soul.name+' • Lv '+c.soul.level):'Ready to capture the next soul you kill.')+'</div>'+(c.filled?'':'<button data-equipsoul="'+c.id+'" '+(String(s.equippedSoulCrystal)===String(c.id)?'disabled':'')+'>'+(String(s.equippedSoulCrystal)===String(c.id)?'EQUIPPED':'EQUIP CRYSTAL')+'</button>')+'</div>').join(""):'<p class="small">No Soul Crystals.</p>';
 }
@@ -2046,7 +2063,154 @@ const achievementDefs=[
 ];
 function achievementToast(t){let p=$("achievementPop");if(!p)return;p.textContent=t;p.classList.add("show");setTimeout(()=>p.classList.remove("show"),2200)}
 function checkAchievements(){for(const a of achievementDefs){if(!s.achievements[a.id]&&a.test()){s.achievements[a.id]=true;s.title=a.title;s.gold+=20;achievementToast("Achievement: "+a.name+" • Title: "+a.title)}}}
-function renderAchievements(){if($("titleLabel"))$("titleLabel").textContent=s.title;if($("achievementList"))$("achievementList").innerHTML=achievementDefs.map(a=>'<div class="item"><b>'+(s.achievements[a.id]?'✓ ':'🔒 ')+a.name+'</b><div class="small">Title: '+a.title+'</div></div>').join("")}
+function renderAchievements(){
+ if($("titleLabel"))$("titleLabel").textContent=s.title;
+ if($("achievementList"))$("achievementList").innerHTML=achievementDefs.map(a=>'<div class="item"><b>'+(s.achievements[a.id]?'✓ ':'🔒 ')+a.name+'</b><div class="small">Title: '+a.title+'</div>'+(s.achievements[a.id]?'<button class="secondary" data-settitle="'+a.title+'" '+(s.title===a.title?'disabled':'')+'>'+(s.title===a.title?'EQUIPPED':'USE TITLE')+'</button>':'')+'</div>').join("");
+}
+
+
+// ---------- Feature 1: Companions ----------
+const companionTemplates=[
+ {role:"Sellsword",names:["Mara","Dain","Rook","Tessa"],atk:5,heal:0,desc:"A straightforward fighter who adds physical damage."},
+ {role:"Field Medic",names:["Elia","Bram","Nessa","Corin"],atk:2,heal:5,desc:"Deals light damage and occasionally restores your HP."},
+ {role:"Arcanist",names:["Ilyra","Soren","Vael","Mira"],atk:4,heal:0,desc:"Adds arcane damage that ignores some defense."},
+ {role:"Scout",names:["Kael","Linn","Perrin","Asha"],atk:3,heal:0,desc:"Improves travel safety and assists with quick strikes."}
+];
+function tavernRecruitOptions(){
+ let key="recruits_"+area().name;
+ if(!s.flags[key]){
+   s.flags[key]=[0,1,2].map(()=>{
+     let t=spin(companionTemplates);
+     return{id:"cmp_"+Date.now()+"_"+Math.random(),name:spin(t.names),role:t.role,atk:t.atk+s.level,heal:t.heal,desc:t.desc,cost:45+s.level*6,level:s.level};
+   });
+ }
+ return s.flags[key];
+}
+function recruitCompanion(id){
+ let options=tavernRecruitOptions(),c=options.find(x=>x.id===id);
+ if(!c||s.gold<c.cost){log("You cannot afford that recruit.");return}
+ s.gold-=c.cost;s.companions.push(c);s.flags["recruits_"+area().name]=options.filter(x=>x.id!==id);
+ if(!s.activeCompanion)s.activeCompanion=c.id;
+ log(c.name+" the "+c.role+" joins you.");save();render();
+}
+function activeCompanion(){return s.companions.find(x=>x.id===s.activeCompanion)||null}
+function setCompanion(id){if(s.companions.some(x=>x.id===id)){s.activeCompanion=id;save();render()}}
+function companionTurn(dungeonMode=false){
+ let c=activeCompanion();if(!c)return;
+ let target=dungeonMode?(s.dungeon.encounter&&s.dungeon.encounter.find(x=>x.hp>0)):s.enemy;
+ if(!target)return;
+ if(c.role==="Field Medic"&&Math.random()<.28){
+   let h=4+c.heal+Math.floor(s.level*.4);s.hp=Math.min(maxHp(),s.hp+h);
+   (dungeonMode?dlog:log)(c.name+" patches you up for "+h+" HP.");
+   return;
+ }
+ let dmg=Math.max(1,Math.floor(c.atk*(.8+Math.random()*.4)-(c.role==="Arcanist"?target.def*.2:target.def*.35)));
+ target.hp-=dmg;
+ (dungeonMode?dlog:log)(c.name+" attacks "+target.name+" for "+dmg+".");
+}
+
+// ---------- Feature 2: Camp Cooking ----------
+const mealRecipes={
+ "Hunter Stew":{need:{Herb:1,Leather:1},desc:"+3 attack for several fights.",effect:"atk"},
+ "Miner Broth":{need:{Herb:1,Iron:1},desc:"+3 defense for several fights.",effect:"def"},
+ "Moonleaf Tea":{need:{Moonleaf:2},desc:"Restores mana and grants rested XP.",effect:"mana"},
+ "Trail Rations":{need:{Herb:1,"Wild Honey":1},desc:"Grants rested XP charges.",effect:"rest"}
+};
+function canCook(r){return Object.entries(r.need).every(([k,v])=>(s.materials[k]||0)>=v)}
+function cookMealByName(name){
+ let r=mealRecipes[name];if(!r||!canCook(r)){log("You lack the ingredients for "+name+".");return}
+ for(const [k,v] of Object.entries(r.need))s.materials[k]-=v;
+ s.meals[name]=(s.meals[name]||0)+1;log("You cook "+name+".");save();render();
+}
+function eatMeal(name){
+ if(!(s.meals[name]>0))return;s.meals[name]--;
+ let r=mealRecipes[name];
+ if(r.effect==="atk"){s.tempAttackBuff=Math.max(s.tempAttackBuff||0,3);s.flags.mealAtk=5}
+ if(r.effect==="def"){s.tempDefenseBuff=Math.max(s.tempDefenseBuff||0,3);s.flags.mealDef=5}
+ if(r.effect==="mana"){s.mana=Math.min(maxMana(),s.mana+Math.floor(maxMana()*.3));s.restedXP+=2}
+ if(r.effect==="rest"){s.restedXP+=4}
+ log("You eat "+name+". "+r.desc);save();render();
+}
+
+// ---------- Feature 3: Fishing ----------
+function fish(){
+ if(currentTown()){log("You need to leave town before fishing.");return}
+ let wet=/coast|mire|marsh|river|frost/i.test(area().name);
+ let roll=Math.random(),bonus=wet?.16:0;
+ if(roll<.42+bonus){
+   let catches=["River Fish","Silverfin","Marsh Eel","Shellfish"],item=spin(catches),qty=1+rnd(3);
+   s.materials[item]=(s.materials[item]||0)+qty;
+   log("Fishing: you catch "+qty+" "+item+".");
+   gainRegionMastery(2);
+ }else if(roll<.50+bonus){
+   let g=12+s.level*3;s.gold+=g;log("Fishing: you hook a lost purse containing "+g+" gold.");
+ }else log("Fishing: nothing bites.");
+ save();render();
+}
+
+// ---------- Feature 4: Monster Trophies ----------
+function awardTrophy(dead){
+ if(!(dead.elite||dead.boss||dead.worldBossId))return;
+ let chance=dead.boss||dead.worldBossId?1:.35;
+ if(Math.random()>chance)return;
+ let key=dead.name.replace(/^Elite\s+/,"");
+ s.trophies[key]=(s.trophies[key]||0)+1;
+ log("Trophy acquired: "+key+".");
+}
+
+// ---------- Feature 5: Region Mastery ----------
+function masteryData(name=area().name){
+ if(!s.regionMastery[name])s.regionMastery[name]={xp:0,level:1};
+ let m=s.regionMastery[name];
+ while(m.xp>=m.level*12&&m.level<10){m.xp-=m.level*12;m.level++;log("Region Mastery increased in "+name+" to Lv "+m.level+".")}
+ return m;
+}
+function gainRegionMastery(n=1,name=area().name){let m=masteryData(name);m.xp+=n;masteryData(name)}
+function masteryRewardMult(name=area().name){return 1+(masteryData(name).level-1)*.035}
+
+// ---------- Feature 6: Salvaging ----------
+function salvageItem(id){
+ let i=s.inventory.find(x=>String(x.id)===String(id));if(!i)return;
+ if((s.weapon&&String(s.weapon.id)===String(id))||(s.armor&&String(s.armor.id)===String(id))){log("Unequip that item before salvaging it.");return}
+ let mat=i.kind==="weapon"?"Iron":"Leather",qty=Math.max(1,Math.floor(i.stat/4)+(i.up||0));
+ s.materials[mat]=(s.materials[mat]||0)+qty;s.ore+=Math.floor(qty/2);
+ s.inventory=s.inventory.filter(x=>String(x.id)!==String(id));
+ log("You salvage "+i.name+" into "+qty+" "+mat+".");save();render();
+}
+
+// ---------- Feature 7: Enchantment Reroll ----------
+function rerollItemAttribute(id){
+ let i=s.inventory.find(x=>String(x.id)===String(id));if(!i)return;
+ let dust=s.materials["Arcane Dust"]||0,cost=20+(i.up||0)*10;
+ if(dust<1||s.gold<cost){log("Rerolling requires 1 Arcane Dust and "+cost+" gold.");return}
+ s.materials["Arcane Dust"]--;s.gold-=cost;
+ let choices=attrs.filter(a=>a.name!==i.attr.name);i.attr={...spin(choices)};
+ log(i.name+" is re-enchanted with "+i.attr.name+".");save();render();
+}
+
+// ---------- Feature 8: Rumor Board ----------
+function generateRumor(){
+ let boss=s.worldBosses.find(x=>!x.defeated),maps=s.treasureMaps.filter(x=>!x.found),r;
+ if(boss&&Math.random()<.45)r="Hunters whisper that "+boss.name+" roams "+boss.area+".";
+ else if(maps.length&&Math.random()<.5)r="A cartographer claims buried treasure lies somewhere in "+spin(maps).area+".";
+ else{
+   let a=spin(areas.filter(x=>x.type!=="town"));
+   r="Travelers report danger "+regionDangerValue(a.name)+"/100 around "+a.name+".";
+ }
+ s.rumors[area().name]=r;return r;
+}
+
+// ---------- Feature 9: Rested XP ----------
+function grantRestedXP(n){s.restedXP=Math.min(12,(s.restedXP||0)+n)}
+function consumeRestedXP(baseXP){
+ if(!(s.restedXP>0))return 0;
+ s.restedXP--;return Math.floor(baseXP*.35);
+}
+
+// ---------- Feature 10: Selectable Titles ----------
+function setTitle(title){
+ if(achievementDefs.some(a=>a.title===title&&s.achievements[a.id])){s.title=title;save();render()}
+}
 
 function regionDangerValue(name=area().name){if(typeof s.regionDanger[name]!=="number"){let a=areas.find(x=>x.name===name),base=a?.min||1;s.regionDanger[name]=Math.max(1,Math.min(100,Math.floor(base*4+5+rnd(22))))}return s.regionDanger[name]}
 function modifyRegionDanger(name,amount){s.regionDanger[name]=Math.max(1,Math.min(100,regionDangerValue(name)+amount))}
@@ -2070,14 +2234,30 @@ function renderWorldSystems(){ensureWorldBosses();maybeTravelingMerchant();
 
  if($("worldActivityPanel")){let danger=regionDangerValue(),f=currentTown()?townFestivalFor():null,boss=s.worldBosses.find(x=>!x.defeated&&x.area===area().name),maps=s.treasureMaps.filter(x=>!x.found&&x.area===area().name).length;$("worldActivityPanel").innerHTML='<div class="row"><span class="pill">Danger '+danger+'/100</span><span class="pill">'+worldWeatherFor(area().name)+'</span></div><div class="dangerMeter"><span style="width:'+danger+'%"></span></div>'+(boss?'<div class="worldDepthNote">Rumor: <b>'+boss.name+'</b> has been sighted here.</div>':'')+(maps?'<div class="worldDepthNote">You have '+maps+' treasure map'+(maps===1?'':'s')+' pointing here.</div>':'')+(f?'<div class="worldDepthNote">Festival: <b>'+f.type+'</b> is underway.</div>':'')+renderTravelingMerchant()}
 }
+function renderTenFeatureSystems(){
+ if($("companionPanel")){
+   $("companionPanel").innerHTML=s.companions.length?s.companions.map(c=>'<div class="item companionCard"><div class="row"><b>'+c.name+'</b><span class="pill">'+c.role+'</span></div><div class="small">'+c.desc+' • ATK '+c.atk+'</div><button data-setcompanion="'+c.id+'" '+(s.activeCompanion===c.id?'disabled':'')+'>'+(s.activeCompanion===c.id?'ACTIVE':'SET ACTIVE')+'</button></div>').join(""):'<p class="small">No companions recruited yet. Visit a town tavern.</p>';
+ }
+ if($("masteryPanel")){
+   let entries=Object.entries(s.regionMastery).sort((a,b)=>b[1].level-a[1].level);
+   $("masteryPanel").innerHTML=entries.length?entries.map(([n,m])=>'<div class="item"><div class="row"><b>'+n+'</b><span class="pill">Lv '+m.level+'</span></div><div class="small">Reward bonus '+Math.round((masteryRewardMult(n)-1)*100)+'% • '+m.xp+'/'+(m.level*12)+' mastery XP</div><div class="masteryBar"><span style="width:'+Math.min(100,m.xp/(m.level*12)*100)+'%"></span></div></div>').join(""):'<p class="small">Explore a region to begin mastering it.</p>';
+ }
+ if($("trophyPanel")){
+   let t=Object.entries(s.trophies);
+   $("trophyPanel").innerHTML=t.length?t.map(([n,v])=>'<div class="item"><b>'+n+'</b><div class="small">Trophies x'+v+'</div></div>').join(""):'<p class="small">No trophies collected.</p>';
+ }
+ if($("cookPanel")&&!$("cookPanel").classList.contains("hidden")){
+   $("cookPanel").innerHTML=Object.entries(mealRecipes).map(([n,r])=>'<div class="item recipeCard"><b>'+n+'</b><div class="small">'+r.desc+'</div><div class="small">Needs: '+Object.entries(r.need).map(([k,v])=>v+' '+k).join(", ")+'</div><button data-cookmeal="'+n+'" '+(!canCook(r)?'disabled':'')+'>COOK</button></div>').join("");
+ }
+}
 function render(){
  s.mana=Math.min(maxMana(),Math.max(0,s.mana));
  $("setup").classList.toggle("hidden",s.started);$("game").classList.toggle("hidden",!s.started);$("tabs").classList.toggle("hidden",!s.started);if(!s.started){renderCreator();return;}
  $("level").textContent=s.level;$("gold").textContent=s.gold;$("power").textContent=power();$("hpText").textContent=Math.floor(s.hp)+" / "+maxHp();$("hpBar").style.width=Math.max(0,s.hp/maxHp()*100)+"%";$("manaText").textContent=Math.floor(s.mana)+" / "+maxMana();$("manaBar").style.width=Math.max(0,Math.min(100,s.mana/maxMana()*100))+"%";$("xpText").textContent=s.xp+" / "+s.xpNeed;$("xpBar").style.width=s.xp/s.xpNeed*100+"%";$("location").textContent="Location: "+area().name+" • Ore: "+s.ore;$("modeText").textContent="Mode: "+(s.mode==="free"?"Free Roam":"Campaign");$("areaTitle").textContent=area().name;$("areaDesc").textContent=area().desc;
  $("enemyName").textContent=s.enemy?s.enemy.name:"No enemy";if($("enemySlotMini"))$("enemySlotMini").textContent=s.enemy?("HP "+Math.max(0,s.enemy.hp)+"/"+s.enemy.max+" • Lv "+s.enemy.lv):"";
  $("equipped").innerHTML="<div class='item'><b>Weapon:</b> "+(s.weapon?s.weapon.rarity+" "+s.weapon.name+" +"+s.weapon.up+" • "+s.weapon.attr.name:"None")+"</div><div class='item'><b>Armor:</b> "+(s.armor?s.armor.rarity+" "+s.armor.name+" +"+s.armor.up+" • "+s.armor.attr.name:"None")+"</div>";
- $("inventory").innerHTML=s.inventory.length?s.inventory.map(i=>"<div class='item'><div class='row'><b>"+i.rarity+" "+i.name+" +"+i.up+"</b><span class='pill'>"+i.kind+"</span></div><div class='small'>"+(i.kind==="weapon"?"ATK ":"DEF ")+i.stat+" • "+i.attr.name+": "+i.attr.desc+(i.material?" • "+i.material+(i.rune&&i.rune!=="None"?" • "+i.rune:"")+" • "+i.effort:"")+"</div><div class='grid'><button data-equip='"+i.id+"'>EQUIP</button><button class='secondary' data-upitem='"+i.id+"'>UPGRADE "+(20+(i.up+1)*20)+"g</button></div></div>").join(""):"<p class='small'>Your bag contains mostly optimism.</p>";
- $("stats").innerHTML="<div class='item'><b>"+s.name+"</b><div class='small'>"+s.race+" • "+s.className+" • "+(backstories.find(x=>x.id===s.backstory)?.name||"Unknown past")+"</div></div><div class='item'>Wealth Class: <b>"+s.wealthClass+"</b> <span class='small'>(d100: "+s.wealthRoll+")</span></div><div class='item'>Attack: <b>"+atk()+"</b></div><div class='item'>Defense: <b>"+def()+"</b></div><div class='item'>Max HP: <b>"+maxHp()+"</b></div><div class='item'>Max Mana: <b>"+maxMana()+"</b></div><div class='item'>Spellwork: <b>Lv "+s.spellwork.level+"</b></div><div class='item'>Class Level: <b>"+classLevel()+"</b></div><div class='item'>Item Quality Luck: <b>"+Math.round(luck()*100)+"%</b></div><div class='item'>Kills: <b>"+s.kills+"</b></div><div class='item'>Dungeons: <b>"+s.dungeons+"</b></div><div class='item'>Renown: <b>"+s.renown+"</b></div>";if($("activeEffects"))$("activeEffects").innerHTML=s.statuses.length?s.statuses.map(x=>'<span class="statusPill">'+x.name+' '+x.turns+'</span>').join(""):'<span class="small">None</span>';
+ $("inventory").innerHTML=s.inventory.length?s.inventory.map(i=>"<div class='item'><div class='row'><b>"+i.rarity+" "+i.name+" +"+i.up+"</b><span class='pill'>"+i.kind+"</span></div><div class='small'>"+(i.kind==="weapon"?"ATK ":"DEF ")+i.stat+" • "+i.attr.name+": "+i.attr.desc+(i.material?" • "+i.material+(i.rune&&i.rune!=="None"?" • "+i.rune:"")+" • "+i.effort:"")+"</div><div class='grid'><button data-equip='"+i.id+"'>EQUIP</button><button class='secondary' data-upitem='"+i.id+"'>UPGRADE "+(20+(i.up+1)*20)+"g</button></div><div class='grid'><button class='secondary' data-salvage='"+i.id+"'>SALVAGE</button><button class='secondary' data-rerollattr='"+i.id+"'>REROLL ATTRIBUTE</button></div></div>").join(""):"<p class='small'>Your bag contains mostly optimism.</p>";
+ $("stats").innerHTML="<div class='item'><b>"+s.name+"</b><div class='small'>"+s.race+" • "+s.className+" • "+(backstories.find(x=>x.id===s.backstory)?.name||"Unknown past")+"</div></div><div class='item'>Wealth Class: <b>"+s.wealthClass+"</b> <span class='small'>(d100: "+s.wealthRoll+")</span></div><div class='item'>Attack: <b>"+atk()+"</b></div><div class='item'>Defense: <b>"+def()+"</b></div><div class='item'>Max HP: <b>"+maxHp()+"</b></div><div class='item'>Max Mana: <b>"+maxMana()+"</b></div><div class='item'>Spellwork: <b>Lv "+s.spellwork.level+"</b></div><div class='item'>Class Level: <b>"+classLevel()+"</b></div><div class='item'>Item Quality Luck: <b>"+Math.round(luck()*100)+"%</b></div><div class='item'>Kills: <b>"+s.kills+"</b></div><div class='item'>Dungeons: <b>"+s.dungeons+"</b></div><div class='item'>Renown: <b>"+s.renown+"</b></div><div class='item'>Rested XP Charges: <b>"+s.restedXP+"</b></div><div class='item'>Active Companion: <b>"+(activeCompanion()?activeCompanion().name:'None')+"</b></div>";if($("activeEffects"))$("activeEffects").innerHTML=s.statuses.length?s.statuses.map(x=>'<span class="statusPill">'+x.name+' '+x.turns+'</span>').join(""):'<span class="small">None</span>';
  let ups=[["atk","Strength","+1 base attack"],["hp","Vitality","+6 max HP"],["def","Guard","+2 defense"],["luck","Fortune","+2% item-quality luck"]];$("upgrades").innerHTML=ups.map(u=>{let c=30+s.upgrade[u[0]]*30;return"<div class='item'><div class='row'><b>"+u[1]+"</b><span>Lv. "+s.upgrade[u[0]]+"</span></div><div class='small'>"+u[2]+"</div><button data-stat='"+u[0]+"'>UPGRADE "+c+"g</button></div>"}).join("");
  if(s.mode==="campaign"){
  $("questTitle").textContent="Campaign Journal";
@@ -2100,7 +2280,7 @@ function render(){
 }
 if($("bestiaryList")){let bs=Object.values(s.bestiary);$("bestiaryList").innerHTML=bs.length?bs.map(x=>'<div class="item"><b>'+x.name+'</b><div class="small">Weak: '+x.affinity.weak.join(", ")+' • Resists: '+x.affinity.strong.join(", ")+'</div></div>').join(""):'<p class="small">No monsters identified yet.</p>';}
  $("worldList").innerHTML=areas.map((a,i)=>"<div class='item'><b>"+a.name+"</b><div class='small'>Recommended level "+a.min+" • "+a.type+"</div></div>").join("");
- renderTownPanel();renderForgeOptions();renderWorldMap();renderMaterialsTab();renderSpellUI();renderQuestDrop();renderMonsterCombatStats();renderSummonSlots();renderCombatSpellPickers();renderClassSkillUI();renderQuickPotion();renderAchievements();checkAchievements();renderWorldSystems();
+ renderTownPanel();renderForgeOptions();renderWorldMap();renderMaterialsTab();renderSpellUI();renderQuestDrop();renderMonsterCombatStats();renderSummonSlots();renderCombatSpellPickers();renderClassSkillUI();renderQuickPotion();renderAchievements();checkAchievements();renderWorldSystems();renderTenFeatureSystems();
  $("dungeonTabBtn").disabled=!s.dungeon.active;
  $("dungeonState").textContent=!s.dungeon.active?"NO DUNGEON":s.dungeon.bossReady?"BOSS ROOM":"IN PROGRESS";
  $("dungeonName").textContent=s.dungeon.active?s.dungeon.name:"No dungeon discovered.";
@@ -2137,6 +2317,14 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.study){studyTome(b.dataset.study);return}
  if(b.dataset.castspell){castKnownSpell(b.dataset.castspell,false);return}
  if(b.dataset.castdungeon){castKnownSpell(b.dataset.castdungeon,true);return}
+ if(b.dataset.recruit){recruitCompanion(b.dataset.recruit);return}
+ if(b.dataset.setcompanion){setCompanion(b.dataset.setcompanion);return}
+ if(b.dataset.cookmeal){cookMealByName(b.dataset.cookmeal);return}
+ if(b.dataset.eatmeal){eatMeal(b.dataset.eatmeal);return}
+ if(b.dataset.salvage){salvageItem(b.dataset.salvage);return}
+ if(b.dataset.rerollattr){rerollItemAttribute(b.dataset.rerollattr);return}
+ if(b.dataset.settitle){setTitle(b.dataset.settitle);return}
+ if(b.dataset.refreshRumor){if(s.gold>=5){s.gold-=5;s.rumors[area().name]=generateRumor();save();render()}return}
  if(b.dataset.selectquickpotion){s.selectedQuickPotion=b.dataset.selectquickpotion;let p=$(b.dataset.quickmode==="dungeon"?"quickPotionPickerDungeon":"quickPotionPicker");if(p)p.classList.remove("open");save();render();return}
  if(b.dataset.travelmerchant){buyTravelingMerchant(b.dataset.travelmerchant);return}
  if(b.dataset.claimbounty){claimBounty(b.dataset.claimbounty);return}
@@ -2163,6 +2351,10 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.dir){moveDungeon(b.dataset.dir);return}
  if(b.dataset.equip){equip(b.dataset.equip);return}if(b.dataset.upitem){upgradeItem(b.dataset.upitem);return}if(b.dataset.stat){let k=b.dataset.stat,c=30+s.upgrade[k]*30;if(s.gold>=c){s.gold-=c;s.upgrade[k]++;s.hp=Math.min(maxHp(),s.hp+(k==="hp"?10:0));save();render()}return}
  switch(b.dataset.a){
+ case"cookMeal":{let p=$("cookPanel");p.classList.toggle("hidden");renderTenFeatureSystems()}break;
+ case"fish":fish();break;
+ case"openTavern":s.townPanel=s.townPanel==="tavern"?null:"tavern";save();render();break;
+ case"openRumors":s.townPanel=s.townPanel==="rumors"?null:"rumors";save();render();break;
  case"closeHarvestModal":$("harvestModal").classList.remove("open");break;
  case"searchTreasureMap":searchTreasureMap();break;
  case"harvestRegion":harvestRegion();break;
