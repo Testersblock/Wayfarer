@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG v3.0</title>
+<title>Wayfarer: Wheel & Dice RPG v3.1</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
@@ -102,8 +102,16 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 .recipeCard{border-left:3px solid #b28a59;padding-left:8px}
 .trophyGrid{display:grid;grid-template-columns:1fr 1fr;gap:7px}
 @media(max-width:430px){.trophyGrid{grid-template-columns:1fr}}
+
+.actionModal{display:none;position:fixed;inset:0;background:#000a;z-index:112;align-items:center;justify-content:center;padding:20px}
+.actionModal.open{display:flex}.actionModalCard{width:min(440px,100%);background:#171b24;border:1px solid #343b49;border-radius:18px;padding:18px;box-shadow:0 20px 60px #000a}
+.actionResultGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}.actionResultGrid .item{margin:0}
+.prosperityBar,.affinityBar,.influenceBar{height:8px;background:#252b36;border-radius:999px;overflow:hidden;margin-top:5px}.prosperityBar>span,.affinityBar>span,.influenceBar>span{display:block;height:100%;background:#758c8a}
+.immersiveCard{border-left:3px solid #7b8a74;padding-left:8px}
+@media(max-width:420px){.actionResultGrid{grid-template-columns:1fr}}
 </style></head>
-<body><div id="harvestModal" class="harvestModal"><div class="harvestModalCard"><b id="harvestModalTitle">Harvest Result</b><div id="harvestModalBody"></div><button data-a="closeHarvestModal">CONTINUE</button></div></div>
+<body><div id="actionModal" class="actionModal"><div class="actionModalCard"><b id="actionModalTitle">Result</b><div id="actionModalBody"></div><button data-a="closeActionModal">CONTINUE</button></div></div>
+<div id="harvestModal" class="harvestModal"><div class="harvestModalCard"><b id="harvestModalTitle">Harvest Result</b><div id="harvestModalBody"></div><button data-a="closeHarvestModal">CONTINUE</button></div></div>
 <div id="campModal" class="campModal"><div class="campModalCard"><b id="campModalTitle">Camp Result</b><div class="small" id="campModalText" style="margin:10px 0"></div><button data-a="closeCampModal">CONTINUE</button></div></div>
 <div id="achievementPop" class="achievementPop"></div>
 <div id="app">
@@ -762,9 +770,9 @@ const effortDefs={
 };
 const armorNames=["Leather Coat","Chainmail","Iron Plate","Ranger Cloak","Scale Armor","Knight Plate","Runed Robes","Brigandine","Warden Mail","Dragonhide"];
 function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:55,baseHp:55,mana:60,baseMana:60,atk:4,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,materials:{Iron:3,Steel:0,Silver:0,Hardwood:0,Crystal:0,"Drake Scale":0,Sunstone:0,"Frost Crystal":0,Hellstone:0,Leather:0,Herb:0,Flax:0,Clay:0,"Wild Honey":0,Silk:0,Moonleaf:0,Resin:0,"Living Bark":0,Coal:0,"Adamant Shard":0,Quartz:0,Sulfur:0,"Venom Sac":0,"Black Herb":0,"Spirit Water":0,"Bog Iron":0,Rotroot:0,"Ghost Reed":0,"Hydra Scale":0,"Glass Shard":0,"Gold Ore":0,"Desert Rose":0,"Scorpion Chitin":0,"Star Sand":0,Obsidian:0,"Wyrm Hide":0,Iceglass:0,"White Fur":0,"Frozen Core":0,"Blue Quartz":0,"Demon Horn":0,"Blood Crystal":0,"Infernal Iron":0,"Ash Pearl":0,"Soul Ash":0,Demonhide:0,"Ancient Parchment":0,"Arcane Dust":0,"Beast Fang":0,"Glowcap":0,"Dryad Sap":0,"Black Timber":0,"Shadow Moss":0,"Wolf Pelt":0,"Mist Pearl":0,"Dark Resin":0,"Ironwood":0,"Mithril Flake":0,"Swamp Amber":0,"Sea Crystal":0,"Pearl":0,"Saltstone":0,"Coral":0,"Siren Scale":0,"Tideglass":0,"Djinn Ash":0,"Stormglass":0,"Cloud Feather":0,"Sky Iron":0,"Giant Bone":0,"Lightning Core":0,"Wind Silk":0,"Everfrost":0,"Bone Dust":0,"Grave Wax":0,"Black Iron":0,"Crypt Amber":0,"Death Silk":0,"Hellglass":0,"Cursed Steel":0,"Abyssal Alloy":0,"Demon Heart":0,"Black Crystal":0,"Royal Hellstone":0,"Soulsteel":0,"Infernal Ruby":0},
-soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,randomNPCs:{},sideQuests:[],renown:0,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,selectedClassSkill:null,activeSummon:null,tempAttackBuff:0,tempDefenseBuff:0,tempHaste:0,skipEnemyTurn:false,potions:{},statuses:[],bestiary:{},reputation:{},activeWorldEvent:null,campCooldown:0,timeOfDay:8,daysPassed:1,landmarksFound:{},achievements:{},title:"Wayfarer",selectedQuickPotion:null,discoveredLocations:[0,1,2,3],worldMapSeed:482731,weather:{},factions:{Wardens:0,Arcanists:0,Merchants:0,Freeblades:0},bounties:[],minorSites:{},regionalHarvest:{},travelingMerchant:null,worldBosses:[],regionDanger:{},treasureMaps:[],townFestivals:{},companions:[],activeCompanion:null,meals:{},trophies:{},regionMastery:{},rumors:{},restedXP:0,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
+soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,randomNPCs:{},sideQuests:[],renown:0,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,selectedClassSkill:null,activeSummon:null,tempAttackBuff:0,tempDefenseBuff:0,tempHaste:0,skipEnemyTurn:false,potions:{},statuses:[],bestiary:{},reputation:{},activeWorldEvent:null,campCooldown:0,timeOfDay:8,daysPassed:1,landmarksFound:{},achievements:{},title:"Wayfarer",selectedQuickPotion:null,discoveredLocations:[0,1,2,3],worldMapSeed:482731,weather:{},factions:{Wardens:0,Arcanists:0,Merchants:0,Freeblades:0},bounties:[],minorSites:{},regionalHarvest:{},travelingMerchant:null,worldBosses:[],regionDanger:{},treasureMaps:[],townFestivals:{},companions:[],activeCompanion:null,meals:{},trophies:{},regionMastery:{},rumors:{},restedXP:0,prosperity:{},regionInfluence:{},companionAffinity:{},location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
 dungeon:{active:false,name:null,roomsEntered:0,targetRooms:0,blocked:null,bossReady:false,bossDefeated:false,encounter:null,boss:null,clearedRooms:0}}}
-let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.potions=Object.assign({},x.potions||{});s.bestiary=Object.assign({},x.bestiary||{});s.reputation=Object.assign({},x.reputation||{});s.statuses=Array.isArray(x.statuses)?x.statuses:[];s.landmarksFound=Object.assign({},x.landmarksFound||{});s.achievements=Object.assign({},x.achievements||{});if(typeof x.timeOfDay==="number")s.timeOfDay=x.timeOfDay;if(typeof x.daysPassed==="number")s.daysPassed=x.daysPassed;if(typeof x.title==="string")s.title=x.title;if(typeof x.selectedQuickPotion==="string")s.selectedQuickPotion=x.selectedQuickPotion;if(typeof x.worldMapSeed==="number")s.worldMapSeed=x.worldMapSeed;s.weather=Object.assign({},x.weather||{});s.factions=Object.assign({Wardens:0,Arcanists:0,Merchants:0,Freeblades:0},x.factions||{});s.bounties=Array.isArray(x.bounties)?x.bounties:[];s.minorSites=Object.assign({},x.minorSites||{});s.regionalHarvest=Object.assign({},x.regionalHarvest||{});s.travelingMerchant=x.travelingMerchant||null;s.worldBosses=Array.isArray(x.worldBosses)?x.worldBosses:[];s.regionDanger=Object.assign({},x.regionDanger||{});s.treasureMaps=Array.isArray(x.treasureMaps)?x.treasureMaps:[];s.townFestivals=Object.assign({},x.townFestivals||{});s.companions=Array.isArray(x.companions)?x.companions:[];s.activeCompanion=x.activeCompanion||null;s.meals=Object.assign({},x.meals||{});s.trophies=Object.assign({},x.trophies||{});s.regionMastery=Object.assign({},x.regionMastery||{});s.rumors=Object.assign({},x.rumors||{});s.restedXP=Number(x.restedXP||0);s.discoveredLocations=Array.isArray(x.discoveredLocations)&&x.discoveredLocations.length?x.discoveredLocations:[0,1,2,3];s.questProgress=Object.assign({},x.questProgress||{});s.randomNPCs=Object.assign({},x.randomNPCs||{});s.sideQuests=Array.isArray(x.sideQuests)?x.sideQuests:[];if(typeof x.renown==="number")s.renown=x.renown;s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
+let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.potions=Object.assign({},x.potions||{});s.bestiary=Object.assign({},x.bestiary||{});s.reputation=Object.assign({},x.reputation||{});s.statuses=Array.isArray(x.statuses)?x.statuses:[];s.landmarksFound=Object.assign({},x.landmarksFound||{});s.achievements=Object.assign({},x.achievements||{});if(typeof x.timeOfDay==="number")s.timeOfDay=x.timeOfDay;if(typeof x.daysPassed==="number")s.daysPassed=x.daysPassed;if(typeof x.title==="string")s.title=x.title;if(typeof x.selectedQuickPotion==="string")s.selectedQuickPotion=x.selectedQuickPotion;if(typeof x.worldMapSeed==="number")s.worldMapSeed=x.worldMapSeed;s.weather=Object.assign({},x.weather||{});s.factions=Object.assign({Wardens:0,Arcanists:0,Merchants:0,Freeblades:0},x.factions||{});s.bounties=Array.isArray(x.bounties)?x.bounties:[];s.minorSites=Object.assign({},x.minorSites||{});s.regionalHarvest=Object.assign({},x.regionalHarvest||{});s.travelingMerchant=x.travelingMerchant||null;s.worldBosses=Array.isArray(x.worldBosses)?x.worldBosses:[];s.regionDanger=Object.assign({},x.regionDanger||{});s.treasureMaps=Array.isArray(x.treasureMaps)?x.treasureMaps:[];s.townFestivals=Object.assign({},x.townFestivals||{});s.companions=Array.isArray(x.companions)?x.companions:[];s.activeCompanion=x.activeCompanion||null;s.meals=Object.assign({},x.meals||{});s.trophies=Object.assign({},x.trophies||{});s.regionMastery=Object.assign({},x.regionMastery||{});s.rumors=Object.assign({},x.rumors||{});s.restedXP=Number(x.restedXP||0);s.prosperity=Object.assign({},x.prosperity||{});s.regionInfluence=Object.assign({},x.regionInfluence||{});s.companionAffinity=Object.assign({},x.companionAffinity||{});s.discoveredLocations=Array.isArray(x.discoveredLocations)&&x.discoveredLocations.length?x.discoveredLocations:[0,1,2,3];s.questProgress=Object.assign({},x.questProgress||{});s.randomNPCs=Object.assign({},x.randomNPCs||{});s.sideQuests=Array.isArray(x.sideQuests)?x.sideQuests:[];if(typeof x.renown==="number")s.renown=x.renown;s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
 if(!s.flags.soulCrystalObjectMigration){
   let legacyFilled=Number((x.materials||{})["Soul Crystal (Filled)"]||0);
   let legacyEmpty=Number((x.materials||{})["Soul Crystal (Empty)"]||0);
@@ -802,7 +810,7 @@ function enemy(){
 }
 function levelUp(){while(s.xp>=s.xpNeed){s.xp-=s.xpNeed;s.level++;s.xpNeed=Math.floor(s.xpNeed*1.28);s.baseHp+=3;s.hp=maxHp();s.mana=maxMana();log("Level up! You are now level "+s.level+". HP and mana restored.")}}
 function loot(mult=1){mult*=masteryRewardMult();let g=Math.floor((8+s.level*3)*mult*(1+attrsTotal("gold"))),xp=Math.floor((12+s.level*3)*mult*(1+attrsTotal("xp")+s.bonusXP)),restBonus=consumeRestedXP(xp);xp+=restBonus;s.gold+=g;s.xp+=xp;if(restBonus)log("Rested XP bonus: +"+restBonus+" XP.");if(Math.random()<.35){s.ore+=1+rnd(2);log("You recover forging ore.")}if(Math.random()<.16){let it=makeItem(Math.random()<.55?"weapon":"armor",2);s.inventory.push(it);log("Loot wheel: "+it.rarity+" "+it.name+" ["+it.attr.name+"].")}log("Reward: "+g+" gold, "+xp+" XP.");levelUp()}
-function win(){let dead={...s.enemy};awardTrophy(dead);gainRegionMastery(dead.elite?3:1);updateBounties(dead.name);modifyRegionDanger(area().name,-2);if(dead.worldBossId){let wb=s.worldBosses.find(x=>x.id===dead.worldBossId);if(wb){wb.defeated=true;s.gold+=100+wb.level*10;s.renown+=3;log("World Boss defeated! Renown +3 and a massive bounty paid.")}}let roadDestination=dead.roadAmbush?dead.pendingDestination:null;s.kills++;s.questProgress["kills_"+area().name]=Number(s.questProgress["kills_"+area().name]||0)+1;
+function win(){let dead={...s.enemy};awardTrophy(dead);gainRegionMastery(dead.elite?3:1);updateBounties(dead.name);modifyRegionDanger(area().name,-2);if(dead.worldBossId){let wb=s.worldBosses.find(x=>x.id===dead.worldBossId);if(wb){wb.defeated=true;s.gold+=100+wb.level*10;s.renown+=3;spreadProsperity(area().name,8);addRegionInfluence(area().name,"Wardens",3);gainCompanionAffinity(4,"defeating a world boss together");log("World Boss defeated! Renown +3. Trade improves and Warden influence grows.")}}let roadDestination=dead.roadAmbush?dead.pendingDestination:null;s.kills++;s.questProgress["kills_"+area().name]=Number(s.questProgress["kills_"+area().name]||0)+1;
  if(s.mode==="campaign"){if(dead.finalBoss){s.finalBossDefeated=true;log("Demon Lord Malachar is defeated. Valedorn survives.");}}
  captureSoul(dead,false);if(dead.elite&&/(Wandering Champion|Ancient Beast|Monster Nest)/.test(dead.name)){s.gold+=25+s.level*4;s.renown++;s.activeWorldEvent=null;log("Elite hunt complete. Bonus gold and Renown +1.")}loot((s.enemy.elite?1.8:1)*(dead.lootMult||1));s.enemy=null;
  if(roadDestination!==null&&areas[roadDestination]){
@@ -841,7 +849,7 @@ function explore(){
  if(discoverConnectedRegion()){save();render();return;}if(discoverMinorSite()){save();render();return;}if(maybeSpawnWorldBoss()){save();render();return;}
 
  let roll=Math.random();
- let dangerBonus=(regionDangerValue()-50)/300;
+ let dangerBonus=(effectiveRegionDanger()-50)/300;
  if(roll<Math.max(.30,Math.min(.62,.42+dangerBonus))){
    enemy();
    if(s.enemy){
@@ -885,7 +893,7 @@ function camp(){
  if(s.campCooldown>0){showCampPopup("Camp Failed","You need to explore or travel before camping again.");return}
  advanceTime(8);
  if(Math.random()<.22){showCampPopup("Ambushed!","Something found your camp. Prepare for combat.");log("Your camp attracts trouble.");enemy();s.campCooldown=1;save();render();return}
- let h=Math.floor(maxHp()*.35),mm=Math.floor(maxMana()*.35);s.hp=Math.min(maxHp(),s.hp+h);s.mana=Math.min(maxMana(),s.mana+mm);s.campCooldown=1;grantRestedXP(3);let text="You rest until "+timeLabel()+". Restored "+h+" HP and "+mm+" mana.";showCampPopup("Camp Rest",text);log(text);save();render();
+ let h=Math.floor(maxHp()*.35),mm=Math.floor(maxMana()*.35);s.hp=Math.min(maxHp(),s.hp+h);s.mana=Math.min(maxMana(),s.mana+mm);s.campCooldown=1;grantRestedXP(3);gainCompanionAffinity(1);let text="You rest until "+timeLabel()+". Restored "+h+" HP and "+mm+" mana.";showCampPopup("Camp Rest",text);log(text);save();render();
 }
 
 function unlockLocation(idx){
@@ -919,7 +927,7 @@ function roadAmbush(destIndex){
  return true;
 }
 function travel(){
- advanceTime(3);maybeShiftWeather();
+ advanceTime(3);maybeShiftWeather();if(activeCompanion()&&Math.random()<.55)gainCompanionAffinity(1);
  s.campCooldown=0;
  if(s.enemy){log("You cannot travel while an enemy is attacking you.");return}
 
@@ -1075,7 +1083,7 @@ function renderCreator(){
  $("creatorPreview").innerHTML='<div class="item"><b>'+creatorState.race+' '+creatorState.className+'</b><div class="small">'+race.desc+' '+cl.desc+'</div></div><div class="item"><b>'+bg.name+'</b><div class="small">Starts in '+bg.start+' • '+bg.perk+'</div></div><div class="item"><b>Wealth</b><div class="small">Rolled secretly on a d100 when the game begins. Possible classes: Destitute, Poor, Common, Comfortable, Wealthy, Noble.</div></div>';
 }
 
-function currentTown(){return area().type==="town"}function townRep(n=area().name){return Number(s.reputation[n]||0)}function gainTownRep(n=1){if(currentTown())s.reputation[area().name]=townRep()+n}function townPriceMult(){return Math.max(.65,(1-townRep()*.01)*festivalBonus().buy)}
+function currentTown(){return area().type==="town"}function townRep(n=area().name){return Number(s.reputation[n]||0)}function gainTownRep(n=1){if(currentTown())s.reputation[area().name]=townRep()+n}function townPriceMult(){let inf=influenceBenefit(area().name);return Math.max(.58,(1-townRep()*.01)*festivalBonus().buy*prosperityPriceMult(area().name)*(1-inf.merchants))}
 let jobTimer=null;
 function startJobChallenge(jobIndex){
  if(!currentTown()){log("You need to be in a town to take a job.");return}
@@ -1559,12 +1567,13 @@ function updateBounties(deadName){
  }
 }
 function claimBounty(id){
- let b=s.bounties.find(x=>x.id===id);
- if(!b||!b.complete)return;
- s.gold+=b.rewardGold;s.xp+=b.rewardXP;s.factions[b.faction]=(s.factions[b.faction]||0)+2;
- log("Bounty claimed: "+b.target+". "+b.faction+" standing +2.");
- s.bounties=s.bounties.filter(x=>x.id!==id);
- levelUp();ensureBounties();save();render();
+ let b=s.bounties.find(x=>x.id===id);if(!b||!b.complete)return;
+ let freebladeBonus=influenceBenefit(b.area).freeblades;
+ let gold=Math.floor(b.rewardGold*(1+freebladeBonus)),xp=b.rewardXP;
+ s.gold+=gold;s.xp+=xp;s.factions[b.faction]=(s.factions[b.faction]||0)+2;
+ addRegionInfluence(b.area,b.faction,3);modifyRegionDanger(b.area,-5);spreadProsperity(b.area,4);
+ log("Bounty claimed: "+b.target+". "+b.faction+" standing +2. Local prosperity rises.");
+ s.bounties=s.bounties.filter(x=>x.id!==id);levelUp();ensureBounties();save();render();
 }
 
 function factionTier(v){
@@ -2069,6 +2078,69 @@ function renderAchievements(){
 }
 
 
+// ---------- Connected World Systems ----------
+function showActionPopup(title,body){
+ let m=$("actionModal");if(!m)return;
+ $("actionModalTitle").textContent=title;$("actionModalBody").innerHTML=body;m.classList.add("open");
+}
+
+// 1) Regional Prosperity: danger, bounties, bosses, festivals and markets feed one economy.
+function prosperityValue(name=area().name){
+ if(typeof s.prosperity[name]!=="number"){
+   let a=areas.find(x=>x.name===name),base=a&&a.type==="town"?52:42;
+   s.prosperity[name]=Math.max(5,Math.min(95,base-rnd(16)+rnd(18)));
+ }
+ return s.prosperity[name];
+}
+function modifyProsperity(name,amount){s.prosperity[name]=Math.max(0,Math.min(100,prosperityValue(name)+amount))}
+function connectedTowns(regionName){
+ let links=worldConnections[regionName]||[],towns=links.map(n=>areas.find(a=>a.name===n)).filter(a=>a&&a.type==="town");
+ if(!towns.length){let self=areas.find(a=>a.name===regionName);if(self&&self.type==="town")towns=[self]}
+ return towns;
+}
+function spreadProsperity(regionName,amount){
+ modifyProsperity(regionName,amount);
+ let towns=connectedTowns(regionName);for(const t of towns)modifyProsperity(t.name,Math.ceil(amount*.7));
+}
+function prosperityTier(v){return v>=80?"Thriving":v>=60?"Prosperous":v>=40?"Stable":v>=20?"Struggling":"Impoverished"}
+function prosperityPriceMult(name=area().name){let p=prosperityValue(name);return Math.max(.86,1-(p-50)*.0028)}
+
+// 2) Regional Faction Influence: contracts change who matters where, and that affects other systems.
+const influenceFactions=["Wardens","Arcanists","Merchants","Freeblades"];
+function influenceData(name=area().name){
+ if(!s.regionInfluence[name])s.regionInfluence[name]={Wardens:0,Arcanists:0,Merchants:0,Freeblades:0};
+ return s.regionInfluence[name];
+}
+function addRegionInfluence(name,faction,amount){
+ let d=influenceData(name);d[faction]=Math.max(0,(d[faction]||0)+amount);
+ for(const t of connectedTowns(name)){let td=influenceData(t.name);td[faction]=Math.max(0,(td[faction]||0)+Math.ceil(amount*.5))}
+}
+function dominantFaction(name=area().name){
+ let d=influenceData(name),arr=Object.entries(d).sort((a,b)=>b[1]-a[1]);
+ return arr[0]&&arr[0][1]>=3?{name:arr[0][0],value:arr[0][1]}:null;
+}
+function influenceBenefit(name=area().name){
+ let d=influenceData(name);return{
+   wardens:Math.min(12,(d.Wardens||0)*.7),
+   arcanists:Math.min(.30,(d.Arcanists||0)*.015),
+   merchants:Math.min(.18,(d.Merchants||0)*.009),
+   freeblades:Math.min(.25,(d.Freeblades||0)*.012)
+ };
+}
+function effectiveRegionDanger(name=area().name){return Math.max(1,Math.round(regionDangerValue(name)-influenceBenefit(name).wardens))}
+
+// 3) Companion Affinity: meals, travel, rest and victories build an actual bond.
+function companionAffinityValue(c=activeCompanion()){if(!c)return 0;return Number(s.companionAffinity[c.id]||0)}
+function companionBondTier(v){return v>=50?"Bonded":v>=30?"Trusted":v>=15?"Friendly":v>=5?"Acquainted":"New"}
+function companionBondMult(c=activeCompanion()){return 1+Math.min(.30,companionAffinityValue(c)*.006)}
+function gainCompanionAffinity(amount,reason=""){
+ let c=activeCompanion();if(!c)return;
+ let before=companionBondTier(companionAffinityValue(c));s.companionAffinity[c.id]=companionAffinityValue(c)+amount;
+ let after=companionBondTier(companionAffinityValue(c));
+ if(before!==after)log(c.name+" now considers you "+after+".");
+ else if(reason&&amount>=2)log(c.name+" appreciates "+reason+". Affinity +"+amount+".");
+}
+
 // ---------- Feature 1: Companions ----------
 const companionTemplates=[
  {role:"Sellsword",names:["Mara","Dain","Rook","Tessa"],atk:5,heal:0,desc:"A straightforward fighter who adds physical damage."},
@@ -2097,16 +2169,11 @@ function activeCompanion(){return s.companions.find(x=>x.id===s.activeCompanion)
 function setCompanion(id){if(s.companions.some(x=>x.id===id)){s.activeCompanion=id;save();render()}}
 function companionTurn(dungeonMode=false){
  let c=activeCompanion();if(!c)return;
- let target=dungeonMode?(s.dungeon.encounter&&s.dungeon.encounter.find(x=>x.hp>0)):s.enemy;
- if(!target)return;
- if(c.role==="Field Medic"&&Math.random()<.28){
-   let h=4+c.heal+Math.floor(s.level*.4);s.hp=Math.min(maxHp(),s.hp+h);
-   (dungeonMode?dlog:log)(c.name+" patches you up for "+h+" HP.");
-   return;
- }
- let dmg=Math.max(1,Math.floor(c.atk*(.8+Math.random()*.4)-(c.role==="Arcanist"?target.def*.2:target.def*.35)));
- target.hp-=dmg;
- (dungeonMode?dlog:log)(c.name+" attacks "+target.name+" for "+dmg+".");
+ let target=dungeonMode?(s.dungeon.encounter&&s.dungeon.encounter.find(x=>x.hp>0)):s.enemy;if(!target)return;
+ let bond=companionBondMult(c);
+ if(c.role==="Field Medic"&&Math.random()<.28){let h=Math.floor((4+c.heal+Math.floor(s.level*.4))*bond);s.hp=Math.min(maxHp(),s.hp+h);(dungeonMode?dlog:log)(c.name+" patches you up for "+h+" HP.");return}
+ let dmg=Math.max(1,Math.floor((c.atk*(.8+Math.random()*.4)-(c.role==="Arcanist"?target.def*.2:target.def*.35))*bond));target.hp-=dmg;
+ (dungeonMode?dlog:log)(c.name+" attacks "+target.name+" for "+dmg+"."+(bond>1.12?" Your bond makes the attack more effective.":""));
 }
 
 // ---------- Feature 2: Camp Cooking ----------
@@ -2129,23 +2196,34 @@ function eatMeal(name){
  if(r.effect==="def"){s.tempDefenseBuff=Math.max(s.tempDefenseBuff||0,3);s.flags.mealDef=5}
  if(r.effect==="mana"){s.mana=Math.min(maxMana(),s.mana+Math.floor(maxMana()*.3));s.restedXP+=2}
  if(r.effect==="rest"){s.restedXP+=4}
- log("You eat "+name+". "+r.desc);save();render();
+ gainCompanionAffinity(1,"sharing a meal");log("You eat "+name+". "+r.desc);save();render();
 }
 
 // ---------- Feature 3: Fishing ----------
 function fish(){
- if(currentTown()){log("You need to leave town before fishing.");return}
+ if(currentTown()){
+   showActionPopup("Fishing","<p class='small'>You need to leave town before fishing. The fountain does not count, regardless of optimism.</p>");
+   return;
+ }
  let wet=/coast|mire|marsh|river|frost/i.test(area().name);
- let roll=Math.random(),bonus=wet?.16:0;
+ let weather=worldWeatherFor(area().name),roll=Math.random(),bonus=wet?.16:0;
+ if(weather==="Rain")bonus+=.08;if(weather==="Storm")bonus-=.05;
+ let title="Fishing Result",body="";
  if(roll<.42+bonus){
    let catches=["River Fish","Silverfin","Marsh Eel","Shellfish"],item=spin(catches),qty=1+rnd(3);
-   s.materials[item]=(s.materials[item]||0)+qty;
+   qty=Math.max(1,Math.floor(qty*masteryRewardMult()));
+   s.materials[item]=(s.materials[item]||0)+qty;gainRegionMastery(2);
+   body="<div class='actionResultGrid'><div class='item'><div class='small'>CATCH</div><b>"+item+"</b></div><div class='item'><div class='small'>AMOUNT</div><b>x"+qty+"</b></div><div class='item'><div class='small'>REGION</div><b>"+area().name+"</b></div><div class='item'><div class='small'>WEATHER</div><b>"+weather+"</b></div></div><p class='small'>Region Mastery +2.</p>";
    log("Fishing: you catch "+qty+" "+item+".");
-   gainRegionMastery(2);
  }else if(roll<.50+bonus){
-   let g=12+s.level*3;s.gold+=g;log("Fishing: you hook a lost purse containing "+g+" gold.");
- }else log("Fishing: nothing bites.");
- save();render();
+   let g=12+s.level*3;s.gold+=g;
+   body="<div class='actionResultGrid'><div class='item'><div class='small'>FOUND</div><b>Lost Purse</b></div><div class='item'><div class='small'>GOLD</div><b>+"+g+"g</b></div></div><p class='small'>Apparently somebody upstream had a much worse afternoon.</p>";
+   log("Fishing: you hook a lost purse containing "+g+" gold.");
+ }else{
+   body="<div class='item'><b>No Catch</b><div class='small'>Nothing bites. Weather: "+weather+". Water-friendly region bonus: "+(wet?"Yes":"No")+".</div></div>";
+   log("Fishing: nothing bites.");
+ }
+ showActionPopup(title,body);save();render();
 }
 
 // ---------- Feature 4: Monster Trophies ----------
@@ -2155,7 +2233,7 @@ function awardTrophy(dead){
  if(Math.random()>chance)return;
  let key=dead.name.replace(/^Elite\s+/,"");
  s.trophies[key]=(s.trophies[key]||0)+1;
- log("Trophy acquired: "+key+".");
+ gainCompanionAffinity(dead.worldBossId?3:2,"a memorable victory");log("Trophy acquired: "+key+".");
 }
 
 // ---------- Feature 5: Region Mastery ----------
@@ -2181,11 +2259,17 @@ function salvageItem(id){
 // ---------- Feature 7: Enchantment Reroll ----------
 function rerollItemAttribute(id){
  let i=s.inventory.find(x=>String(x.id)===String(id));if(!i)return;
- let dust=s.materials["Arcane Dust"]||0,cost=20+(i.up||0)*10;
- if(dust<1||s.gold<cost){log("Rerolling requires 1 Arcane Dust and "+cost+" gold.");return}
+ let old=i.attr.name,dust=s.materials["Arcane Dust"]||0;
+ let arcaneDiscount=influenceBenefit(area().name).arcanists;
+ let cost=Math.max(8,Math.floor((20+(i.up||0)*10)*(1-arcaneDiscount)));
+ if(dust<1||s.gold<cost){
+   showActionPopup("Re-Enchantment Failed","<div class='actionResultGrid'><div class='item'><div class='small'>ARCANE DUST</div><b>"+dust+" / 1</b></div><div class='item'><div class='small'>GOLD</div><b>"+s.gold+" / "+cost+"g</b></div></div><p class='small'>Arcanist regional influence can reduce the gold cost.</p>");
+   log("Rerolling requires 1 Arcane Dust and "+cost+" gold.");return;
+ }
  s.materials["Arcane Dust"]--;s.gold-=cost;
- let choices=attrs.filter(a=>a.name!==i.attr.name);i.attr={...spin(choices)};
- log(i.name+" is re-enchanted with "+i.attr.name+".");save();render();
+ let choices=attrs.filter(a=>a.name!==old);i.attr={...spin(choices)};
+ showActionPopup("Attribute Rerolled","<div class='actionResultGrid'><div class='item'><div class='small'>ITEM</div><b>"+i.name+"</b></div><div class='item'><div class='small'>COST</div><b>1 Dust + "+cost+"g</b></div><div class='item'><div class='small'>OLD ATTRIBUTE</div><b>"+old+"</b></div><div class='item'><div class='small'>NEW ATTRIBUTE</div><b>"+i.attr.name+"</b></div></div>"+(arcaneDiscount>0?"<p class='small'>Arcanist influence discounted the ritual by "+Math.round(arcaneDiscount*100)+"%.</p>":""));
+ log(i.name+" is re-enchanted: "+old+" → "+i.attr.name+".");save();render();
 }
 
 // ---------- Feature 8: Rumor Board ----------
@@ -2195,7 +2279,7 @@ function generateRumor(){
  else if(maps.length&&Math.random()<.5)r="A cartographer claims buried treasure lies somewhere in "+spin(maps).area+".";
  else{
    let a=spin(areas.filter(x=>x.type!=="town"));
-   r="Travelers report danger "+regionDangerValue(a.name)+"/100 around "+a.name+".";
+   let dom=dominantFaction(a.name);r="Travelers report danger "+effectiveRegionDanger(a.name)+"/100 around "+a.name+", prosperity "+prosperityTier(prosperityValue(a.name))+""+(dom?", with growing "+dom.name+" influence":"")+".";
  }
  s.rumors[area().name]=r;return r;
 }
@@ -2214,29 +2298,64 @@ function setTitle(title){
 
 function regionDangerValue(name=area().name){if(typeof s.regionDanger[name]!=="number"){let a=areas.find(x=>x.name===name),base=a?.min||1;s.regionDanger[name]=Math.max(1,Math.min(100,Math.floor(base*4+5+rnd(22))))}return s.regionDanger[name]}
 function modifyRegionDanger(name,amount){s.regionDanger[name]=Math.max(1,Math.min(100,regionDangerValue(name)+amount))}
-function maybeTravelingMerchant(){if(s.travelingMerchant&&s.travelingMerchant.expiresDay<s.daysPassed)s.travelingMerchant=null;if(!s.travelingMerchant&&Math.random()<.08){let town=spin(areas.filter(a=>a.type==="town"));s.travelingMerchant={town:town.name,expiresDay:s.daysPassed+2,stock:[{name:"Traveler's Cache",cost:35+s.level*3,type:"cache"},{name:"Rare Soul Crystal",cost:70+s.level*5,type:"soul"},{name:"Treasure Map",cost:55+s.level*4,type:"map"}]};log("A traveling merchant has arrived in "+town.name+".")}}
+function maybeTravelingMerchant(){
+ if(s.travelingMerchant&&s.travelingMerchant.expiresDay<s.daysPassed)s.travelingMerchant=null;
+ if(s.travelingMerchant)return;
+ let towns=areas.filter(a=>a.type==="town"),avg=towns.reduce((n,t)=>n+prosperityValue(t.name),0)/Math.max(1,towns.length);
+ if(Math.random()<.035+avg*.0008){
+   let weighted=[];for(const t of towns){let copies=Math.max(1,Math.round(prosperityValue(t.name)/15));for(let i=0;i<copies;i++)weighted.push(t)}
+   let town=spin(weighted);
+   s.travelingMerchant={town:town.name,expiresDay:s.daysPassed+2,stock:[{name:"Traveler's Cache",cost:35+s.level*3,type:"cache"},{name:"Rare Soul Crystal",cost:70+s.level*5,type:"soul"},{name:"Treasure Map",cost:55+s.level*4,type:"map"}]};
+   log("A traveling merchant has arrived in "+town.name+". Prosperous roads attract trade.");
+ }
+}
 function buyTravelingMerchant(type){let m=s.travelingMerchant;if(!m||m.town!==area().name)return;let it=m.stock.find(x=>x.type===type);if(!it||s.gold<it.cost){log("You cannot afford that.");return}s.gold-=it.cost;if(type==="cache"){let mat=spin(regionalSpecialty(area()));s.materials[mat]=(s.materials[mat]||0)+3;log("The cache contains 3 "+mat+".")}else if(type==="soul"){addSoulCrystal("Rare");log("You buy a Rare Soul Crystal.")}else{createTreasureMap();log("You buy a treasure map.")}save();render()}
 function ensureWorldBosses(){if(s.worldBosses.length)return;let candidates=areas.filter(a=>a.type!=="town"&&a.min>=5);for(let i=0;i<Math.min(4,candidates.length);i++){let a=candidates.splice(rnd(candidates.length),1)[0];s.worldBosses.push({id:"wb_"+i,name:spin(["The Hollow King","Stormmaw","The Pale Colossus","Cinder Tyrant","Gravetide","The Glass Wyrm"]),area:a.name,level:Math.max(a.min,s.level+6+i*2),defeated:false})}}
 function maybeSpawnWorldBoss(){let b=s.worldBosses.find(x=>!x.defeated&&x.area===area().name);if(!b||Math.random()>.06||s.enemy)return false;let lv=b.level,hp=Math.floor(90+lv*18);s.enemy={name:b.name,lv,hp,max:hp,atk:Math.floor(9+lv*2.3),def:Math.floor(4+lv*.9),elite:true,boss:true,worldBossId:b.id,identified:false};$("result").textContent="WORLD BOSS";log("World Boss encountered: "+b.name+".",true);return true}
 function createTreasureMap(){let a=spin(areas.filter(a=>a.type!=="town"));s.treasureMaps.push({id:"tm_"+Date.now()+"_"+Math.random(),area:a.name,found:false,reward:45+s.level*10})}
-function searchTreasureMap(){let map=s.treasureMaps.find(x=>!x.found&&x.area===area().name);if(!map){log("You have no treasure map pointing to this region.");return}if(Math.random()<.55){map.found=true;s.gold+=map.reward;let item=makeItem(Math.random()<.5?"weapon":"armor",2+rnd(3));s.inventory.push(item);log("Treasure found! "+map.reward+" gold and "+item.name+".")}else log("You search the marked region but the landmarks do not line up yet.");save();render()}
-function townFestivalFor(name=area().name){if(!s.townFestivals[name]||s.townFestivals[name].day<s.daysPassed){if(Math.random()<.16)s.townFestivals[name]={day:s.daysPassed+1,type:spin(["Harvest Fair","Founders' Day","Moon Festival","Tournament","Market Jubilee"])};else s.townFestivals[name]={day:s.daysPassed-1,type:null}}let f=s.townFestivals[name];return f&&f.type&&f.day>=s.daysPassed?f:null}
+function searchTreasureMap(){
+ let map=s.treasureMaps.find(x=>!x.found&&x.area===area().name);
+ if(!map){
+   let pending=s.treasureMaps.filter(x=>!x.found);
+   showActionPopup("Treasure Map","<p class='small'>No active treasure map points to "+area().name+".</p>"+(pending.length?"<p class='small'>Your unresolved maps point to: "+pending.map(x=>x.area).join(", ")+".</p>":"<p class='small'>You currently have no unresolved treasure maps.</p>"));
+   return;
+ }
+ let mastery=masteryData(area().name).level,chance=Math.min(.82,.48+mastery*.025);
+ if(Math.random()<chance){
+   map.found=true;s.gold+=map.reward;
+   let item=makeItem(Math.random()<.5?"weapon":"armor",2+rnd(3));s.inventory.push(item);gainRegionMastery(3);spreadProsperity(area().name,2);
+   showActionPopup("Treasure Found!","<div class='actionResultGrid'><div class='item'><div class='small'>GOLD</div><b>+"+map.reward+"g</b></div><div class='item'><div class='small'>EQUIPMENT</div><b>"+item.rarity+" "+item.name+"</b></div><div class='item'><div class='small'>ATTRIBUTE</div><b>"+item.attr.name+"</b></div><div class='item'><div class='small'>REGION MASTERY</div><b>Lv "+mastery+"</b></div></div><p class='small'>Finding lost wealth slightly improves local prosperity.</p>");
+   log("Treasure found! "+map.reward+" gold and "+item.name+".");
+ }else{
+   showActionPopup("Treasure Search","<div class='item'><b>The landmarks do not line up yet.</b><div class='small'>Current success chance: "+Math.round(chance*100)+"%. Raising "+area().name+" Region Mastery improves your odds.</div></div>");
+   log("You search the marked region but the landmarks do not line up yet.");
+ }
+ save();render();
+}
+function townFestivalFor(name=area().name){
+ if(!s.townFestivals[name]||s.townFestivals[name].day<s.daysPassed){
+   let chance=.08+prosperityValue(name)*.0016;
+   if(Math.random()<chance)s.townFestivals[name]={day:s.daysPassed+1,type:spin(["Harvest Fair","Founders' Day","Moon Festival","Tournament","Market Jubilee"])};
+   else s.townFestivals[name]={day:s.daysPassed-1,type:null};
+ }
+ let f=s.townFestivals[name];return f&&f.type&&f.day>=s.daysPassed?f:null;
+}
 function festivalBonus(){let f=currentTown()?townFestivalFor():null;return f?{buy:.88,job:1.25}:{buy:1,job:1}}
 function renderTravelingMerchant(){if(!currentTown())return"";let m=s.travelingMerchant;if(!m||m.town!==area().name)return"";return '<div class="item worldAlert"><b>Traveling Merchant</b><div class="small">Leaves after Day '+m.expiresDay+'.</div>'+m.stock.map(x=>'<button data-travelmerchant="'+x.type+'">'+x.name+' • '+x.cost+'g</button>').join('')+'</div>'}
 function renderWorldSystems(){ensureWorldBosses();maybeTravelingMerchant();
  ensureBounties();
  if($("factionPanel")){
-   $("factionPanel").innerHTML=Object.entries(s.factions).map(([n,v])=>'<div class="factionCard"><div class="row"><b>'+n+'</b><span class="pill">'+factionTier(v)+'</span></div><div class="small">Standing '+v+'</div></div>').join("");
+   $("factionPanel").innerHTML=Object.entries(s.factions).map(([n,v])=>'<div class="factionCard"><div class="row"><b>'+n+'</b><span class="pill">'+factionTier(v)+'</span></div><div class="small">Standing '+v+' • Local influence '+(influenceData()[n]||0)+'</div><div class="influenceBar"><span style="width:'+Math.min(100,(influenceData()[n]||0)*5)+'%"></span></div></div>').join("");
  }
  if($("bountyPanel")){
    $("bountyPanel").innerHTML=s.bounties.map(b=>'<div class="item"><div class="row"><b>'+b.target+'</b><span class="pill">'+b.faction+'</span></div><div class="small">'+b.area+' • '+Math.min(b.kills,b.need)+'/'+b.need+' defeated</div><div class="small">Reward: '+b.rewardGold+'g + '+b.rewardXP+' XP</div><button data-claimbounty="'+b.id+'" '+(!b.complete?'disabled':'')+'>CLAIM</button></div>').join("");
  }
 
- if($("worldActivityPanel")){let danger=regionDangerValue(),f=currentTown()?townFestivalFor():null,boss=s.worldBosses.find(x=>!x.defeated&&x.area===area().name),maps=s.treasureMaps.filter(x=>!x.found&&x.area===area().name).length;$("worldActivityPanel").innerHTML='<div class="row"><span class="pill">Danger '+danger+'/100</span><span class="pill">'+worldWeatherFor(area().name)+'</span></div><div class="dangerMeter"><span style="width:'+danger+'%"></span></div>'+(boss?'<div class="worldDepthNote">Rumor: <b>'+boss.name+'</b> has been sighted here.</div>':'')+(maps?'<div class="worldDepthNote">You have '+maps+' treasure map'+(maps===1?'':'s')+' pointing here.</div>':'')+(f?'<div class="worldDepthNote">Festival: <b>'+f.type+'</b> is underway.</div>':'')+renderTravelingMerchant()}
+ if($("worldActivityPanel")){let danger=effectiveRegionDanger(),rawDanger=regionDangerValue(),pros=prosperityValue(),dom=dominantFaction(),f=currentTown()?townFestivalFor():null,boss=s.worldBosses.find(x=>!x.defeated&&x.area===area().name),maps=s.treasureMaps.filter(x=>!x.found&&x.area===area().name).length;$("worldActivityPanel").innerHTML='<div class="row"><span class="pill">Danger '+danger+'/100</span><span class="pill">'+worldWeatherFor(area().name)+'</span></div><div class="dangerMeter"><span style="width:'+danger+'%"></span></div><div class="worldDepthNote">Prosperity: <b>'+prosperityTier(pros)+'</b> ('+pros+'/100)'+(dom?' • Influence: <b>'+dom.name+'</b>':'')+(rawDanger!==danger?' • Wardens suppress '+(rawDanger-danger)+' danger':'')+'</div>'+(boss?'<div class="worldDepthNote">Rumor: <b>'+boss.name+'</b> has been sighted here.</div>':'')+(maps?'<div class="worldDepthNote">You have '+maps+' treasure map'+(maps===1?'':'s')+' pointing here.</div>':'')+(f?'<div class="worldDepthNote">Festival: <b>'+f.type+'</b> is underway.</div>':'')+renderTravelingMerchant()}
 }
 function renderTenFeatureSystems(){
  if($("companionPanel")){
-   $("companionPanel").innerHTML=s.companions.length?s.companions.map(c=>'<div class="item companionCard"><div class="row"><b>'+c.name+'</b><span class="pill">'+c.role+'</span></div><div class="small">'+c.desc+' • ATK '+c.atk+'</div><button data-setcompanion="'+c.id+'" '+(s.activeCompanion===c.id?'disabled':'')+'>'+(s.activeCompanion===c.id?'ACTIVE':'SET ACTIVE')+'</button></div>').join(""):'<p class="small">No companions recruited yet. Visit a town tavern.</p>';
+   $("companionPanel").innerHTML=s.companions.length?s.companions.map(c=>'<div class="item companionCard"><div class="row"><b>'+c.name+'</b><span class="pill">'+c.role+'</span></div><div class="small">'+c.desc+' • ATK '+c.atk+'</div><div class="small">Bond: '+companionBondTier(companionAffinityValue(c))+' • Affinity '+companionAffinityValue(c)+'</div><div class="affinityBar"><span style="width:'+Math.min(100,companionAffinityValue(c)*2)+'%"></span></div><button data-setcompanion="'+c.id+'" '+(s.activeCompanion===c.id?'disabled':'')+'>'+(s.activeCompanion===c.id?'ACTIVE':'SET ACTIVE')+'</button></div>').join(""):'<p class="small">No companions recruited yet. Visit a town tavern.</p>';
  }
  if($("masteryPanel")){
    let entries=Object.entries(s.regionMastery).sort((a,b)=>b[1].level-a[1].level);
@@ -2351,6 +2470,7 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.dir){moveDungeon(b.dataset.dir);return}
  if(b.dataset.equip){equip(b.dataset.equip);return}if(b.dataset.upitem){upgradeItem(b.dataset.upitem);return}if(b.dataset.stat){let k=b.dataset.stat,c=30+s.upgrade[k]*30;if(s.gold>=c){s.gold-=c;s.upgrade[k]++;s.hp=Math.min(maxHp(),s.hp+(k==="hp"?10:0));save();render()}return}
  switch(b.dataset.a){
+ case"closeActionModal":$("actionModal").classList.remove("open");break;
  case"cookMeal":{let p=$("cookPanel");p.classList.toggle("hidden");renderTenFeatureSystems()}break;
  case"fish":fish();break;
  case"openTavern":s.townPanel=s.townPanel==="tavern"?null:"tavern";save();render();break;
