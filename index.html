@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG v3.4</title>
+<title>Wayfarer: Wheel & Dice RPG v3.5.1</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
@@ -121,12 +121,170 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 
 .codexModal{display:none;position:fixed;inset:0;background:#000b;z-index:116;align-items:center;justify-content:center;padding:18px}.codexModal.open{display:flex}.codexCard{width:min(520px,100%);max-height:86vh;overflow:auto;background:#171c25;border:1px solid var(--line);border-radius:18px;padding:16px}.codexCard select{width:100%;margin:8px 0 10px}.codexKnowledge{height:8px;background:#252b36;border-radius:999px;overflow:hidden;margin:6px 0}.codexKnowledge>span{display:block;height:100%;background:#718c8b}
 .dungeonMapWrap{overflow:auto;min-height:260px;max-height:440px;background:#0f141c;border:1px solid var(--line);border-radius:13px;padding:12px;touch-action:pan-x pan-y}.dungeonMapCanvas{position:relative;width:620px;height:620px;margin:auto}.dungeonRoomNode{position:absolute;width:48px;height:48px;border:1px solid #596271;border-radius:9px;background:#242c38;display:flex;align-items:center;justify-content:center;font-size:10px;text-align:center;transform:translate(-50%,-50%)}.dungeonRoomNode.current{outline:3px solid #e7bc5a;background:#463d27}.dungeonRoomNode.boss{border-color:#bb5865;background:#46252c}.dungeonRoomNode.cleared{background:#26392e}.dungeonCorridor{position:absolute;height:3px;background:#596271;transform-origin:0 50%;pointer-events:none}.seedHelp{font-size:11px;color:var(--muted);margin-top:4px}
+
+/* ===== v3.5 Reactive World UI ===== */
+#weatherFx{position:fixed;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+#weatherTint{position:fixed;inset:0;pointer-events:none;z-index:1;transition:background .5s,box-shadow .5s,opacity .5s}
+body{position:relative;isolation:isolate}
+#app,.enemyAlert,#miniHud{position:relative;z-index:5}
+
+.weather-rain #weatherTint{background:linear-gradient(180deg,rgba(45,80,110,.065),rgba(15,30,45,.035))}
+.weather-rain #weatherFx{
+  background-image:
+   repeating-linear-gradient(108deg,
+     transparent 0 70px,
+     rgba(145,195,235,.22) 71px 72px,
+     transparent 73px 150px);
+  background-size:280px 280px;
+  animation:rainFall 1.18s linear infinite;
+  opacity:.34
+}
+@keyframes rainFall{from{background-position:0 -280px}to{background-position:-24px 280px}}
+
+.weather-storm #weatherTint{background:rgba(10,19,34,.34)}
+.weather-storm #weatherFx{
+  background-image:
+   repeating-linear-gradient(108deg,transparent 0 42px,rgba(150,205,255,.34) 43px 45px,transparent 46px 92px);
+  background-size:210px 210px;
+  animation:rainFall .78s linear infinite,stormPulse 5s infinite;
+  opacity:.58
+}
+.weather-storm #weatherFx:after{
+  content:"";position:absolute;inset:0;background:white;opacity:0;animation:lightning 7s infinite
+}
+@keyframes lightning{0%,92%,94%,100%{opacity:0}93%{opacity:.22}}
+@keyframes stormPulse{0%,100%{filter:brightness(.95)}50%{filter:brightness(.82)}}
+
+.weather-snow #weatherTint{
+  background:rgba(185,225,255,.06);
+  box-shadow:inset 0 0 110px 32px rgba(175,220,255,.28)
+}
+.weather-snow #weatherFx{
+  background-image:
+   radial-gradient(circle,rgba(255,255,255,.85) 0 2px,transparent 2.5px),
+   radial-gradient(circle,rgba(225,245,255,.72) 0 1.5px,transparent 2px),
+   radial-gradient(circle,rgba(255,255,255,.55) 0 1px,transparent 1.5px);
+  background-size:78px 78px,54px 54px,34px 34px;
+  background-position:0 0,20px -10px,11px 20px;
+  animation:snowFall 7s linear infinite;
+  opacity:.7
+}
+@keyframes snowFall{from{background-position:0 -120px,20px -90px,11px -60px}to{background-position:35px 120px,-10px 90px,45px 60px}}
+
+.weather-blizzard #weatherTint{
+  background:rgba(190,225,255,.12);
+  box-shadow:inset 0 0 140px 44px rgba(160,210,255,.38)
+}
+.weather-blizzard #weatherFx{
+  background-image:
+   repeating-linear-gradient(155deg,transparent 0 28px,rgba(235,248,255,.6) 30px 33px,transparent 35px 62px);
+  background-size:180px 180px;animation:blizzard .58s linear infinite;opacity:.72
+}
+@keyframes blizzard{from{background-position:-180px -80px}to{background-position:180px 120px}}
+
+.weather-fog #weatherTint{background:rgba(205,215,220,.08)}
+.weather-fog #weatherFx{
+  background:
+   radial-gradient(ellipse at 30% 40%,rgba(220,225,225,.16),transparent 55%),
+   radial-gradient(ellipse at 70% 65%,rgba(220,225,225,.14),transparent 58%);
+  filter:blur(12px);animation:fogDrift 8s ease-in-out infinite alternate
+}
+@keyframes fogDrift{from{transform:translateX(-3%)}to{transform:translateX(3%)}}
+
+.weather-heatwave #weatherTint{background:linear-gradient(180deg,rgba(255,180,75,.08),rgba(165,80,35,.08))}
+.weather-heatwave #weatherFx{
+  background:repeating-linear-gradient(0deg,transparent 0 20px,rgba(255,210,120,.025) 22px 24px);
+  animation:heatShimmer 2.8s ease-in-out infinite
+}
+@keyframes heatShimmer{0%,100%{transform:translateY(0) scaleY(1)}50%{transform:translateY(-3px) scaleY(1.01)}}
+
+.weather-windy #weatherFx{
+ background-image:repeating-linear-gradient(0deg,transparent 0 34px,rgba(220,230,235,.08) 35px 36px,transparent 37px 70px);
+ animation:windSweep 1.4s linear infinite
+}
+@keyframes windSweep{from{background-position:-150px 0}to{background-position:150px 0}}
+
+#miniHud{
+ display:none;position:sticky;top:0;z-index:94;
+ margin:0 auto 6px;max-width:1050px;
+ background:#111722eb;border:1px solid var(--line);border-radius:0 0 13px 13px;
+ padding:7px 9px;backdrop-filter:blur(10px);box-shadow:0 7px 18px #0007
+}
+#miniHud.show{display:block}
+.miniHudTop{display:flex;gap:9px;align-items:center;font-size:10px}
+.miniHudName{font-weight:900;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.miniHudBars{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:5px}
+.miniBar{height:7px;background:#252b36;border-radius:999px;overflow:hidden}
+.miniBar>span{display:block;height:100%;transition:width .2s}
+.miniHp>span{background:#a84955}.miniMana>span{background:#5576b8}
+.miniCombat{font-weight:900;color:#e4b1b6}
+
+button .btnIcon{display:inline-block;min-width:1.2em;text-align:center;margin-right:5px;filter:drop-shadow(0 1px 0 #0005)}
+button[data-a="attack"],button[data-a="dungeonAttack"]{border-color:#6f3b43}
+button[data-a="defend"],button[data-a="dungeonDefend"]{border-color:#596d8a}
+button[data-a="castSpell"],button[data-a="dungeonSpell"]{border-color:#665090}
+button[data-a="explore"]{border-color:#52704f}
+button[data-a="travel"]{border-color:#826b48}
+button[data-a="camp"]{border-color:#6f6251}
+button[data-a="harvestRegion"]{border-color:#547055}
+button[data-a="fish"]{border-color:#456d7d}
+button[data-a="searchTreasureMap"]{border-color:#8a744d}
+button[data-a="openMarket"],button[data-a="openJobs"]{border-color:#786447}
+button[data-a="openTavern"]{border-color:#745542}
+button[data-a="dungeon"]{border-color:#6b4d73}
+
+.environmentBanner{
+ margin:7px 0 9px;padding:7px 9px;border-radius:11px;border:1px solid var(--line);
+ background:#141b25;font-size:11px;color:var(--muted)
+}
+.environmentBanner b{color:var(--text)}
+
+/* ===== v3.5.1 Bottom Navigation Fix ===== */
+#tabs.tabs{
+ position:fixed !important;
+ left:50% !important;
+ right:auto !important;
+ bottom:max(env(safe-area-inset-bottom),7px) !important;
+ top:auto !important;
+ transform:translateX(-50%) !important;
+ z-index:180 !important;
+ width:calc(100% - 20px) !important;
+ max-width:620px !important;
+ margin:0 !important;
+ padding:6px !important;
+ display:grid;
+ grid-template-columns:repeat(6,1fr) !important;
+ gap:4px !important;
+ background:rgba(16,19,27,.97) !important;
+ border:1px solid #292e3a !important;
+ border-radius:16px !important;
+ box-shadow:0 -8px 24px rgba(0,0,0,.48) !important;
+ backdrop-filter:blur(12px);
+ -webkit-backdrop-filter:blur(12px);
+}
+#tabs.tabs.hidden{display:none !important}
+#tabs.tabs:not(.hidden){display:grid !important}
+body{padding-bottom:calc(92px + env(safe-area-inset-bottom)) !important}
+.questDock{bottom:calc(76px + env(safe-area-inset-bottom)) !important}
+
 </style></head>
 <body><div id="codexModal" class="codexModal"><div class="codexCard"><div class="row"><b>Creature Codex</b><button class="secondary" data-a="closeCodex">CLOSE</button></div><div class="small">Bestiary identification and combat familiarity are combined here.</div><select id="codexCreature"></select><div id="codexDetails"></div></div></div>
 <div id="actionModal" class="actionModal"><div class="actionModalCard"><b id="actionModalTitle">Result</b><div id="actionModalBody"></div><button data-a="closeActionModal">CONTINUE</button></div></div>
 <div id="harvestModal" class="harvestModal"><div class="harvestModalCard"><b id="harvestModalTitle">Harvest Result</b><div id="harvestModalBody"></div><button data-a="closeHarvestModal">CONTINUE</button></div></div>
 <div id="campModal" class="campModal"><div class="campModalCard"><b id="campModalTitle">Camp Result</b><div class="small" id="campModalText" style="margin:10px 0"></div><button data-a="closeCampModal">CONTINUE</button></div></div>
 <div id="achievementPop" class="achievementPop"></div>
+<div id="weatherTint"></div><div id="weatherFx"></div>
+<div id="miniHud">
+ <div class="miniHudTop">
+   <span class="miniHudName" id="miniHudName">Wayfarer</span>
+   <span id="miniHudLevel">Lv 1</span>
+   <span class="miniCombat" id="miniHudCombat"></span>
+ </div>
+ <div class="miniHudBars">
+   <div><div class="small" id="miniHpText">HP</div><div class="miniBar miniHp"><span id="miniHpBar"></span></div></div>
+   <div><div class="small" id="miniManaText">MANA</div><div class="miniBar miniMana"><span id="miniManaBar"></span></div></div>
+ </div>
+</div>
 <div id="enemyAlert" class="enemyAlert"><div class="enemyAlertText"><div class="enemyAlertTitle">⚔ ACTIVE COMBAT</div><div class="enemyAlertName" id="enemyAlertName">An enemy is attacking you.</div></div><button data-a="jumpToCombat" id="enemyAlertJump">COMBAT</button></div>
 <div id="app">
 <h1>Wayfarer</h1><div class="sub">An open-world text RPG driven by dice, wheels, shifting dungeons, questionable treasure, and your own bad decisions.</div><button class="secondary topCharacterBtn" data-tab="characterTab">CHARACTER</button>
@@ -157,7 +315,7 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 </div>
 
 <div id="game" class="hidden">
-<div class="card"><div class="row"><div><div class="small">LEVEL</div><div class="big" id="level"></div></div><div class="center"><div class="small">GOLD</div><div class="big" id="gold"></div></div><div class="right"><div class="small">POWER</div><div class="big" id="power"></div></div></div>
+<div class="card" id="mainStatsCard"><div class="row"><div><div class="small">LEVEL</div><div class="big" id="level"></div></div><div class="center"><div class="small">GOLD</div><div class="big" id="gold"></div></div><div class="right"><div class="small">POWER</div><div class="big" id="power"></div></div></div>
 <div class="small">HP <b id="hpText"></b></div><div class="bar"><div class="fill hp" id="hpBar"></div></div><div class="small">MANA <b id="manaText"></b></div><div class="bar"><div class="fill mana" id="manaBar"></div></div><div class="small">XP <b id="xpText"></b></div><div class="bar"><div class="fill xp" id="xpBar"></div></div>
 <div class="small" id="location"></div><div class="small" id="modeText"></div></div>
 
@@ -167,7 +325,7 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 <div class="adventureWorldCell"><div class="small">WEATHER</div><div class="adventureWorldValue" id="advWeather">Clear</div></div>
 <div class="adventureWorldCell"><div class="small">REGION</div><div class="adventureWorldValue" id="advRegion">Unknown</div></div>
 <div class="adventureWorldCell"><div class="small">DANGER</div><div class="adventureWorldValue" id="advDanger">1 / 100</div></div>
-</div>
+</div><div class="environmentBanner" id="environmentBanner"></div>
 <div class="immersiveStrip"><div class="item"><div class="small">LOCAL CONDITION</div><b id="localCondition">Quiet</b></div><div class="item"><div class="small">ROAD STATE</div><b id="roadState">Open</b></div><div class="item"><div class="small">REGIONAL STORY</div><b id="regionStory">No major developments</b></div></div>
 <div class="card"><b>Living World</b><div id="livingWorldFeed" class="worldFeed"></div></div>
 <div class="card"><b>World Activity</b><div id="worldActivityPanel" class="small">The roads are quiet.</div></div>
@@ -189,7 +347,7 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 <div class="combatSlot empty" id="summonSlot"><div class="small">SUMMON</div><div class="wheel" id="summonName">No summon</div><div id="summonMini" class="small">Summon a creature to fill this slot.</div></div>
 </div>
 <div class="monsterStatsBox"><div class="small" id="enemySummary">Explore until you encounter something.</div><div class="monsterStatGrid" id="enemyStatGrid"></div></div>
-<div class="grid"><button data-a="attack">ATTACK (d20)</button><button class="secondary" data-a="defend">DEFEND</button></div>
+<div class="grid"><button data-a="attack">ATTACK</button><button class="secondary" data-a="defend">DEFEND</button></div>
 <div class="grid"><button class="blue" data-a="skill">POWER MOVE</button><button class="secondary" data-a="flee">FLEE (d20)</button></div>
 <div class="combatSpellRow"><button class="blue" data-a="worldSpell" id="worldSpellBtn">CAST SPELL</button><button class="secondary" data-a="toggleWorldSpellPicker" id="worldSpellSelectBtn">SELECT SPELL</button></div>
 <div class="combatSpellPicker" id="worldSpellPicker"></div>
@@ -312,12 +470,12 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
   <b>Move</b>
   <div class="small">Push into new rooms or return through corridors you already mapped.</div>
   <div style="max-width:230px;margin:10px auto">
-    <button class="secondary" data-dir="up" id="dirUp">↑ UP</button>
+    <button class="secondary" data-dir="up" id="dirUp">↑ NORTH</button>
     <div class="grid">
-      <button class="secondary" data-dir="left" id="dirLeft">← LEFT</button>
-      <button class="secondary" data-dir="right" id="dirRight">RIGHT →</button>
+      <button class="secondary" data-dir="left" id="dirLeft">← WEST</button>
+      <button class="secondary" data-dir="right" id="dirRight">EAST →</button>
     </div>
-    <button class="secondary" data-dir="down" id="dirDown">↓ DOWN</button>
+    <button class="secondary" data-dir="down" id="dirDown">↓ SOUTH</button>
   </div>
 </div>
 
@@ -328,7 +486,7 @@ input,select{width:100%;padding:12px;margin-top:7px;border:1px solid #343a49;bor
 <div class="combatSlot empty" id="dungeonSummonSlot"><div class="small">SUMMON</div><div class="wheel" id="dungeonSummonName">No summon</div><div id="dungeonSummonMini" class="small">Summon a creature to fill this slot.</div></div>
 </div>
 <div class="monsterStatsBox"><div class="small" id="dungeonTargetSummary">No active dungeon target.</div><div class="monsterStatGrid" id="dungeonTargetStatGrid"></div></div>
-  <div class="grid"><button data-a="dungeonAttack">ATTACK (d20)</button><button class="secondary" data-a="dungeonDefend">DEFEND</button></div>
+  <div class="grid"><button data-a="dungeonAttack">ATTACK</button><button class="secondary" data-a="dungeonDefend">DEFEND</button></div>
   <div class="grid"><button class="blue" data-a="dungeonSkill">POWER MOVE</button><button class="secondary" data-a="dungeonPotion">SECOND WIND</button></div>
   <div class="combatSpellRow"><button class="blue" data-a="dungeonSpell" id="dungeonSpellBtn">CAST SPELL</button><button class="secondary" data-a="toggleDungeonSpellPicker" id="dungeonSpellSelectBtn">SELECT SPELL</button></div>
   <div class="combatSpellPicker" id="dungeonSpellPicker"></div>
@@ -2380,6 +2538,66 @@ function renderImmersionSystems(){
  if($("relationshipPanel")){let a=Object.entries(s.npcRelations);$("relationshipPanel").innerHTML=a.length?a.map(([n,v])=>'<div class="item"><div class="row"><b>'+n+'</b><span class="pill">'+relationTier(v)+'</span></div><div class="relationBar"><span style="width:'+Math.max(0,Math.min(100,(v+50)/1.5))+'%"></span></div></div>').join(""):'<p class="small">No notable relationships yet.</p>'}
  if($("knowledgePanel")){let a=Object.entries(s.monsterKnowledge);$("knowledgePanel").innerHTML=a.length?a.map(([n,v])=>'<div class="item"><div class="row"><b>'+n+'</b><span class="pill">Knowledge '+monsterKnowledgeTier(n)+'/3</span></div><div class="knowledgeBar"><span style="width:'+Math.min(100,v*10)+'%"></span></div></div>').join(""):'<p class="small">Fight creatures to learn their habits.</p>'}
 }
+function weatherCssClass(){
+ let w=worldWeatherFor(area().name);
+ if(w==="Rain")return"weather-rain";
+ if(w==="Storm")return"weather-storm";
+ if(w==="Snow")return"weather-snow";
+ if(w==="Blizzard")return"weather-blizzard";
+ if(w==="Fog")return"weather-fog";
+ if(w==="Heatwave")return"weather-heatwave";
+ if(w==="Windy")return"weather-windy";
+ return"";
+}
+function renderWeatherBackdrop(){
+ const classes=["weather-rain","weather-storm","weather-snow","weather-blizzard","weather-fog","weather-heatwave","weather-windy"];
+ document.body.classList.remove(...classes);let c=weatherCssClass();if(c)document.body.classList.add(c);
+}
+function environmentFlavor(){
+ let w=worldWeatherFor(area().name),phase=timeLabel(),d=effectiveRegionDanger();
+ let weatherText={
+  Clear:"The sky is clear and visibility is good.",
+  Rain:"Rain streaks across the road and darkens the ground.",
+  Storm:"Thunder rolls overhead and the roads feel exposed.",
+  Snow:"A pale blue chill settles over the landscape.",
+  Blizzard:"Snow whips sideways and the horizon almost disappears.",
+  Fog:"Mist hangs low and muffles distant sounds.",
+  Heatwave:"Heat shimmers above the ground.",
+  Windy:"Strong gusts push across the region."
+ }[w]||("Conditions: "+w+".");
+ let danger=d>=75?"Movement outside settled areas feels genuinely dangerous.":d<=25?"Patrols and travelers make the region feel unusually safe.":"The region remains tense but passable.";
+ return weatherText+" "+(phase==="Night"?"Night makes distant movement harder to judge. ":"")+danger;
+}
+function renderEnvironmentBanner(){
+ if($("environmentBanner"))$("environmentBanner").innerHTML="<b>"+worldWeatherFor(area().name)+" • "+timeLabel()+"</b> — "+environmentFlavor();
+}
+function renderMiniHud(){
+ let hud=$("miniHud"),main=$("mainStatsCard");if(!hud||!main||!s.started){if(hud)hud.classList.remove("show");return}
+ let rect=main.getBoundingClientRect(),show=rect.bottom<24;
+ hud.classList.toggle("show",show);
+ if(!show)return;
+ $("miniHudName").textContent=s.name||"Wayfarer";$("miniHudLevel").textContent="Lv "+s.level;
+ $("miniHpText").textContent="HP "+Math.floor(s.hp)+" / "+maxHp();$("miniManaText").textContent="MANA "+Math.floor(s.mana)+" / "+maxMana();
+ $("miniHpBar").style.width=Math.max(0,Math.min(100,s.hp/maxHp()*100))+"%";$("miniManaBar").style.width=Math.max(0,Math.min(100,s.mana/maxMana()*100))+"%";
+ let c=activeCombatInfo();$("miniHudCombat").textContent=c?"⚔ "+c.name:"";
+}
+const buttonIcons={
+ attack:"⚔",defend:"🛡",castSpell:"✦",dungeonAttack:"⚔",dungeonDefend:"🛡",dungeonSpell:"✦",
+ explore:"⌖",travel:"🧭",dungeon:"⛩",camp:"⛺",harvestRegion:"⛏",searchTreasureMap:"🗺",cookMeal:"🍲",fish:"🎣",
+ openJobs:"📜",openMarket:"🪙",openGambling:"🎲",openPotionHouse:"⚗",openTavern:"🍺",openRumors:"🗣",
+ dungeonExplore:"🚪",dungeonSkill:"✹",dungeonPotion:"✚",dungeonClassSkill:"◆",
+ useQuickPotion:"⚗",useQuickPotionDungeon:"⚗",toggleQuickPotionPicker:"▾",toggleQuickPotionPickerDungeon:"▾",
+ worldMapCenter:"◎",worldMapZoomIn:"＋",worldMapZoomOut:"−",worldMapToggleLabels:"◫",worldMapReroll:"⟳",
+ openCodex:"📖",closeCodex:"✕",jumpToCombat:"⚔"
+};
+function decorateButtons(){
+ document.querySelectorAll("button").forEach(b=>{
+   if(b.dataset.iconDone)return;
+   let key=b.dataset.a;if(!key&&b.dataset.dir)key="dir"+b.dataset.dir;
+   let icon=buttonIcons[key]||(b.dataset.equip?"✦":b.dataset.upitem?"⬆":b.dataset.salvage?"♻":b.dataset.rerollattr?"✧":"");
+   if(icon){b.insertAdjacentHTML("afterbegin",'<span class="btnIcon">'+icon+'</span>');b.dataset.iconDone="1"}
+ });
+}
 function activeCombatInfo(){
  if(s.enemy&&s.enemy.hp>0)return{type:"world",name:s.enemy.name,hp:s.enemy.hp,max:s.enemy.max||s.enemy.hp};
  if(s.dungeon&&Array.isArray(s.dungeon.encounter)){let living=s.dungeon.encounter.filter(e=>e&&e.hp>0);if(living.length){let t=living[0];return{type:"dungeon",name:living.length>1?t.name+" + "+(living.length-1)+" more":t.name,hp:t.hp,max:t.max||t.hp}}}
@@ -2429,7 +2647,7 @@ function render(){
 }
 if($("bestiaryList")){let bs=Object.values(s.bestiary);$("bestiaryList").innerHTML=bs.length?bs.map(x=>'<div class="item"><b>'+x.name+'</b><div class="small">Weak: '+x.affinity.weak.join(", ")+' • Resists: '+x.affinity.strong.join(", ")+'</div></div>').join(""):'<p class="small">No monsters identified yet.</p>';}
  $("worldList").innerHTML=areas.map((a,i)=>"<div class='item'><b>"+a.name+"</b><div class='small'>Recommended level "+a.min+" • "+a.type+"</div></div>").join("");
- renderTownPanel();renderForgeOptions();renderWorldMap();renderMaterialsTab();renderSpellUI();renderQuestDrop();renderMonsterCombatStats();renderSummonSlots();renderCombatSpellPickers();renderClassSkillUI();renderQuickPotion();renderAchievements();checkAchievements();renderWorldSystems();renderTenFeatureSystems();renderCombatAlert();renderAdventureWorldBar();renderImmersionSystems();if($("codexSummary"))$("codexSummary").textContent=codexCreatureNames().length+" creatures recorded.";if($("codexModal")&&$("codexModal").classList.contains("open"))renderCodex();
+ renderTownPanel();renderForgeOptions();renderWorldMap();renderMaterialsTab();renderSpellUI();renderQuestDrop();renderMonsterCombatStats();renderSummonSlots();renderCombatSpellPickers();renderClassSkillUI();renderQuickPotion();renderAchievements();checkAchievements();renderWorldSystems();renderTenFeatureSystems();renderCombatAlert();renderAdventureWorldBar();renderImmersionSystems();renderWeatherBackdrop();renderEnvironmentBanner();renderMiniHud();decorateButtons();if($("codexSummary"))$("codexSummary").textContent=codexCreatureNames().length+" creatures recorded.";if($("codexModal")&&$("codexModal").classList.contains("open"))renderCodex();
  $("dungeonTabBtn").disabled=!s.dungeon.active;
  if(s.dungeon.active)migrateDungeonGraph();$("dungeonState").textContent=!s.dungeon.active?"NO DUNGEON":(currentDungeonRoom()&&currentDungeonRoom().boss)?"BOSS ROOM":"IN PROGRESS";
  $("dungeonName").textContent=s.dungeon.active?s.dungeon.name:"No dungeon discovered.";
@@ -2579,4 +2797,6 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
 })();
 
 window.addEventListener("resize",()=>{if($("worldCanvas")&&!$("mapTab").classList.contains("hidden"))drawWorldCanvas()});
+
+window.addEventListener("scroll",()=>{if(typeof renderMiniHud==="function")renderMiniHud()},{passive:true});
 </script></body></html>
