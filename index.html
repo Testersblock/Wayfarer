@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG v4.0</title>
+<title>Wayfarer: Wheel & Dice RPG v4.2</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
@@ -402,6 +402,36 @@ section .card>.row>b:first-child{
 .banditGoods{display:grid;gap:7px}.banditGoods .item{border-left:3px solid #8b4e5a}
 .lockpickTrack{position:relative;height:38px;background:#111722;border:1px solid #3c4554;border-radius:10px;overflow:hidden;margin:12px 0}.lockpickSweet{position:absolute;top:3px;bottom:3px;background:#6b925d66;border:1px solid #79a36b;border-radius:7px}.lockpickPin{position:absolute;top:0;bottom:0;width:4px;background:#f0cf78;box-shadow:0 0 8px #f0cf78;transform:translateX(-2px)}
 .burglaryTimer{font-weight:900;font-size:18px;text-align:center;margin:8px 0}.burglaryTimer.danger{color:#df6c78}.houseBoxes{display:grid;grid-template-columns:1fr 1fr;gap:7px}.houseBox{min-height:70px}.houseBox.searched{opacity:.55}.crimeResult{border-left:3px solid #8d4957;padding-left:9px}.factionMorality{font-size:9px;color:var(--muted);margin-top:3px}@media(max-width:430px){.houseBoxes{grid-template-columns:1fr}}
+
+/* ===== v4.1 Cleanup & Connected World ===== */
+:root{--panel:#171d26;--panel2:#121821;--soft:#202734;--soft2:#272f3d;--text:#f1efe9;--muted:#aab2bf;--line:#323c4b}
+body{line-height:1.42}.card{border-radius:15px!important;padding:14px!important;margin-bottom:9px!important;box-shadow:0 5px 18px rgba(0,0,0,.13)}.item{border-radius:11px!important}button{min-height:44px;line-height:1.15;letter-spacing:.01em}.small{line-height:1.38}.row{gap:8px}.grid{gap:7px}.wheel{border-radius:12px}.pill{white-space:nowrap}.tabHero{margin-top:1px}.quickActionDock button{min-width:0;overflow:hidden;text-overflow:ellipsis}.sectionDivider{margin-top:16px}#worldActivityPanel .item,#livingWorldFeed .item{margin-bottom:6px}#factionPanel,.trophyGrid,#masteryPanel,#companionPanel,#inventory,#spellList,#spellTomeList,#worldList{display:grid;gap:7px}.log{max-height:240px!important}#combatLog{max-height:220px;overflow:auto}.tabs button{font-size:11px!important}
+.worldLinkSummary{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:8px 0 0}.worldLinkSummary .item{margin:0;background:#151d27}.worldPulse{border-left:3px solid #5e7d72;background:#17211f!important}.worldEcho{border-left:3px solid #726588;background:#1c1925!important}
+@media(max-width:480px){.worldLinkSummary{grid-template-columns:1fr}}@media(max-width:430px){.tabHero{padding:12px}.tabHeroTitle{font-size:17px}.quickActionDock{gap:4px}.quickActionDock button{font-size:9px;padding-inline:5px}.card{padding:12px!important}}
+
+/* ===== v4.2 Crime/Jail + Condensed Character UI ===== */
+.miniHudLocation{display:block;font-size:9px;color:#9eb1c2;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.condensedGroup{margin-bottom:9px;border:1px solid var(--line);border-radius:14px;background:#131922;overflow:hidden}
+.condensedToggle{width:100%;display:flex;justify-content:space-between;align-items:center;border:0;border-radius:0;background:#1b2330;padding:11px 12px;text-align:left}
+.condensedToggle b{font-size:12px}.condensedToggle span{font-size:10px;color:var(--muted)}
+.condensedBody{padding:8px}.condensedBody.hidden{display:none}
+.condensedBody .card{margin-bottom:7px!important}
+.crimeTimer{height:8px;background:#252b36;border-radius:999px;overflow:hidden;margin:8px 0}.crimeTimer>span{display:block;height:100%;background:#d39a52;transition:width .05s linear}
+.jailModal{display:none;position:fixed;inset:0;background:#000d;z-index:245;align-items:center;justify-content:center;padding:14px}
+.jailModal.open{display:flex}
+.jailCard{width:min(520px,100%);max-height:90vh;overflow:auto;background:#15191f;border:1px solid #4a505a;border-radius:18px;padding:15px;box-shadow:0 25px 80px #000}
+.jailHero{background:linear-gradient(145deg,#24272d,#17191e);border:1px solid #3c424c;border-radius:13px;padding:11px;margin:8px 0}
+.jailRoute{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin:9px 0}
+.jailNode{height:10px;border-radius:999px;background:#2c333d}.jailNode.done{background:#5a8068}.jailNode.current{background:#d0aa61;box-shadow:0 0 8px #d0aa61}
+.jailAlertTrack{height:9px;background:#252b36;border-radius:999px;overflow:hidden}.jailAlertTrack>span{display:block;height:100%;background:#a64f5b;transition:width .2s}
+.jailActions{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+.jailChallenge{margin-top:10px;padding:10px;background:#1c222b;border:1px solid #313a47;border-radius:12px}
+.jailChallengeTrack{position:relative;height:34px;background:#0f141b;border:1px solid #394453;border-radius:999px;overflow:hidden;margin:10px 0}
+.jailSafe{position:absolute;top:3px;bottom:3px;background:#5f8b6866;border:1px solid #6fa579;border-radius:999px}
+.jailNeedle{position:absolute;top:0;bottom:0;width:4px;background:#f3d07b;box-shadow:0 0 8px #f3d07b;transform:translateX(-2px)}
+.jailTimerText{text-align:center;font-weight:900;font-size:13px}
+.escapeOutcome{border-left:3px solid #a15460;padding-left:9px}
+@media(max-width:430px){.jailActions{grid-template-columns:1fr}.jailRoute{grid-template-columns:repeat(6,1fr)}}
 </style></head>
 <body><div id="codexModal" class="codexModal"><div class="codexCard"><div class="row"><b>Creature Codex</b><button class="secondary" data-a="closeCodex">CLOSE</button></div><div class="small">Bestiary identification and combat familiarity are combined here.</div><select id="codexCreature"></select><div id="codexDetails"></div></div></div>
 <div id="actionModal" class="actionModal"><div class="actionModalCard"><b id="actionModalTitle">Result</b><div id="actionModalBody"></div><button data-a="closeActionModal">CONTINUE</button></div></div>
@@ -409,6 +439,15 @@ section .card>.row>b:first-child{
 <div id="campModal" class="campModal"><div class="campModalCard"><b id="campModalTitle">Camp Result</b><div class="small" id="campModalText" style="margin:10px 0"></div><button data-a="closeCampModal">CONTINUE</button></div></div>
 <div id="achievementPop" class="achievementPop"></div>
 <div id="weatherTint"></div><div id="weatherFx"></div><div id="xpOrbLayer"></div>
+<div id="jailModal" class="jailModal"><div class="jailCard">
+<div class="row"><b>⛓ Jail Escape</b><span class="pill" id="jailTown"></span></div>
+<div class="jailHero"><div class="row"><b id="jailRoomName">Holding Cell</b><span class="pill" id="jailProgress">0 / 5</span></div><div class="small" id="jailDescription">You wake behind a locked door.</div></div>
+<div class="small">Escape route</div><div class="jailRoute" id="jailRoute"></div>
+<div class="row"><span class="small">GUARD ALERT</span><span class="small" id="jailAlertText">0 / 100</span></div><div class="jailAlertTrack"><span id="jailAlertBar" style="width:0%"></span></div>
+<div id="jailChallengeArea"></div>
+<div class="jailActions" id="jailActions"></div>
+<button class="secondary" data-a="serveSentence">SERVE SENTENCE</button>
+</div></div>
 <div id="outpostModal" class="outpostModal"><div class="outpostCard"><div class="row"><b>☠ Bandit Outpost</b><button class="secondary" data-a="closeOutpost">CLOSE</button></div><div class="outpostHero" id="outpostHero"></div><div id="outpostContent"></div></div></div>
 <div id="burglaryModal" class="burglaryModal"><div class="burglaryCard"><div class="row"><b>🏚 House Burglary</b><span class="pill" id="burglaryTown"></span></div><div class="burglaryTimer" id="burglaryTimer">15.0s</div><div class="small">Search containers for valuables, then EXIT before time runs out. If the timer reaches zero, you're caught.</div><div class="houseBoxes" id="houseBoxes"></div><button data-a="burglaryExit">🚪 EXIT HOUSE</button></div></div>
 <div id="adventureModal" class="adventureModal"><div class="adventureModalCard">
@@ -418,7 +457,7 @@ section .card>.row>b:first-child{
 <div class="adventureActionRow" id="adventureModalActions"></div>
 </div></div>
 <div id="versionModal" class="versionModal"><div class="versionModalCard">
-<div class="row"><b>Wayfarer Version Log</b><span class="versionBadge">v4.0</span></div>
+<div class="row"><b>Wayfarer Version Log</b><span class="versionBadge">v4.2</span></div>
 <div class="small">The version shown here is built directly into this HTML file, so you can tell exactly which build is currently running.</div>
 <div id="versionLogEntries"></div>
 <button class="secondary" data-a="closeVersionLog">CLOSE</button>
@@ -440,7 +479,7 @@ section .card>.row>b:first-child{
 
 <div id="miniHud">
  <div class="miniHudTop">
-   <span class="miniHudName" id="miniHudName">Wayfarer</span>
+   <div style="min-width:0;flex:1"><span class="miniHudName" id="miniHudName">Wayfarer</span><span class="miniHudLocation" id="miniHudLocation">📍 Unknown</span></div>
    <span id="miniHudLevel">Lv 1</span>
    <span class="miniCombat" id="miniHudCombat"></span>
  </div>
@@ -499,6 +538,7 @@ section .card>.row>b:first-child{
 </div><div class="environmentBanner" id="environmentBanner"></div>
 <div class="immersiveStrip"><div class="item"><div class="small">LOCAL CONDITION</div><b id="localCondition">Quiet</b></div><div class="item"><div class="small">ROAD STATE</div><b id="roadState">Open</b></div><div class="item"><div class="small">REGIONAL STORY</div><b id="regionStory">No major developments</b></div></div>
 <div class="card"><b>Living World</b><div id="livingWorldFeed" class="worldFeed"></div></div>
+<div class="card"><div class="row"><b>Connected World</b><span class="pill">LIVE</span></div><div class="small">Nearby regions react to trade, crime, monster pressure, factions, and major events.</div><div class="worldLinkSummary" id="connectedWorldSummary"></div></div>
 <div class="sectionDivider">Living Region</div><div class="card panelAccentGreen"><b>World Activity</b><div id="worldActivityPanel" class="small">The roads are quiet.</div></div>
 <div class="card"><b>Current Area</b><div class="wheel" id="areaTitle"></div><div class="small" id="areaDesc"></div><div class="grid"><button data-a="explore">EXPLORE</button><button class="secondary" data-a="travel">TRAVEL</button></div><button class="blue" data-a="dungeon">SEARCH FOR DUNGEON</button><button class="secondary" data-a="camp">MAKE CAMP</button><button class="secondary" data-a="harvestRegion">HARVEST REGION</button><button class="secondary" data-a="searchTreasureMap">SEARCH TREASURE MAP</button><div class="grid"><button class="secondary" data-a="cookMeal">COOK MEAL</button><button class="secondary" data-a="fish">FISH</button></div><div id="cookPanel" class="hidden"></div></div>
 <div class="card" id="townServices">
@@ -639,17 +679,29 @@ section .card>.row>b:first-child{
 <div class="row"><span>Class Level</span><span class="pill" id="classLevelLabel">1</span></div>
 <div id="classSkills"></div></div>
 
-<div class="card"><b>Companions</b><div class="small">Recruit allies in town taverns. One active companion can assist in combat.</div><div id="companionPanel"></div></div>
-<div class="card"><b>Region Mastery</b><div class="small">Exploring, harvesting, and fighting in a region raises mastery and improves rewards there.</div><div id="masteryPanel"></div></div>
-<div class="card"><b>Monster Trophies</b><div class="small">Elite monsters and bosses can leave permanent trophies.</div><div id="trophyPanel" class="trophyGrid"></div></div><div class="card"><b>Relationships</b><div class="small">Named people can remember how you treated them.</div><div id="relationshipPanel"></div></div>
-<div class="card panelAccentPurple"><b>Creature Codex</b><div class="small">Bestiary identification and combat familiarity are combined in one place.</div><button data-a="openCodex">OPEN CREATURE CODEX</button><div class="small" id="codexSummary"></div></div><div class="card"><b>Achievements & Title</b><div class="small">Current title: <b id="titleLabel"></b></div><div id="achievementList"></div></div><div class="card panelAccentGold"><div class="row"><b>Moral Compass</b><span class="pill" id="moralityTier">Neutral</span></div><div class="small">Choices shift you between ruthless and altruistic. Morality changes prices, dialogue, criminal access, and how factions judge your actions.</div><div class="moralityLabels"><span>EVIL</span><span>NEUTRAL</span><span>GOOD</span></div><div class="moralityTrack"><div class="moralityMarker" id="moralityMarker" style="left:50%"></div></div><div class="moralityValue" id="moralityValue">0</div></div>
-<div class="card panelAccentBlue"><b>Factions</b><div class="small">Your actions can improve standing with groups across the world.</div><div id="factionPanel" class="factionGrid"></div></div>
-<div class="card panelAccentRed"><b>Bounties</b><div class="small">Dynamic contracts refresh as you travel and level.</div><div id="bountyPanel"></div></div><div class="card"><b id="questTitle">Journal</b><div id="quests"></div></div>
-<div class="card"><b>World</b><div id="worldList"></div></div>
+<div class="condensedGroup">
+<button class="condensedToggle" data-condense="socialRecords"><b>Social & World Standing</b><span>Companions • Relationships • Factions • Bounties ▾</span></button>
+<div class="condensedBody hidden" id="socialRecords">
+ <div class="card"><b>Companions</b><div class="small">Recruit allies in town taverns. One active companion can assist in combat.</div><div id="companionPanel"></div></div>
+ <div class="card"><b>Relationships</b><div class="small">Named people can remember how you treated them.</div><div id="relationshipPanel"></div></div>
+ <div class="card panelAccentBlue"><b>Factions</b><div class="small">Your actions can improve standing with groups across the world.</div><div id="factionPanel" class="factionGrid"></div></div>
+ <div class="card panelAccentRed"><b>Bounties</b><div class="small">Dynamic contracts refresh as you travel and level.</div><div id="bountyPanel"></div></div>
+</div></div>
+<div class="condensedGroup">
+<button class="condensedToggle" data-condense="progressRecords"><b>Progress & Collections</b><span>Mastery • Trophies • Codex • Achievements • World ▾</span></button>
+<div class="condensedBody hidden" id="progressRecords">
+ <div class="card"><b>Region Mastery</b><div class="small">Exploring, harvesting, and fighting in a region raises mastery and improves rewards there.</div><div id="masteryPanel"></div></div>
+ <div class="card"><b>Monster Trophies</b><div class="small">Elite monsters and bosses can leave permanent trophies.</div><div id="trophyPanel" class="trophyGrid"></div></div>
+ <div class="card panelAccentPurple"><b>Creature Codex</b><div class="small">Bestiary identification and combat familiarity are combined in one place.</div><button data-a="openCodex">OPEN CREATURE CODEX</button><div class="small" id="codexSummary"></div></div>
+ <div class="card"><b>Achievements & Title</b><div class="small">Current title: <b id="titleLabel"></b></div><div id="achievementList"></div></div>
+ <div class="card"><b>World</b><div id="worldList"></div></div>
+</div></div>
+<div class="card panelAccentGold"><div class="row"><b>Moral Compass</b><span class="pill" id="moralityTier">Neutral</span></div><div class="small">Choices shift you between ruthless and altruistic. Morality changes prices, dialogue, criminal access, and how factions judge your actions.</div><div class="moralityLabels"><span>EVIL</span><span>NEUTRAL</span><span>GOOD</span></div><div class="moralityTrack"><div class="moralityMarker" id="moralityMarker" style="left:50%"></div></div><div class="moralityValue" id="moralityValue">0</div></div>
+<div class="card"><b id="questTitle">Journal</b><div id="quests"></div></div>
 <div class="card">
-  <div class="row"><b>Save Data</b><span class="versionBadge">Wayfarer v4.0</span></div>
+  <div class="row"><b>Save Data</b><span class="versionBadge">Wayfarer v4.2</span></div>
   <div class="small">This permanently erases this character, inventory, dungeon progress, campaign progress, and all other Wayfarer save data on this device.</div>
-  <div class="versionRow"><button class="red" data-a="resetData">RESET ALL DATA</button><button class="secondary" data-a="openVersionLog">VERSION LOG • v4.0</button></div>
+  <div class="versionRow"><button class="red" data-a="resetData">RESET ALL DATA</button><button class="secondary" data-a="openVersionLog">VERSION LOG • v4.2</button></div>
 </div>
 </section>
 
@@ -1148,9 +1200,9 @@ const effortDefs={
 };
 const armorNames=["Leather Coat","Chainmail","Iron Plate","Ranger Cloak","Scale Armor","Knight Plate","Runed Robes","Brigandine","Warden Mail","Dragonhide"];
 function base(){return{started:false,mode:null,name:"Wayfarer",race:null,className:null,backstory:null,wealthRoll:null,wealthClass:null,level:1,xp:0,xpNeed:35,gold:50,hp:55,baseHp:55,mana:60,baseMana:60,atk:4,def:3,luck:0,bonusXP:0,bonusCrit:0,bonusDodge:0,ore:3,materials:{Iron:3,Steel:0,Silver:0,Hardwood:0,Crystal:0,"Drake Scale":0,Sunstone:0,"Frost Crystal":0,Hellstone:0,Leather:0,Herb:0,Flax:0,Clay:0,"Wild Honey":0,Silk:0,Moonleaf:0,Resin:0,"Living Bark":0,Coal:0,"Adamant Shard":0,Quartz:0,Sulfur:0,"Venom Sac":0,"Black Herb":0,"Spirit Water":0,"Bog Iron":0,Rotroot:0,"Ghost Reed":0,"Hydra Scale":0,"Glass Shard":0,"Gold Ore":0,"Desert Rose":0,"Scorpion Chitin":0,"Star Sand":0,Obsidian:0,"Wyrm Hide":0,Iceglass:0,"White Fur":0,"Frozen Core":0,"Blue Quartz":0,"Demon Horn":0,"Blood Crystal":0,"Infernal Iron":0,"Ash Pearl":0,"Soul Ash":0,Demonhide:0,"Ancient Parchment":0,"Arcane Dust":0,"Beast Fang":0,"Glowcap":0,"Dryad Sap":0,"Black Timber":0,"Shadow Moss":0,"Wolf Pelt":0,"Mist Pearl":0,"Dark Resin":0,"Ironwood":0,"Mithril Flake":0,"Swamp Amber":0,"Sea Crystal":0,"Pearl":0,"Saltstone":0,"Coral":0,"Siren Scale":0,"Tideglass":0,"Djinn Ash":0,"Stormglass":0,"Cloud Feather":0,"Sky Iron":0,"Giant Bone":0,"Lightning Core":0,"Wind Silk":0,"Everfrost":0,"Bone Dust":0,"Grave Wax":0,"Black Iron":0,"Crypt Amber":0,"Death Silk":0,"Hellglass":0,"Cursed Steel":0,"Abyssal Alloy":0,"Demon Heart":0,"Black Crystal":0,"Royal Hellstone":0,"Soulsteel":0,"Infernal Ruby":0},
-soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,randomNPCs:{},sideQuests:[],renown:0,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,selectedClassSkill:null,activeSummon:null,tempAttackBuff:0,tempDefenseBuff:0,tempHaste:0,skipEnemyTurn:false,potions:{},statuses:[],bestiary:{},reputation:{},activeWorldEvent:null,campCooldown:0,timeOfDay:8,daysPassed:1,landmarksFound:{},achievements:{},title:"Wayfarer",selectedQuickPotion:null,discoveredLocations:[0,1,2,3],worldMapSeed:482731,weather:{},factions:{Wardens:0,Arcanists:0,Merchants:0,Freeblades:0,Bandits:0},bounties:[],minorSites:{},regionalHarvest:{},travelingMerchant:null,worldBosses:[],regionDanger:{},treasureMaps:[],townFestivals:{},companions:[],activeCompanion:null,meals:{},trophies:{},regionMastery:{},rumors:{},restedXP:0,prosperity:{},regionInfluence:{},companionAffinity:{},worldEvents:[],npcRelations:{},monsterKnowledge:{},worldHistory:[],activeNpcChat:null,pendingNpcQuest:null,marketTab:"materials",morality:0,banditOutposts:{},crimeHeat:{},burglaryStats:{success:0,caught:0},location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
+soulCrystals:[],equippedSoulCrystal:null,visited:[0],townPanel:null,jobChallenge:null,jobShifts:3,gamblingSession:null,questProgress:{},finalBossDefeated:false,randomNPCs:{},sideQuests:[],renown:0,spellwork:{level:1,xp:0,xpNeed:30},arcane:{capacity:0,efficiency:0,potency:0,flow:0},knownSpells:[],spellTomes:[],customSpells:[],selectedSpell:null,selectedClassSkill:null,activeSummon:null,tempAttackBuff:0,tempDefenseBuff:0,tempHaste:0,skipEnemyTurn:false,potions:{},statuses:[],bestiary:{},reputation:{},activeWorldEvent:null,campCooldown:0,timeOfDay:8,daysPassed:1,landmarksFound:{},achievements:{},title:"Wayfarer",selectedQuickPotion:null,discoveredLocations:[0,1,2,3],worldMapSeed:482731,weather:{},factions:{Wardens:0,Arcanists:0,Merchants:0,Freeblades:0,Bandits:0},bounties:[],minorSites:{},regionalHarvest:{},travelingMerchant:null,worldBosses:[],regionDanger:{},treasureMaps:[],townFestivals:{},companions:[],activeCompanion:null,meals:{},trophies:{},regionMastery:{},rumors:{},restedXP:0,prosperity:{},regionInfluence:{},companionAffinity:{},worldEvents:[],npcRelations:{},monsterKnowledge:{},worldHistory:[],activeNpcChat:null,pendingNpcQuest:null,marketTab:"materials",morality:0,banditOutposts:{},crimeHeat:{},burglaryStats:{success:0,caught:0},regionalMemory:{},tradeFlow:{},ecology:{},regionalLaw:{},rumorNetwork:{},lastWorldPulseDay:0,jail:null,location:0,kills:0,dungeons:0,story:0,enemy:null,inventory:[],weapon:null,armor:null,upgrade:{atk:0,hp:0,def:0,luck:0},flags:{},turnDefend:false,
 dungeon:{active:false,name:null,roomsEntered:0,targetRooms:0,dungeonLevel:1,currentRoom:"0,0",rooms:{},bossRoom:null,bossReady:false,bossDefeated:false,encounter:null,boss:null,clearedRooms:0}}}
-let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.potions=Object.assign({},x.potions||{});s.bestiary=Object.assign({},x.bestiary||{});s.reputation=Object.assign({},x.reputation||{});s.statuses=Array.isArray(x.statuses)?x.statuses:[];s.landmarksFound=Object.assign({},x.landmarksFound||{});s.achievements=Object.assign({},x.achievements||{});if(typeof x.timeOfDay==="number")s.timeOfDay=x.timeOfDay;if(typeof x.daysPassed==="number")s.daysPassed=x.daysPassed;if(typeof x.title==="string")s.title=x.title;if(typeof x.selectedQuickPotion==="string")s.selectedQuickPotion=x.selectedQuickPotion;if(typeof x.worldMapSeed==="number")s.worldMapSeed=x.worldMapSeed;s.weather=Object.assign({},x.weather||{});s.factions=Object.assign({Wardens:0,Arcanists:0,Merchants:0,Freeblades:0,Bandits:0},x.factions||{});s.bounties=Array.isArray(x.bounties)?x.bounties:[];s.minorSites=Object.assign({},x.minorSites||{});s.regionalHarvest=Object.assign({},x.regionalHarvest||{});s.travelingMerchant=x.travelingMerchant||null;s.worldBosses=Array.isArray(x.worldBosses)?x.worldBosses:[];s.regionDanger=Object.assign({},x.regionDanger||{});s.treasureMaps=Array.isArray(x.treasureMaps)?x.treasureMaps:[];s.townFestivals=Object.assign({},x.townFestivals||{});s.companions=Array.isArray(x.companions)?x.companions:[];s.activeCompanion=x.activeCompanion||null;s.meals=Object.assign({},x.meals||{});s.trophies=Object.assign({},x.trophies||{});s.regionMastery=Object.assign({},x.regionMastery||{});s.rumors=Object.assign({},x.rumors||{});s.restedXP=Number(x.restedXP||0);s.prosperity=Object.assign({},x.prosperity||{});s.regionInfluence=Object.assign({},x.regionInfluence||{});s.companionAffinity=Object.assign({},x.companionAffinity||{});s.worldEvents=Array.isArray(x.worldEvents)?x.worldEvents:[];s.npcRelations=Object.assign({},x.npcRelations||{});s.monsterKnowledge=Object.assign({},x.monsterKnowledge||{});s.worldHistory=Array.isArray(x.worldHistory)?x.worldHistory:[];s.activeNpcChat=x.activeNpcChat||null;s.pendingNpcQuest=x.pendingNpcQuest||null;s.marketTab=x.marketTab||"materials";s.morality=Number(x.morality||0);s.banditOutposts=Object.assign({},x.banditOutposts||{});s.crimeHeat=Object.assign({},x.crimeHeat||{});s.burglaryStats=Object.assign({success:0,caught:0},x.burglaryStats||{});s.discoveredLocations=Array.isArray(x.discoveredLocations)&&x.discoveredLocations.length?x.discoveredLocations:[0,1,2,3];s.questProgress=Object.assign({},x.questProgress||{});s.randomNPCs=Object.assign({},x.randomNPCs||{});s.sideQuests=Array.isArray(x.sideQuests)?x.sideQuests:[];if(typeof x.renown==="number")s.renown=x.renown;s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
+let s=base();try{let x=JSON.parse(localStorage.getItem(KEY)||"null");if(x){s=Object.assign(base(),x);s.upgrade=Object.assign(base().upgrade,x.upgrade||{});s.materials=Object.assign(base().materials,x.materials||{});s.spellwork=Object.assign(base().spellwork,x.spellwork||{});s.arcane=Object.assign(base().arcane,x.arcane||{});if(typeof x.mana==="number")s.mana=x.mana;if(typeof x.baseMana==="number")s.baseMana=x.baseMana;s.knownSpells=Array.isArray(x.knownSpells)?x.knownSpells:[];s.spellTomes=Array.isArray(x.spellTomes)?x.spellTomes:[];s.customSpells=Array.isArray(x.customSpells)?x.customSpells:[];s.soulCrystals=Array.isArray(x.soulCrystals)?x.soulCrystals:[];s.visited=Array.isArray(x.visited)&&x.visited.length?x.visited:[s.location||0];if(typeof x.selectedSpell==="string")s.selectedSpell=x.selectedSpell;s.flags=Object.assign({},x.flags||{});s.potions=Object.assign({},x.potions||{});s.bestiary=Object.assign({},x.bestiary||{});s.reputation=Object.assign({},x.reputation||{});s.statuses=Array.isArray(x.statuses)?x.statuses:[];s.landmarksFound=Object.assign({},x.landmarksFound||{});s.achievements=Object.assign({},x.achievements||{});if(typeof x.timeOfDay==="number")s.timeOfDay=x.timeOfDay;if(typeof x.daysPassed==="number")s.daysPassed=x.daysPassed;if(typeof x.title==="string")s.title=x.title;if(typeof x.selectedQuickPotion==="string")s.selectedQuickPotion=x.selectedQuickPotion;if(typeof x.worldMapSeed==="number")s.worldMapSeed=x.worldMapSeed;s.weather=Object.assign({},x.weather||{});s.factions=Object.assign({Wardens:0,Arcanists:0,Merchants:0,Freeblades:0,Bandits:0},x.factions||{});s.bounties=Array.isArray(x.bounties)?x.bounties:[];s.minorSites=Object.assign({},x.minorSites||{});s.regionalHarvest=Object.assign({},x.regionalHarvest||{});s.travelingMerchant=x.travelingMerchant||null;s.worldBosses=Array.isArray(x.worldBosses)?x.worldBosses:[];s.regionDanger=Object.assign({},x.regionDanger||{});s.treasureMaps=Array.isArray(x.treasureMaps)?x.treasureMaps:[];s.townFestivals=Object.assign({},x.townFestivals||{});s.companions=Array.isArray(x.companions)?x.companions:[];s.activeCompanion=x.activeCompanion||null;s.meals=Object.assign({},x.meals||{});s.trophies=Object.assign({},x.trophies||{});s.regionMastery=Object.assign({},x.regionMastery||{});s.rumors=Object.assign({},x.rumors||{});s.restedXP=Number(x.restedXP||0);s.prosperity=Object.assign({},x.prosperity||{});s.regionInfluence=Object.assign({},x.regionInfluence||{});s.companionAffinity=Object.assign({},x.companionAffinity||{});s.worldEvents=Array.isArray(x.worldEvents)?x.worldEvents:[];s.npcRelations=Object.assign({},x.npcRelations||{});s.monsterKnowledge=Object.assign({},x.monsterKnowledge||{});s.worldHistory=Array.isArray(x.worldHistory)?x.worldHistory:[];s.activeNpcChat=x.activeNpcChat||null;s.pendingNpcQuest=x.pendingNpcQuest||null;s.marketTab=x.marketTab||"materials";s.morality=Number(x.morality||0);s.banditOutposts=Object.assign({},x.banditOutposts||{});s.crimeHeat=Object.assign({},x.crimeHeat||{});s.burglaryStats=Object.assign({success:0,caught:0},x.burglaryStats||{});s.regionalMemory=Object.assign({},x.regionalMemory||{});s.tradeFlow=Object.assign({},x.tradeFlow||{});s.ecology=Object.assign({},x.ecology||{});s.regionalLaw=Object.assign({},x.regionalLaw||{});s.rumorNetwork=Object.assign({},x.rumorNetwork||{});s.lastWorldPulseDay=Number(x.lastWorldPulseDay||0);s.jail=x.jail||null;s.discoveredLocations=Array.isArray(x.discoveredLocations)&&x.discoveredLocations.length?x.discoveredLocations:[0,1,2,3];s.questProgress=Object.assign({},x.questProgress||{});s.randomNPCs=Object.assign({},x.randomNPCs||{});s.sideQuests=Array.isArray(x.sideQuests)?x.sideQuests:[];if(typeof x.renown==="number")s.renown=x.renown;s.dungeon=Object.assign(base().dungeon,x.dungeon||{});
 if(!s.flags.soulCrystalObjectMigration){
   let legacyFilled=Number((x.materials||{})["Soul Crystal (Filled)"]||0);
   let legacyEmpty=Number((x.materials||{})["Soul Crystal (Empty)"]||0);
@@ -1180,7 +1232,7 @@ function showAdventurePopup(title,subtitle,icon="⌖",combat=false){
 }
 function showVersionLog(){
  let versions=[
-  ["v4.0","Moral compass, faction morality reactions, bandit outposts, black market/jobs, house lockpicking and timed burglary, more monsters."],["v3.9","Visual overhaul for every major tab, live tab headers, contextual quick actions, regional ambience strip."],["v3.8","Adventure popup, improved Adventure Log, mandatory trap skill checks, Character version log."],
+  ["v4.2","Sticky HUD location, condensed Character groups, faster timed crime checks, harsher arrest consequences, escape checks and stealth jail escape dungeon."],["v4.1","UI cleanup plus regional memory, trade flow, ecology, law propagation, and rumor network systems."],["v4.0","Moral compass, faction morality reactions, bandit outposts, black market/jobs, house lockpicking and timed burglary, more monsters."],["v3.9","Visual overhaul for every major tab, live tab headers, contextual quick actions, regional ambience strip."],["v3.8","Adventure popup, improved Adventure Log, mandatory trap skill checks, Character version log."],
   ["v3.7","Fishing/cooking skill checks, three-tab Market popup, more weapons/elements/monsters."],
   ["v3.6","NPC conversations, XP-orb kill animation, boss reward popup."],
   ["v3.5.1","Fixed bottom navigation and softened rain effects."],
@@ -1191,7 +1243,7 @@ function showVersionLog(){
   ["v3.1","Prosperity, faction influence and companion affinity integration."],
   ["v3.0","Companions, cooking, fishing, trophies, mastery, salvaging and more."]
  ];
- $("versionLogEntries").innerHTML=versions.map(v=>'<div class="item versionEntry"><div class="row"><b>'+v[0]+'</b><span class="pill">'+(v[0]==="v4.0"?"CURRENT":"OLDER")+'</span></div><div class="small">'+v[1]+'</div></div>').join("");
+ $("versionLogEntries").innerHTML=versions.map(v=>'<div class="item versionEntry"><div class="row"><b>'+v[0]+'</b><span class="pill">'+(v[0]==="v4.2"?"CURRENT":"OLDER")+'</span></div><div class="small">'+v[1]+'</div></div>').join("");
  $("versionModal").classList.add("open");
 }
 
@@ -1222,7 +1274,7 @@ function enemy(){
 }
 function levelUp(){while(s.xp>=s.xpNeed){s.xp-=s.xpNeed;s.level++;s.xpNeed=Math.floor(s.xpNeed*1.28);s.baseHp+=3;s.hp=maxHp();s.mana=maxMana();log("Level up! You are now level "+s.level+". HP and mana restored.")}}
 function loot(mult=1){mult*=masteryRewardMult();let g=Math.floor((8+s.level*3)*mult*(1+attrsTotal("gold"))),xp=Math.floor((12+s.level*3)*mult*(1+attrsTotal("xp")+s.bonusXP)),restBonus=consumeRestedXP(xp);xp+=restBonus;s.gold+=g;s.xp+=xp;if(restBonus)log("Rested XP bonus: +"+restBonus+" XP.");if(Math.random()<.35){s.ore+=1+rnd(2);log("You recover forging ore.")}if(Math.random()<.16){let it=makeItem(Math.random()<.55?"weapon":"armor",2);s.inventory.push(it);log("Loot wheel: "+it.rarity+" "+it.name+" ["+it.attr.name+"].")}log("Reward: "+g+" gold, "+xp+" XP.");levelUp()}
-function win(){let dead={...s.enemy},preGold=s.gold,preXP=s.xp,preRenown=s.renown;xpOrbBurst(dead.boss||dead.worldBossId||dead.finalBoss?26:14);gainMonsterKnowledge(dead.name,dead.elite?2:1);majorVictoryConsequence(dead);awardTrophy(dead);gainRegionMastery(dead.elite?3:1);updateBounties(dead.name);modifyRegionDanger(area().name,-2);if(dead.worldBossId){let wb=s.worldBosses.find(x=>x.id===dead.worldBossId);if(wb){wb.defeated=true;s.gold+=100+wb.level*10;s.renown+=3;spreadProsperity(area().name,8);addRegionInfluence(area().name,"Wardens",3);gainCompanionAffinity(4,"defeating a world boss together");log("World Boss defeated! Renown +3. Trade improves and Warden influence grows.")}}let roadDestination=dead.roadAmbush?dead.pendingDestination:null;s.kills++;s.questProgress["kills_"+area().name]=Number(s.questProgress["kills_"+area().name]||0)+1;
+function win(){let dead={...s.enemy},preGold=s.gold,preXP=s.xp,preRenown=s.renown;recordEcologyKill(dead.name);xpOrbBurst(dead.boss||dead.worldBossId||dead.finalBoss?26:14);gainMonsterKnowledge(dead.name,dead.elite?2:1);majorVictoryConsequence(dead);awardTrophy(dead);gainRegionMastery(dead.elite?3:1);updateBounties(dead.name);modifyRegionDanger(area().name,-2);if(dead.worldBossId){let wb=s.worldBosses.find(x=>x.id===dead.worldBossId);if(wb){wb.defeated=true;s.gold+=100+wb.level*10;s.renown+=3;spreadProsperity(area().name,8);addRegionInfluence(area().name,"Wardens",3);gainCompanionAffinity(4,"defeating a world boss together");log("World Boss defeated! Renown +3. Trade improves and Warden influence grows.")}}let roadDestination=dead.roadAmbush?dead.pendingDestination:null;s.kills++;s.questProgress["kills_"+area().name]=Number(s.questProgress["kills_"+area().name]||0)+1;
  if(s.mode==="campaign"){if(dead.finalBoss){s.finalBossDefeated=true;log("Demon Lord Malachar is defeated. Valedorn survives.");}}
  captureSoul(dead,false);if(dead.elite&&/(Wandering Champion|Ancient Beast|Monster Nest)/.test(dead.name)){s.gold+=25+s.level*4;s.renown++;s.activeWorldEvent=null;log("Elite hunt complete. Bonus gold and Renown +1.")}loot((s.enemy.elite?1.8:1)*(dead.lootMult||1));s.enemy=null;
  if(roadDestination!==null&&areas[roadDestination]){
@@ -1284,8 +1336,8 @@ function explore(){
  if(discoverBanditOutpost()){save();render();showAdventurePopup("Bandit Outpost Discovered","You uncover a hidden criminal camp. It remains accessible whenever you return to this region.","☠",false);return}if(discoverMinorSite()){save();render();showAdventurePopup("Minor Site Discovered","You find something that wasn't marked on any ordinary road map.","⌖",false);return}
  if(maybeSpawnWorldBoss()){save();render();showAdventurePopup("World Boss Encounter","A major threat has found you.","♛",true);return}
 
- let roll=Math.random(),dangerBonus=(effectiveRegionDanger()-50)/300;
- if(roll<Math.max(.30,Math.min(.62,.42+dangerBonus))){
+ let roll=Math.random(),dangerBonus=(effectiveRegionDanger()-50)/300,ecoMult=ecologyEncounterMult();
+ if(roll<Math.max(.24,Math.min(.68,(.42+dangerBonus)*ecoMult))){
    enemy();
    if(s.enemy){$("result").textContent="Wheel: ENCOUNTER";log("A "+s.enemy.name+" appears.",true);log("Combat encounter: "+s.enemy.name+" attacks you.");save();render();showAdventurePopup("Combat Encounter","Your exploration is interrupted by an enemy.","⚔",true);return}
  }else if(roll<.66){
@@ -1502,7 +1554,7 @@ function renderCreator(){
  $("creatorPreview").innerHTML='<div class="item"><b>'+creatorState.race+' '+creatorState.className+'</b><div class="small">'+race.desc+' '+cl.desc+'</div></div><div class="item"><b>'+bg.name+'</b><div class="small">Starts in '+bg.start+' • '+bg.perk+'</div></div><div class="item"><b>World Seed</b><div class="small">'+(($("worldSeedInput")&&$("worldSeedInput").value)||"482731")+' → '+hashWorldSeed(($("worldSeedInput")&&$("worldSeedInput").value)||"482731")+'</div></div><div class="item"><b>Wealth</b><div class="small">Rolled secretly on a d100 when the game begins. Possible classes: Destitute, Poor, Common, Comfortable, Wealthy, Noble.</div></div>';
 }
 
-function currentTown(){return area().type==="town"}function townRep(n=area().name){return Number(s.reputation[n]||0)}function gainTownRep(n=1){if(currentTown())s.reputation[area().name]=townRep()+n}function townPriceMult(){let inf=influenceBenefit(area().name);return Math.max(.52,(1-townRep()*.01)*festivalBonus().buy*prosperityPriceMult(area().name)*(1-inf.merchants)*moralityTownPriceMult())}
+function currentTown(){return area().type==="town"}function townRep(n=area().name){return Number(s.reputation[n]||0)}function gainTownRep(n=1){if(currentTown())s.reputation[area().name]=townRep()+n}function townPriceMult(){let inf=influenceBenefit(area().name);return Math.max(.48,(1-townRep()*.01)*festivalBonus().buy*prosperityPriceMult(area().name)*(1-inf.merchants)*moralityTownPriceMult()*tradePriceMult()*lawPriceMult())}
 let jobTimer=null;
 function startJobChallenge(jobIndex){
  if(!currentTown()){log("You need to be in a town to take a job.");return}
@@ -2870,14 +2922,14 @@ function renderTenFeatureSystems(){
 function rememberWorld(t){s.worldHistory.unshift({day:s.daysPassed,text:t});s.worldHistory=s.worldHistory.slice(0,30)}
 function localCondition(){let d=effectiveRegionDanger(),p=prosperityValue();return d>=80?"Under Siege":d>=60?"Dangerous":p>=80?"Bustling":p<=20?"Desperate":worldWeatherFor(area().name)==="Storm"?"Stormbound":"Watchful"}
 function roadCondition(){let w=worldWeatherFor(area().name),d=effectiveRegionDanger();return (w==="Blizzard"||w==="Sandstorm")?"Nearly Impassable":w==="Storm"?"Hazardous":d>70?"Bandit-Ridden":d<25?"Patrolled":"Open"}
-function tickLivingWorld(){s.worldEvents=s.worldEvents.filter(e=>e.until>=s.daysPassed);if(s.worldEvents.length<3&&Math.random()<.10){let a=spin(areas),k=spin(["Bandit Surge","Monster Migration","Trade Caravan","Arcane Bloom","Refugee Column","Warden Patrol"]);s.worldEvents.push({area:a.name,kind:k,until:s.daysPassed+2+rnd(4)});if(k==="Bandit Surge"||k==="Monster Migration")modifyRegionDanger(a.name,8);if(k==="Trade Caravan")modifyProsperity(a.name,5);if(k==="Warden Patrol")addRegionInfluence(a.name,"Wardens",2);rememberWorld(k+" begins around "+a.name+".")}}
+function tickLivingWorld(){s.worldEvents=s.worldEvents.filter(e=>e.until>=s.daysPassed);if(s.worldEvents.length<3&&Math.random()<.10){let a=spin(areas),k=spin(["Bandit Surge","Monster Migration","Trade Caravan","Arcane Bloom","Refugee Column","Warden Patrol"]);s.worldEvents.push({area:a.name,kind:k,until:s.daysPassed+2+rnd(4)});if(k==="Bandit Surge"||k==="Monster Migration")modifyRegionDanger(a.name,8);if(k==="Trade Caravan")modifyProsperity(a.name,5);if(k==="Warden Patrol")addRegionInfluence(a.name,"Wardens",2);rememberWorld(k+" begins around "+a.name+".");addRegionMemory(a.name,k+" changed daily life in the region.",2,"world")}}
 function regionStory(name=area().name){let d=effectiveRegionDanger(name),p=prosperityValue(name),dom=dominantFaction(name),boss=s.worldBosses.find(x=>!x.defeated&&x.area===name);return boss?boss.name+" terrorizes the region":d>75?"Settlements barricade their roads":p>75&&dom?dom.name+" influence fuels a local boom":p<25?"Trade is drying up":dom?dom.name+" presence is growing":"Life continues uneasily"}
 function npcRelation(n){return Number(s.npcRelations[n]||0)}function changeNpcRelation(n,v){s.npcRelations[n]=Math.max(-50,Math.min(100,npcRelation(n)+v))}function relationTier(v){return v>=60?"Devoted":v>=30?"Friend":v>=10?"Familiar":v<=-20?"Hostile":v<0?"Wary":"Stranger"}
 function gainMonsterKnowledge(n,v=1){n=n.replace(/^Elite\s+/,"");s.monsterKnowledge[n]=(s.monsterKnowledge[n]||0)+v}function monsterKnowledgeTier(n){let v=s.monsterKnowledge[n.replace(/^Elite\s+/,"")]||0;return v>=10?3:v>=5?2:v>=2?1:0}
 function tryWeatherFind(){let w=worldWeatherFor(area().name),x=w==="Rain"?["Stormwater",.16]:(w==="Snow"||w==="Blizzard")?["Frost Bloom",.14]:w==="Storm"?["Charged Shard",.12]:w==="Heatwave"?["Sun Resin",.12]:null;if(x&&Math.random()<x[1]){s.materials[x[0]]=(s.materials[x[0]]||0)+1;log("Weather discovery: "+x[0]+".");return x[0]}return null}
 function campDiscovery(){if(currentTown())return"";let t=spin(["Old bootprints circle the camp.","A distant fire burns on the horizon.","Something large moves beyond the firelight.","You find an abandoned traveler camp.","An old road marker points into the dark.","Fresh monster tracks cross the campsite."]);rememberWorld(t+" ("+area().name+")");return t}
 function playerCondition(){let r=s.hp/maxHp();return r<=.2?"Critical":r<=.45?"Wounded":r<=.7?"Bruised":"Fit"}
-function majorVictoryConsequence(d){if(!(d.boss||d.worldBossId))return;spreadProsperity(area().name,5);modifyRegionDanger(area().name,-7);rememberWorld(d.name+" falls. "+area().name+" celebrates the victory.")}
+function majorVictoryConsequence(d){if(!(d.boss||d.worldBossId))return;spreadProsperity(area().name,5);modifyRegionDanger(area().name,-7);rememberWorld(d.name+" falls. "+area().name+" celebrates the victory.");addRegionMemory(area().name,d.name+" was defeated here, and people still talk about it.",5,"victory");spreadMemory(area().name,"Word spreads that "+d.name+" fell in "+area().name+".",4,"victory")}
 function codexCreatureNames(){let names=new Set([...Object.keys(s.bestiary||{}),...Object.keys(s.monsterKnowledge||{})]);return[...names].sort((a,b)=>a.localeCompare(b))}
 function renderCodex(){let sel=$("codexCreature"),det=$("codexDetails");if(!sel||!det)return;let names=codexCreatureNames(),old=sel.value;sel.innerHTML=names.length?names.map(n=>'<option>'+n+'</option>').join(""):'<option>No creatures recorded</option>';if(old&&names.includes(old))sel.value=old;if(!names.length){det.innerHTML='<p class="small">Identify or fight creatures to begin filling the Codex.</p>';return}let n=sel.value,b=s.bestiary[n],raw=s.monsterKnowledge[n]||0,tier=monsterKnowledgeTier(n);let info='<div class="item"><div class="row"><b>'+n+'</b><span class="pill">Familiarity '+tier+'/3</span></div><div class="small">Combat observations: '+raw+'</div><div class="codexKnowledge"><span style="width:'+Math.min(100,raw*10)+'%"></span></div></div>';if(b)info+='<div class="item"><b>Identified Information</b><div class="small">Weaknesses: '+b.affinity.weak.join(", ")+'</div><div class="small">Resistances: '+b.affinity.strong.join(", ")+'</div><div class="small">Observed level: '+(b.level||"?")+'</div></div>';else info+='<div class="item"><b>Not Identified</b><div class="small">'+(tier>=3?'You know its habits extremely well, but magical weaknesses still require Identify.':tier>=2?'You recognize common patterns and behavior.':tier>=1?'You are beginning to recognize its behavior.':'Almost nothing is known yet.')+'</div></div>';det.innerHTML=info}
 function renderImmersionSystems(){
@@ -2924,7 +2976,7 @@ function renderMiniHud(){
  let rect=main.getBoundingClientRect(),show=rect.bottom<24;
  hud.classList.toggle("show",show);
  if(!show)return;
- $("miniHudName").textContent=s.name||"Wayfarer";$("miniHudLevel").textContent="Lv "+s.level;
+ $("miniHudName").textContent=s.name||"Wayfarer";$("miniHudLocation").textContent="📍 "+area().name;$("miniHudLevel").textContent="Lv "+s.level;
  $("miniHpText").textContent="HP "+Math.floor(s.hp)+" / "+maxHp();$("miniManaText").textContent="MANA "+Math.floor(s.mana)+" / "+maxMana();
  $("miniHpBar").style.width=Math.max(0,Math.min(100,s.hp/maxHp()*100))+"%";$("miniManaBar").style.width=Math.max(0,Math.min(100,s.mana/maxMana()*100))+"%";
  let c=activeCombatInfo();$("miniHudCombat").textContent=c?"⚔ "+c.name:"";
@@ -2936,7 +2988,7 @@ const buttonIcons={
  dungeonExplore:"🚪",dungeonSkill:"✹",dungeonPotion:"✚",dungeonClassSkill:"◆",
  useQuickPotion:"⚗",useQuickPotionDungeon:"⚗",toggleQuickPotionPicker:"▾",toggleQuickPotionPickerDungeon:"▾",
  worldMapCenter:"◎",worldMapZoomIn:"＋",worldMapZoomOut:"−",worldMapToggleLabels:"◫",worldMapReroll:"⟳",
- openCodex:"📖",closeCodex:"✕",jumpToCombat:"⚔",closeNpcChat:"✕",closeBossRewards:"✓"
+ openCodex:"📖",closeCodex:"✕",jumpToCombat:"⚔",crimeEscapeStop:"↯",jailCheckStop:"↯",serveSentence:"⌛",closeNpcChat:"✕",closeBossRewards:"✓"
 };
 function decorateButtons(){
  document.querySelectorAll("button").forEach(b=>{
@@ -2951,6 +3003,33 @@ function decorateButtons(){
 }
 
 
+
+// ===== v4.1 Connected World Systems =====
+function regionMemory(name=area().name){if(!s.regionalMemory[name])s.regionalMemory[name]=[];return s.regionalMemory[name]}
+function addRegionMemory(name,text,weight=1,type="event"){let m=regionMemory(name);m.unshift({day:s.daysPassed,text,weight,type});s.regionalMemory[name]=m.slice(0,12)}
+function strongestRegionMemory(name=area().name){let m=regionMemory(name);return m.length?[...m].sort((a,b)=>(b.weight-a.weight)||(b.day-a.day))[0]:null}
+function spreadMemory(name,text,weight=1,type="rumor"){for(const n of (worldConnections[name]||[]))addRegionMemory(n,text,Math.max(1,weight-1),type)}
+
+function tradeFlowValue(name=area().name){if(typeof s.tradeFlow[name]!=="number"){let p=prosperityValue(name),d=effectiveRegionDanger(name);s.tradeFlow[name]=Math.max(0,Math.min(100,Math.round(p*.7+(100-d)*.3)))}return s.tradeFlow[name]}
+function recalcTradeFlow(name){let p=prosperityValue(name),d=effectiveRegionDanger(name),links=worldConnections[name]||[],neighbor=links.length?links.reduce((a,n)=>a+prosperityValue(n),0)/links.length:p;s.tradeFlow[name]=Math.max(0,Math.min(100,Math.round(p*.55+(100-d)*.25+neighbor*.20)));return s.tradeFlow[name]}
+function tradePriceMult(name=area().name){let t=tradeFlowValue(name);return Math.max(.90,Math.min(1.12,1-(t-50)*.0022))}
+
+function ecologyData(name=area().name){if(!s.ecology[name])s.ecology[name]={kills:{},pressure:50};return s.ecology[name]}
+function recordEcologyKill(monster,name=area().name){let e=ecologyData(name),k=monster.replace(/^Elite\s+/,"");e.kills[k]=(e.kills[k]||0)+1;e.pressure=Math.max(5,e.pressure-1);if(e.kills[k]===5)addRegionMemory(name,k+" sightings are becoming less common after repeated hunting.",2,"ecology")}
+function ecologyEncounterMult(name=area().name){return .82+ecologyData(name).pressure/275}
+function ecologyPulse(name){let e=ecologyData(name);e.pressure=Math.min(100,e.pressure+1+rnd(3));if(e.pressure>72&&Math.random()<.2)addRegionMemory(name,"Monster populations are surging again in the wilds.",2,"ecology")}
+
+function lawData(name=area().name){if(!s.regionalLaw[name])s.regionalLaw[name]={alert:0};return s.regionalLaw[name]}
+function addLawAlert(name,amount){let l=lawData(name);l.alert=Math.max(0,Math.min(100,l.alert+amount));if(l.alert>=40)addRegionMemory(name,"Guards have increased patrols after a string of crimes.",3,"law");for(const n of (worldConnections[name]||[])){let a=areas.find(x=>x.name===n);if(a&&a.type==="town")lawData(n).alert=Math.max(0,Math.min(100,lawData(n).alert+Math.ceil(amount*.25)))}}
+function lawPriceMult(name=area().name){return s.morality<0?1+lawData(name).alert*.0015:1}
+
+function rumorNetworkFor(name=area().name){if(!s.rumorNetwork[name])s.rumorNetwork[name]=[];return s.rumorNetwork[name]}
+function pushRumor(name,text){let r=rumorNetworkFor(name);r.unshift({day:s.daysPassed,text});s.rumorNetwork[name]=r.slice(0,8)}
+function propagateRumors(){for(const a of areas){let mem=strongestRegionMemory(a.name);if(!mem||Math.random()>.28)continue;for(const n of (worldConnections[a.name]||[]))if(Math.random()<.45)pushRumor(n,"Travelers from "+a.name+" say "+mem.text.toLowerCase())}}
+function latestRumor(name=area().name){let r=rumorNetworkFor(name);return r.length?r[0].text:null}
+
+function connectedWorldPulse(){if(s.lastWorldPulseDay>=s.daysPassed)return;for(let d=s.lastWorldPulseDay+1;d<=s.daysPassed;d++){for(const a of areas){recalcTradeFlow(a.name);ecologyPulse(a.name);let law=lawData(a.name);law.alert=Math.max(0,law.alert-1);if(tradeFlowValue(a.name)>75&&Math.random()<.12)modifyProsperity(a.name,1);if(tradeFlowValue(a.name)<25&&Math.random()<.12)modifyProsperity(a.name,-1)}propagateRumors()}s.lastWorldPulseDay=s.daysPassed}
+function renderConnectedWorld(){let box=$("connectedWorldSummary");if(!box)return;let mem=strongestRegionMemory(),trade=tradeFlowValue(),eco=ecologyData().pressure,law=lawData().alert,rumor=latestRumor();box.innerHTML='<div class="item worldPulse"><div class="small">TRADE FLOW</div><b>'+trade+'/100</b><div class="small">'+(trade>=70?"Caravans are moving freely.":trade<=30?"Trade routes are struggling.":"Trade remains steady.")+'</div></div><div class="item"><div class="small">WILDLIFE PRESSURE</div><b>'+eco+'/100</b><div class="small">'+(eco>=70?"Creature populations are active.":eco<=30?"Hunting has thinned local monsters.":"Ecology is relatively balanced.")+'</div></div><div class="item"><div class="small">LAW ALERT</div><b>'+law+'/100</b><div class="small">'+(law>=50?"Patrols are actively watching for crime.":law>=20?"Authorities are paying attention.":"Law enforcement is relaxed.")+'</div></div><div class="item worldEcho"><div class="small">LOCAL MEMORY</div><b>'+(mem?"Day "+mem.day:"Quiet")+'</b><div class="small">'+(mem?mem.text:(rumor||"Nothing major has defined this region yet."))+'</div></div>'}
 const factionMorals={Wardens:75,Merchants:25,Arcanists:0,Freeblades:-20,Bandits:-85};
 function moralityClamp(v){return Math.max(-100,Math.min(100,v))}
 function moralityTier(v=s.morality){return v>=70?"Virtuous":v>=30?"Good":v<=-70?"Ruthless":v<=-30?"Bad":"Neutral"}
@@ -2963,26 +3042,136 @@ function renderMorality(){if($("moralityMarker"))$("moralityMarker").style.left=
 function moralNpcTone(npc){let m=s.morality||0,rel=npcRelation(npc.name);if(m>=60)return rel>=10?"People say you've been doing real good around here.":"I've heard decent things about you. Don't make me regret believing them.";if(m<=-60)return npc.role==="Guard"?"I've heard your name. Keep your hands where I can see them.":"You have a reputation. The kind that makes people lock doors.";if(m<=-25)return"Something about you says trouble follows close behind.";if(m>=25)return"You've got the look of someone who still bothers helping strangers.";return"You wanted to talk?"}
 
 function ensureBanditOutpost(areaName=area().name){return s.banditOutposts[areaName]||null}
-function discoverBanditOutpost(){if(area().type==="town"||s.banditOutposts[area().name]||Math.random()>.075)return false;let names=["Black Lantern Camp","Red Knife Den","Broken Crown Stockade","Ash Jackal Hideout","Crooked Coin Camp","Rook's Hollow"];let o={name:spin(names),level:Math.max(area().min||1,s.level),trust:0,discoveredDay:s.daysPassed};s.banditOutposts[area().name]=o;rememberWorld("You discover "+o.name+", a hidden bandit outpost in "+area().name+".");log("Bandit outpost discovered: "+o.name+". You can return whenever you are in "+area().name+".");return true}
+function discoverBanditOutpost(){if(area().type==="town"||s.banditOutposts[area().name]||Math.random()>.075)return false;let names=["Black Lantern Camp","Red Knife Den","Broken Crown Stockade","Ash Jackal Hideout","Crooked Coin Camp","Rook's Hollow"];let o={name:spin(names),level:Math.max(area().min||1,s.level),trust:0,discoveredDay:s.daysPassed};s.banditOutposts[area().name]=o;rememberWorld("You discover "+o.name+", a hidden bandit outpost in "+area().name+".");log("Bandit outpost discovered: "+o.name+". You can return whenever you are in "+area().name+".");addRegionMemory(area().name,"A hidden bandit outpost called "+o.name+" was discovered.",3,"crime");spreadMemory(area().name,"Rumors mention a hidden outlaw camp somewhere near "+area().name+".",2,"crime");return true}
 function renderBanditOutpost(){let o=ensureBanditOutpost();if(!o)return;let access=s.morality<=-20||s.factions.Bandits>=5;$("outpostHero").innerHTML='<b>'+o.name+'</b><div class="small">Hidden in '+area().name+' • Outpost Lv '+o.level+'</div><div class="small">Your morality: '+moralityTier()+' ('+s.morality+')</div>';if(!access){$("outpostContent").innerHTML='<div class="item crimeResult"><b>They do not trust you.</b><div class="small">Bandits trade and offer work only to characters with morality ≤ -20 or Bandit reputation 5+.</div></div>';return}let stock=[{n:"Stolen Silver",c:28,type:"mat"},{n:"Lockpick Kit",c:22,type:"lockpick"},{n:"Black Iron",c:52,type:"mat"},{n:"Arcane Dust",c:36,type:"mat"},{n:"Treasure Map",c:48,type:"map"}];$("outpostContent").innerHTML='<div class="item"><b>Black Market</b><div class="small">Prices improve as you lean further toward evil.</div></div><div class="banditGoods">'+stock.map(x=>{let cost=Math.max(5,Math.floor(x.c*banditPriceMult()));return '<div class="item"><div class="row"><b>'+x.n+'</b><span>'+cost+'g</span></div><button data-banditbuy="'+x.type+'" data-bandititem="'+x.n+'" data-banditcost="'+x.c+'">BUY</button></div>'}).join("")+'</div><div class="item"><b>Bandit Work</b><div class="small">Criminal work lowers morality, improves Bandit reputation, and can worsen regional danger.</div><button data-a="banditJob">TAKE BANDIT JOB</button></div>'}
 function openBanditOutpost(){if(!ensureBanditOutpost()){log("No bandit outpost is known in this region.");return}$("outpostModal").classList.add("open");renderBanditOutpost()}
 function banditBuy(type,item,base){let cost=Math.max(5,Math.floor(Number(base)*banditPriceMult()));if(s.gold<cost){log("Not enough gold.");return}s.gold-=cost;if(type==="map")createTreasureMap();else if(type==="lockpick")s.materials["Lockpick Kit"]=(s.materials["Lockpick Kit"]||0)+1;else s.materials[item]=(s.materials[item]||0)+1;s.factions.Bandits+=factionRepAdjusted("Bandits",1);changeMorality(-1,"black-market trade");save();render();renderBanditOutpost()}
-function banditJob(){if(!(s.morality<=-20||s.factions.Bandits>=5))return;let job=spin(["Rob a merchant caravan","Shake down a roadside camp","Steal medicine from a patrol cache","Sabotage a Warden checkpoint"]),pay=35+s.level*7+rnd(20);s.gold+=pay;s.factions.Bandits+=factionRepAdjusted("Bandits",2);s.factions.Wardens-=1;changeMorality(-6,job);modifyRegionDanger(area().name,4);log(job+" completed. You earn "+pay+" gold.");save();render();renderBanditOutpost()}
+function banditJob(){if(!(s.morality<=-20||s.factions.Bandits>=5))return;let job=spin(["Rob a merchant caravan","Shake down a roadside camp","Steal medicine from a patrol cache","Sabotage a Warden checkpoint"]),pay=35+s.level*7+rnd(20);s.gold+=pay;s.factions.Bandits+=factionRepAdjusted("Bandits",2);s.factions.Wardens-=1;changeMorality(-6,job);modifyRegionDanger(area().name,4);addLawAlert(area().name,8);addRegionMemory(area().name,job+" left the region less stable.",3,"crime");log(job+" completed. You earn "+pay+" gold.");save();render();renderBanditOutpost()}
 
-let lockpickGame=null,lockpickAnim=null,burglaryGame=null,burglaryTimerHandle=null;
-function startHouseLockpick(){if(!currentTown()){log("There are no town houses to break into here.");return}let kit=s.materials["Lockpick Kit"]||0,difficulty=Math.max(1,Math.floor((area().min||1)/3)+1),width=Math.max(10,30-difficulty*3);lockpickGame={pos:0,dir:1,last:performance.now(),speed:.075+difficulty*.008,zoneStart:10+rnd(Math.max(4,80-width)),zoneWidth:width+(kit?8:0)};$("skillGameContent").innerHTML='<div class="trapChallengeTitle"><b>🔒 Lockpick House</b><div class="small">Stop the pick inside the green binding window. '+(kit?"A Lockpick Kit widens the sweet spot.":"You are improvising without a Lockpick Kit.")+'</div></div><div class="lockpickTrack"><div class="lockpickSweet" style="left:'+lockpickGame.zoneStart+'%;width:'+lockpickGame.zoneWidth+'%"></div><div id="lockpickPin" class="lockpickPin"></div></div><button data-a="lockpickStop">SET THE PIN</button><button class="secondary" data-a="lockpickCancel">BACK OFF</button>';$("skillGameModal").classList.add("open");lockpickAnim=requestAnimationFrame(lockpickFrame)}
-function lockpickFrame(now){if(!lockpickGame)return;let g=lockpickGame,dt=Math.min(50,now-g.last);g.last=now;g.pos+=g.dir*g.speed*dt;if(g.pos>=100){g.pos=100;g.dir=-1}else if(g.pos<=0){g.pos=0;g.dir=1}if($("lockpickPin"))$("lockpickPin").style.left=g.pos+"%";lockpickAnim=requestAnimationFrame(lockpickFrame)}
-function lockpickStop(){let g=lockpickGame;if(!g)return;let ok=g.pos>=g.zoneStart&&g.pos<=g.zoneStart+g.zoneWidth;cancelAnimationFrame(lockpickAnim);lockpickGame=null;$("skillGameModal").classList.remove("open");if(ok){if((s.materials["Lockpick Kit"]||0)>0&&Math.random()<.18)s.materials["Lockpick Kit"]--;changeMorality(-2,"breaking into a home");startBurglary()}else{changeMorality(-1,"attempted burglary");s.crimeHeat[area().name]=(s.crimeHeat[area().name]||0)+1;showActionPopup("Lockpick Failed","<div class='item crimeResult'><b>The lock refuses to turn.</b><div class='small'>Crime heat in "+area().name+": "+s.crimeHeat[area().name]+".</div></div>");save();render()}}
+let lockpickGame=null,lockpickAnim=null,lockpickTimeout=null,burglaryGame=null,burglaryTimerHandle=null,crimeEscapeGame=null,crimeEscapeAnim=null,crimeEscapeTimeout=null,jailCheckGame=null,jailCheckAnim=null,jailCheckTimeout=null;
+
+function startHouseLockpick(){
+ if(!currentTown()){log("There are no town houses to break into here.");return}
+ let kit=s.materials["Lockpick Kit"]||0,difficulty=Math.max(1,Math.floor((area().min||1)/3)+1),width=Math.max(9,24-difficulty*2);
+ lockpickGame={pos:0,dir:1,last:performance.now(),speed:.14+difficulty*.012,zoneStart:8+rnd(Math.max(4,84-width)),zoneWidth:width+(kit?7:0),end:Date.now()+4000};
+ $("skillGameContent").innerHTML='<div class="trapChallengeTitle"><b>🔒 Lockpick House</b><div class="small">Fast check: hit the green binding window before 4 seconds expires.</div></div><div class="lockpickTrack"><div class="lockpickSweet" style="left:'+lockpickGame.zoneStart+'%;width:'+lockpickGame.zoneWidth+'%"></div><div id="lockpickPin" class="lockpickPin"></div></div><div class="crimeTimer"><span id="lockpickTimerBar" style="width:100%"></span></div><div class="small" id="lockpickTimerText">4.0s</div><button data-a="lockpickStop">SET THE PIN</button><button class="secondary" data-a="lockpickCancel">BACK OFF</button>';
+ $("skillGameModal").classList.add("open");lockpickAnim=requestAnimationFrame(lockpickFrame);
+}
+function lockpickFrame(now){
+ if(!lockpickGame)return;let g=lockpickGame,dt=Math.min(40,now-g.last);g.last=now;g.pos+=g.dir*g.speed*dt;
+ if(g.pos>=100){g.pos=100;g.dir=-1}else if(g.pos<=0){g.pos=0;g.dir=1}
+ let left=Math.max(0,g.end-Date.now());if($("lockpickPin"))$("lockpickPin").style.left=g.pos+"%";if($("lockpickTimerBar"))$("lockpickTimerBar").style.width=(left/40)+"%";if($("lockpickTimerText"))$("lockpickTimerText").textContent=(left/1000).toFixed(1)+"s";
+ if(left<=0){lockpickFailTimeout();return}lockpickAnim=requestAnimationFrame(lockpickFrame);
+}
+function lockpickFailTimeout(){
+ if(!lockpickGame)return;cancelAnimationFrame(lockpickAnim);lockpickGame=null;$("skillGameModal").classList.remove("open");changeMorality(-1,"attempted burglary");s.crimeHeat[area().name]=(s.crimeHeat[area().name]||0)+2;addLawAlert(area().name,5);showActionPopup("Lockpick Failed","<div class='item crimeResult'><b>You took too long.</b><div class='small'>Someone may have heard you working the lock.</div></div>");save();render();
+}
+function lockpickStop(){
+ let g=lockpickGame;if(!g)return;let ok=g.pos>=g.zoneStart&&g.pos<=g.zoneStart+g.zoneWidth;cancelAnimationFrame(lockpickAnim);lockpickGame=null;$("skillGameModal").classList.remove("open");
+ if(ok){if((s.materials["Lockpick Kit"]||0)>0&&Math.random()<.18)s.materials["Lockpick Kit"]--;changeMorality(-2,"breaking into a home");startBurglary()}
+ else{changeMorality(-1,"attempted burglary");s.crimeHeat[area().name]=(s.crimeHeat[area().name]||0)+2;addLawAlert(area().name,5);showActionPopup("Lockpick Failed","<div class='item crimeResult'><b>The pin slips.</b><div class='small'>Crime heat increases as you abandon the lock.</div></div>");save();render()}
+}
 function lockpickCancel(){if(lockpickAnim)cancelAnimationFrame(lockpickAnim);lockpickGame=null;$("skillGameModal").classList.remove("open")}
-function startBurglary(){let boxes=Array.from({length:6},(_,i)=>({id:i,label:spin(["Desk","Wardrobe","Chest","Cupboard","Bedside Box","Strongbox","Pantry Jar","Coat Rack"]),searched:false}));burglaryGame={town:area().name,end:Date.now()+15000,boxes,loot:0,items:[]};$("burglaryTown").textContent=area().name;$("burglaryModal").classList.add("open");renderBurglary();burglaryTimerHandle=setInterval(updateBurglaryTimer,100)}
+
+function startBurglary(){
+ let boxes=Array.from({length:6},(_,i)=>({id:i,label:spin(["Desk","Wardrobe","Chest","Cupboard","Bedside Box","Strongbox","Pantry Jar","Coat Rack"]),searched:false}));
+ burglaryGame={town:area().name,end:Date.now()+10000,boxes,loot:0,items:[]};$("burglaryTown").textContent=area().name;$("burglaryModal").classList.add("open");renderBurglary();burglaryTimerHandle=setInterval(updateBurglaryTimer,80);
+}
 function renderBurglary(){if(!burglaryGame)return;$("houseBoxes").innerHTML=burglaryGame.boxes.map(b=>'<button class="houseBox '+(b.searched?'searched':'')+'" data-housebox="'+b.id+'" '+(b.searched?'disabled':'')+'>'+(b.searched?'✓ Searched':'▣ '+b.label)+'</button>').join("")}
-function updateBurglaryTimer(){if(!burglaryGame)return;let left=Math.max(0,burglaryGame.end-Date.now()),el=$("burglaryTimer");if(el){el.textContent=(left/1000).toFixed(1)+"s";el.classList.toggle("danger",left<5000)}if(left<=0)finishBurglary(false)}
-function searchHouseBox(id){let g=burglaryGame;if(!g)return;let b=g.boxes.find(x=>x.id===Number(id));if(!b||b.searched)return;b.searched=true;let roll=Math.random();if(roll<.58){let gold=6+rnd(24)+s.level*2;g.loot+=gold;s.gold+=gold;g.items.push(gold+"g")}else if(roll<.82){let item=spin(["Silver","Wild Honey","Arcane Dust","Herb","Moonleaf"]);s.materials[item]=(s.materials[item]||0)+1;g.items.push(item)}else g.items.push("nothing");changeMorality(-1,"stealing from a home");renderBurglary();save();render()}
-function finishBurglary(escaped){if(!burglaryGame)return;clearInterval(burglaryTimerHandle);burglaryTimerHandle=null;let g=burglaryGame;burglaryGame=null;$("burglaryModal").classList.remove("open");if(escaped){s.burglaryStats.success++;s.factions.Bandits+=factionRepAdjusted("Bandits",1);showActionPopup("Burglary Complete","<div class='item crimeResult'><b>You slip away before anyone notices.</b><div class='small'>Loot: "+(g.items.join(", ")||"nothing")+".</div></div>")}else{s.burglaryStats.caught++;let fine=Math.min(s.gold,18+s.level*5);s.gold-=fine;s.reputation[area().name]=(s.reputation[area().name]||0)-3;s.factions.Wardens-=2;changeMorality(-4,"being caught burglarizing a home");s.crimeHeat[area().name]=(s.crimeHeat[area().name]||0)+3;showActionPopup("Caught!","<div class='item crimeResult'><b>The homeowner or guards catch you inside.</b><div class='small'>Fine: "+fine+"g • Town reputation -3 • Warden reputation -2.</div></div>")}save();render()}
+function updateBurglaryTimer(){if(!burglaryGame)return;let left=Math.max(0,burglaryGame.end-Date.now()),el=$("burglaryTimer");if(el){el.textContent=(left/1000).toFixed(1)+"s";el.classList.toggle("danger",left<3000)}if(left<=0)finishBurglary(false)}
+function searchHouseBox(id){
+ let g=burglaryGame;if(!g)return;let b=g.boxes.find(x=>x.id===Number(id));if(!b||b.searched)return;b.searched=true;
+ let roll=Math.random();if(roll<.58){let gold=6+rnd(24)+s.level*2;g.loot+=gold;s.gold+=gold;g.items.push(gold+"g")}else if(roll<.82){let item=spin(["Silver","Wild Honey","Arcane Dust","Herb","Moonleaf"]);s.materials[item]=(s.materials[item]||0)+1;g.items.push(item)}else g.items.push("nothing");
+ changeMorality(-1,"stealing from a home");renderBurglary();save();render();
+}
+function finishBurglary(escaped){
+ if(!burglaryGame)return;clearInterval(burglaryTimerHandle);burglaryTimerHandle=null;let g=burglaryGame;burglaryGame=null;$("burglaryModal").classList.remove("open");
+ if(escaped){s.burglaryStats.success++;s.factions.Bandits+=factionRepAdjusted("Bandits",1);addLawAlert(area().name,4);if(Math.random()<.35)addRegionMemory(area().name,"Residents whisper about a string of unexplained thefts.",2,"crime");showActionPopup("Burglary Complete","<div class='item crimeResult'><b>You slip away before anyone notices.</b><div class='small'>Loot: "+(g.items.join(", ")||"nothing")+".</div></div>");save();render()}
+ else startCrimeEscapeCheck(g);
+}
+
+function startCrimeEscapeCheck(loot){
+ crimeEscapeGame={loot,pos:0,dir:1,last:performance.now(),speed:.18+Math.min(.08,(lawData(area().name).alert||0)*.001),zoneWidth:16,zoneStart:12+rnd(68),end:Date.now()+3500};
+ $("skillGameContent").innerHTML='<div class="trapChallengeTitle"><b>🚨 Guards!</b><div class="small">You have 3.5 seconds to break through the escape opening.</div></div><div class="lockpickTrack"><div class="lockpickSweet" style="left:'+crimeEscapeGame.zoneStart+'%;width:'+crimeEscapeGame.zoneWidth+'%"></div><div id="crimeEscapePin" class="lockpickPin"></div></div><div class="crimeTimer"><span id="crimeEscapeBar" style="width:100%"></span></div><div class="small" id="crimeEscapeTime">3.5s</div><button data-a="crimeEscapeStop">ESCAPE NOW</button>';
+ $("skillGameModal").classList.add("open");crimeEscapeAnim=requestAnimationFrame(crimeEscapeFrame);
+}
+function crimeEscapeFrame(now){
+ if(!crimeEscapeGame)return;let g=crimeEscapeGame,dt=Math.min(35,now-g.last);g.last=now;g.pos+=g.dir*g.speed*dt;if(g.pos>=100){g.pos=100;g.dir=-1}else if(g.pos<=0){g.pos=0;g.dir=1}
+ let left=Math.max(0,g.end-Date.now());if($("crimeEscapePin"))$("crimeEscapePin").style.left=g.pos+"%";if($("crimeEscapeBar"))$("crimeEscapeBar").style.width=(left/35)+"%";if($("crimeEscapeTime"))$("crimeEscapeTime").textContent=(left/1000).toFixed(1)+"s";
+ if(left<=0){resolveCrimeEscape(false);return}crimeEscapeAnim=requestAnimationFrame(crimeEscapeFrame);
+}
+function crimeEscapeStop(){let g=crimeEscapeGame;if(!g)return;resolveCrimeEscape(g.pos>=g.zoneStart&&g.pos<=g.zoneStart+g.zoneWidth)}
+function resolveCrimeEscape(success){
+ let g=crimeEscapeGame;if(!g)return;cancelAnimationFrame(crimeEscapeAnim);crimeEscapeGame=null;$("skillGameModal").classList.remove("open");
+ if(success){
+   s.burglaryStats.success++;s.crimeHeat[area().name]=(s.crimeHeat[area().name]||0)+5;addLawAlert(area().name,12);s.reputation[area().name]=(s.reputation[area().name]||0)-2;s.factions.Wardens-=2;changeMorality(-3,"escaping arrest after burglary");
+   showActionPopup("You Escaped","<div class='item escapeOutcome'><b>You lose the guards in the streets.</b><div class='small'>You keep the loot, but local law alert and crime heat rise sharply.</div></div>");save();render();
+ }else applyCaughtCrimePenalty(g.loot);
+}
+function confiscateCrimeLoot(g){
+ if(!g)return;let goldLoss=Math.min(s.gold,g.loot||0);s.gold-=goldLoss;
+ for(const item of (g.items||[])){if(!/g$/.test(item)&&s.materials[item]>0)s.materials[item]--}
+}
+function applyCaughtCrimePenalty(g){
+ s.burglaryStats.caught++;confiscateCrimeLoot(g);
+ let fine=Math.min(s.gold,Math.max(40+s.level*12,Math.floor(s.gold*.35)));s.gold-=fine;
+ s.reputation[area().name]=(s.reputation[area().name]||0)-8;s.factions.Wardens-=5;s.factions.Bandits+=1;changeMorality(-6,"being arrested for burglary");
+ s.crimeHeat[area().name]=(s.crimeHeat[area().name]||0)+8;addLawAlert(area().name,28);addRegionMemory(area().name,"A high-profile burglary arrest has guards searching the streets.",4,"law");
+ startJail(area().name,fine);
+}
+
+// Stealth jail dungeon
+function startJail(town,fine){
+ let rooms=Math.min(8,Math.max(5,5+Math.floor((lawData(town).alert||0)/30)));
+ s.jail={town,rooms,index:0,alert:20,failures:0,sentence:2+Math.floor(s.level/6),fine};
+ $("jailModal").classList.add("open");renderJail();save();render();
+}
+function jailRoomNames(){return["Holding Cell","Cell Block","Laundry Passage","Service Hall","Guard Station","Courtyard","Outer Stores","Perimeter Gate"]}
+function renderJail(){
+ let j=s.jail;if(!j){$("jailModal").classList.remove("open");return}
+ $("jailTown").textContent=j.town;$("jailRoomName").textContent=jailRoomNames()[Math.min(j.index,jailRoomNames().length-1)];
+ $("jailProgress").textContent=j.index+" / "+j.rooms;$("jailDescription").textContent=j.index===0?"The cell lock is old, but guards pass often.":j.index>=j.rooms-1?"The outer gate is close. One clean move could get you free.":"You move through staff-only corridors while patrols sweep the building.";
+ $("jailRoute").innerHTML=Array.from({length:j.rooms},(_,i)=>'<div class="jailNode '+(i<j.index?'done':i===j.index?'current':'')+'"></div>').join("");
+ $("jailAlertText").textContent=j.alert+" / 100";$("jailAlertBar").style.width=j.alert+"%";
+ $("jailChallengeArea").innerHTML="";
+ $("jailActions").innerHTML='<button data-jailaction="sneak">👣 SNEAK FORWARD</button><button class="secondary" data-jailaction="wait">◌ HIDE & WAIT</button><button class="secondary" data-jailaction="lock">🔓 PICK A ROUTE</button><button class="secondary" data-jailaction="distract">◈ DISTRACT GUARD</button>';
+}
+function startJailCheck(action){
+ let j=s.jail;if(!j||jailCheckGame)return;
+ let cfg={sneak:{w:22,s:.18,label:"Sneak through patrol timing"},wait:{w:30,s:.15,label:"Stay hidden until the patrol passes"},lock:{w:18,s:.20,label:"Open a secured passage quietly"},distract:{w:20,s:.19,label:"Move while the guard is distracted"}}[action];
+ let alertPenalty=Math.floor(j.alert/30),width=Math.max(10,cfg.w-alertPenalty*2);
+ jailCheckGame={action,pos:0,dir:1,last:performance.now(),speed:cfg.s+j.alert*.0005,zoneWidth:width,zoneStart:8+rnd(Math.max(4,84-width)),end:Date.now()+3200};
+ $("jailChallengeArea").innerHTML='<div class="jailChallenge"><b>'+cfg.label+'</b><div class="small">Fast stealth check: 3.2 seconds.</div><div class="jailChallengeTrack"><div class="jailSafe" style="left:'+jailCheckGame.zoneStart+'%;width:'+jailCheckGame.zoneWidth+'%"></div><div class="jailNeedle" id="jailNeedle"></div></div><div class="crimeTimer"><span id="jailTimerBar" style="width:100%"></span></div><div class="jailTimerText" id="jailTimerText">3.2s</div><button data-a="jailCheckStop">ACT NOW</button></div>';
+ jailCheckAnim=requestAnimationFrame(jailCheckFrame);
+}
+function jailCheckFrame(now){
+ if(!jailCheckGame)return;let g=jailCheckGame,dt=Math.min(35,now-g.last);g.last=now;g.pos+=g.dir*g.speed*dt;if(g.pos>=100){g.pos=100;g.dir=-1}else if(g.pos<=0){g.pos=0;g.dir=1}
+ let left=Math.max(0,g.end-Date.now());if($("jailNeedle"))$("jailNeedle").style.left=g.pos+"%";if($("jailTimerBar"))$("jailTimerBar").style.width=(left/32)+"%";if($("jailTimerText"))$("jailTimerText").textContent=(left/1000).toFixed(1)+"s";
+ if(left<=0){resolveJailCheck(false);return}jailCheckAnim=requestAnimationFrame(jailCheckFrame);
+}
+function jailCheckStop(){let g=jailCheckGame;if(!g)return;resolveJailCheck(g.pos>=g.zoneStart&&g.pos<=g.zoneStart+g.zoneWidth)}
+function resolveJailCheck(success){
+ let g=jailCheckGame,j=s.jail;if(!g||!j)return;cancelAnimationFrame(jailCheckAnim);jailCheckGame=null;
+ if(success){
+   if(g.action==="wait"){j.alert=Math.max(0,j.alert-18)}
+   else{j.index++;j.alert=Math.max(0,j.alert-(g.action==="distract"?8:4))}
+   if(j.index>=j.rooms){escapeJail();return}
+ }else{
+   j.failures++;j.alert=Math.min(100,j.alert+(g.action==="wait"?12:22));
+   if(j.alert>=100){j.index=Math.max(0,j.index-1);j.alert=55;advanceTime(.5);addRegionMemory(j.town,"Guards caught an attempted jail escape and tightened security.",3,"law")}
+ }
+ renderJail();save();render();
+}
+function escapeJail(){
+ let town=s.jail.town;s.jail=null;$("jailModal").classList.remove("open");changeMorality(-3,"escaping from jail");s.factions.Wardens-=3;addLawAlert(town,20);s.crimeHeat[town]=(s.crimeHeat[town]||0)+5;addRegionMemory(town,"A prisoner escaped from the local jail.",5,"law");showActionPopup("Jail Escape Successful","<div class='item escapeOutcome'><b>You clear the perimeter without starting a normal combat encounter.</b><div class='small'>You are free, but the law will remember this.</div></div>");save();render();
+}
+function serveSentence(){
+ if(!s.jail)return;let j=s.jail;advanceTime(j.sentence*24);s.crimeHeat[j.town]=Math.max(0,(s.crimeHeat[j.town]||0)-5);lawData(j.town).alert=Math.max(0,lawData(j.town).alert-15);s.jail=null;$("jailModal").classList.remove("open");showActionPopup("Sentence Served","<div class='item'><b>You are released after "+j.sentence+" days.</b><div class='small'>Crime heat and law alert cool slightly.</div></div>");save();render();
+}
 function npcQuestions(npc,quest){
  return[
-  {q:"What can you tell me about this area?",a:()=>area().name+" is "+prosperityTier(prosperityValue(area().name)).toLowerCase()+". Danger is around "+effectiveRegionDanger()+"/100, and the weather is "+worldWeatherFor(area().name).toLowerCase()+"."},
-  {q:"Any rumors or trouble nearby?",a:()=>{let boss=s.worldBosses.find(x=>!x.defeated&&x.area===area().name),ev=s.worldEvents.find(e=>e.area===area().name);if(boss)return "People keep talking about "+boss.name+". Nobody sensible wants to meet it.";if(ev)return "The "+ev.kind.toLowerCase()+" is what everyone is talking about right now.";return s.rumors[area().name]||generateRumor()}},
+  {q:"What can you tell me about this area?",a:()=>{let mem=strongestRegionMemory();return area().name+" is "+prosperityTier(prosperityValue(area().name)).toLowerCase()+". Danger is around "+effectiveRegionDanger()+"/100, weather is "+worldWeatherFor(area().name).toLowerCase()+", and trade flow is "+tradeFlowValue()+"/100."+(mem?" People still remember how "+mem.text.toLowerCase():"")}},
+  {q:"Any rumors or trouble nearby?",a:()=>{let boss=s.worldBosses.find(x=>!x.defeated&&x.area===area().name),ev=s.worldEvents.find(e=>e.area===area().name);if(boss)return "People keep talking about "+boss.name+". Nobody sensible wants to meet it.";if(ev)return "The "+ev.kind.toLowerCase()+" is what everyone is talking about right now.";return latestRumor()||s.rumors[area().name]||generateRumor()}},
   {q:"Why do you need this quest done?",a:()=>quest?("Because "+quest.title.toLowerCase()+" is making life harder here. I need somebody capable enough to handle it."):"I don't need anything right now. I can still talk to you without producing paperwork."}
  ];
 }
@@ -3151,7 +3340,7 @@ function render(){
 }
 if($("bestiaryList")){let bs=Object.values(s.bestiary);$("bestiaryList").innerHTML=bs.length?bs.map(x=>'<div class="item"><b>'+x.name+'</b><div class="small">Weak: '+x.affinity.weak.join(", ")+' • Resists: '+x.affinity.strong.join(", ")+'</div></div>').join(""):'<p class="small">No monsters identified yet.</p>';}
  $("worldList").innerHTML=areas.map((a,i)=>"<div class='item'><b>"+a.name+"</b><div class='small'>Recommended level "+a.min+" • "+a.type+"</div></div>").join("");
- renderTownPanel();renderForgeOptions();renderWorldMap();renderMaterialsTab();renderSpellUI();renderQuestDrop();renderMonsterCombatStats();renderSummonSlots();renderCombatSpellPickers();renderClassSkillUI();renderQuickPotion();renderAchievements();checkAchievements();renderWorldSystems();renderTenFeatureSystems();renderCombatAlert();renderAdventureWorldBar();renderImmersionSystems();renderTabHeroes();renderQuickActions();renderAmbienceStrip();styleDynamicCards();renderMorality();renderWeatherBackdrop();renderEnvironmentBanner();renderMiniHud();decorateButtons();if($("codexSummary"))$("codexSummary").textContent=codexCreatureNames().length+" creatures recorded.";if($("codexModal")&&$("codexModal").classList.contains("open"))renderCodex();
+ renderTownPanel();renderForgeOptions();renderWorldMap();renderMaterialsTab();renderSpellUI();renderQuestDrop();renderMonsterCombatStats();renderSummonSlots();renderCombatSpellPickers();renderClassSkillUI();renderQuickPotion();renderAchievements();checkAchievements();renderWorldSystems();renderTenFeatureSystems();renderCombatAlert();renderAdventureWorldBar();renderImmersionSystems();renderTabHeroes();renderQuickActions();renderAmbienceStrip();styleDynamicCards();renderMorality();connectedWorldPulse();renderConnectedWorld();if(s.jail){$("jailModal").classList.add("open");renderJail();}renderWeatherBackdrop();renderEnvironmentBanner();renderMiniHud();decorateButtons();if($("codexSummary"))$("codexSummary").textContent=codexCreatureNames().length+" creatures recorded.";if($("codexModal")&&$("codexModal").classList.contains("open"))renderCodex();
  $("dungeonTabBtn").disabled=!s.dungeon.active;
  if(s.dungeon.active)migrateDungeonGraph();$("dungeonState").textContent=!s.dungeon.active?"NO DUNGEON":(currentDungeonRoom()&&currentDungeonRoom().boss)?"BOSS ROOM":"IN PROGRESS";
  $("dungeonName").textContent=s.dungeon.active?s.dungeon.name:"No dungeon discovered.";
@@ -3189,6 +3378,8 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.castspell){castKnownSpell(b.dataset.castspell,false);return}
  if(b.dataset.castdungeon){castKnownSpell(b.dataset.castdungeon,true);return}
  if(b.dataset.trapchoice){resolveTrapSkill(Number(b.dataset.trapchoice)===trapGame?.correct);return}
+ if(b.dataset.condense){let el=$(b.dataset.condense);if(el){el.classList.toggle("hidden");let sp=b.querySelector("span");if(sp)sp.textContent=sp.textContent.replace(el.classList.contains("hidden")?"▴":"▾",el.classList.contains("hidden")?"▾":"▴")}return}
+ if(b.dataset.jailaction){startJailCheck(b.dataset.jailaction);return}
  if(b.dataset.banditbuy){banditBuy(b.dataset.banditbuy,b.dataset.bandititem,b.dataset.banditcost);return}
  if(b.dataset.housebox){searchHouseBox(b.dataset.housebox);return}
  if(b.dataset.markettab){s.marketTab=b.dataset.markettab;save();renderMarketPopup();return}
@@ -3234,6 +3425,9 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.dir){moveDungeon(b.dataset.dir);return}
  if(b.dataset.equip){equip(b.dataset.equip);return}if(b.dataset.upitem){upgradeItem(b.dataset.upitem);return}if(b.dataset.stat){let k=b.dataset.stat,c=30+s.upgrade[k]*30;if(s.gold>=c){s.gold-=c;s.upgrade[k]++;s.hp=Math.min(maxHp(),s.hp+(k==="hp"?10:0));save();render()}return}
  switch(b.dataset.a){
+ case"crimeEscapeStop":crimeEscapeStop();break;
+ case"jailCheckStop":jailCheckStop();break;
+ case"serveSentence":serveSentence();break;
  case"openBanditOutpost":openBanditOutpost();break;
  case"closeOutpost":$("outpostModal").classList.remove("open");break;
  case"banditJob":banditJob();break;
