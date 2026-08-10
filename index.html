@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG v3.7</title>
+<title>Wayfarer: Wheel & Dice RPG v3.8</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
@@ -292,6 +292,29 @@ body{padding-bottom:calc(92px + env(safe-area-inset-bottom)) !important}
 .fishStatus,.cookStatus{text-align:center;font-size:12px;min-height:18px}
 .fishDifficulty{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin:6px 0}
 .foodQuality{font-weight:800;color:#e0c27c}
+
+/* ===== v3.8 Exploration Presentation ===== */
+.adventureModal,.versionModal{display:none;position:fixed;inset:0;background:#000b;z-index:230;align-items:center;justify-content:center;padding:16px}
+.adventureModal.open,.versionModal.open{display:flex}
+.adventureModalCard,.versionModalCard{width:min(500px,100%);max-height:88vh;overflow:auto;background:#171c25;border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:0 24px 70px #000c}
+.adventureResultHero{padding:11px;border:1px solid #344152;border-radius:14px;background:linear-gradient(180deg,#202936,#171c25);margin:8px 0}
+.adventureResultHero .resultIcon{font-size:28px;display:block;margin-bottom:4px}
+.adventureEntries{display:grid;gap:7px;margin:9px 0}
+.adventureEntry{display:grid;grid-template-columns:28px 1fr;gap:8px;align-items:start;background:#1c2430;border:1px solid #2d3745;border-radius:11px;padding:8px}
+.adventureEntryIcon{font-size:17px;text-align:center}
+.adventureEntry .small{line-height:1.35}
+.adventureActionRow{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+.log{background:transparent!important;border:0!important;padding:0!important;display:grid;gap:6px}
+.log>div{background:#171f2a;border:1px solid #293442;border-radius:10px;padding:7px 9px;font-size:11px;line-height:1.35}
+.log>div:before{content:"›";color:#83a6c9;margin-right:6px;font-weight:900}
+.versionBadge{display:inline-block;padding:5px 8px;border:1px solid #4b6178;border-radius:999px;background:#182434;color:#9fc0df;font-weight:800;font-size:11px}
+.versionRow{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}
+.versionEntry{border-left:3px solid #607a96;padding-left:9px}
+.trapChallengeTitle{text-align:center;margin-bottom:7px}
+.trapChoiceGrid{display:grid;gap:7px}
+.trapReactionButton.waiting{background:#303844;color:#9ba4af}
+.trapReactionButton.go{background:#904550;color:white;border-color:#b85a67}
+@media(max-width:430px){.adventureActionRow,.versionRow{grid-template-columns:1fr}}
 </style></head>
 <body><div id="codexModal" class="codexModal"><div class="codexCard"><div class="row"><b>Creature Codex</b><button class="secondary" data-a="closeCodex">CLOSE</button></div><div class="small">Bestiary identification and combat familiarity are combined here.</div><select id="codexCreature"></select><div id="codexDetails"></div></div></div>
 <div id="actionModal" class="actionModal"><div class="actionModalCard"><b id="actionModalTitle">Result</b><div id="actionModalBody"></div><button data-a="closeActionModal">CONTINUE</button></div></div>
@@ -299,6 +322,18 @@ body{padding-bottom:calc(92px + env(safe-area-inset-bottom)) !important}
 <div id="campModal" class="campModal"><div class="campModalCard"><b id="campModalTitle">Camp Result</b><div class="small" id="campModalText" style="margin:10px 0"></div><button data-a="closeCampModal">CONTINUE</button></div></div>
 <div id="achievementPop" class="achievementPop"></div>
 <div id="weatherTint"></div><div id="weatherFx"></div><div id="xpOrbLayer"></div>
+<div id="adventureModal" class="adventureModal"><div class="adventureModalCard">
+<div class="row"><b>Adventure Result</b><span class="pill" id="adventureModalRegion"></span></div>
+<div class="adventureResultHero"><span class="resultIcon" id="adventureResultIcon">⌖</span><b id="adventureResultTitle">Exploration</b><div class="small" id="adventureResultSubtitle"></div></div>
+<div class="adventureEntries" id="adventureModalEntries"></div>
+<div class="adventureActionRow" id="adventureModalActions"></div>
+</div></div>
+<div id="versionModal" class="versionModal"><div class="versionModalCard">
+<div class="row"><b>Wayfarer Version Log</b><span class="versionBadge">v3.8</span></div>
+<div class="small">The version shown here is built directly into this HTML file, so you can tell exactly which build is currently running.</div>
+<div id="versionLogEntries"></div>
+<button class="secondary" data-a="closeVersionLog">CLOSE</button>
+</div></div>
 <div id="marketModal" class="marketModal"><div class="marketCard">
 <div class="row"><b>Town Market</b><button class="secondary" data-a="closeMarketModal">CLOSE</button></div>
 <div class="small" id="marketTownLabel"></div>
@@ -491,9 +526,9 @@ body{padding-bottom:calc(92px + env(safe-area-inset-bottom)) !important}
 <div class="card"><b>Bounties</b><div class="small">Dynamic contracts refresh as you travel and level.</div><div id="bountyPanel"></div></div><div class="card"><b id="questTitle">Journal</b><div id="quests"></div></div>
 <div class="card"><b>World</b><div id="worldList"></div></div>
 <div class="card">
-  <b>Save Data</b>
+  <div class="row"><b>Save Data</b><span class="versionBadge">Wayfarer v3.8</span></div>
   <div class="small">This permanently erases this character, inventory, dungeon progress, campaign progress, and all other Wayfarer save data on this device.</div>
-  <button class="red" data-a="resetData">RESET ALL DATA</button>
+  <div class="versionRow"><button class="red" data-a="resetData">RESET ALL DATA</button><button class="secondary" data-a="openVersionLog">VERSION LOG • v3.8</button></div>
 </div>
 </section>
 
@@ -998,7 +1033,41 @@ if(!s.flags.soulCrystalObjectMigration){
   s.flags.soulCrystalObjectMigration=true;
 }}}catch(e){} if(!s.visited.includes(s.location))s.visited.push(s.location);if(typeof s.mana!=="number")s.mana=60;
 const $=id=>document.getElementById(id);const save=()=>localStorage.setItem(KEY,JSON.stringify(s));const rnd=n=>Math.floor(Math.random()*n);
-function log(t,combat=false){$(combat?"combatLog":"log").insertAdjacentHTML("afterbegin","<div>"+t+"</div>")}
+let exploreCapture=null,trapGame=null,trapTimer=null;
+function adventureEntryIcon(t){
+ let x=String(t).toLowerCase();
+ if(/level up|xp|reward/.test(x))return"✦";if(/gold|treasure|loot/.test(x))return"🪙";if(/enemy|appears|combat|ambush/.test(x))return"⚔";if(/hazard|trap|damage/.test(x))return"⚠";if(/find|discover|route|landmark/.test(x))return"⌖";if(/weather|storm|rain|snow/.test(x))return"☁";if(/rest|inn|camp/.test(x))return"☾";return"›";
+}
+function log(t,combat=false){
+ let box=$(combat?"combatLog":"log");if(box)box.insertAdjacentHTML("afterbegin","<div>"+t+"</div>");
+ if(!combat&&exploreCapture)exploreCapture.push(String(t));
+}
+function beginExploreCapture(){exploreCapture=[]}
+function showAdventurePopup(title,subtitle,icon="⌖",combat=false){
+ let entries=(exploreCapture||[]).slice(-10).reverse();exploreCapture=null;
+ $("adventureModalRegion").textContent=area().name+" • "+worldWeatherFor(area().name);
+ $("adventureResultIcon").textContent=icon;$("adventureResultTitle").textContent=title;$("adventureResultSubtitle").textContent=subtitle||"";
+ $("adventureModalEntries").innerHTML=entries.length?entries.map(t=>'<div class="adventureEntry"><div class="adventureEntryIcon">'+adventureEntryIcon(t)+'</div><div class="small">'+t+'</div></div>').join(""):'<div class="adventureEntry"><div class="adventureEntryIcon">…</div><div class="small">Nothing notable happened.</div></div>';
+ $("adventureModalActions").innerHTML=(combat?'<button data-a="adventureGoCombat">⚔ GO TO COMBAT</button>':'')+'<button class="secondary" data-a="closeAdventurePopup">CONTINUE</button>';
+ $("adventureModal").classList.add("open");
+}
+function showVersionLog(){
+ let versions=[
+  ["v3.8","Adventure popup, improved Adventure Log, mandatory trap skill checks, Character version log."],
+  ["v3.7","Fishing/cooking skill checks, three-tab Market popup, more weapons/elements/monsters."],
+  ["v3.6","NPC conversations, XP-orb kill animation, boss reward popup."],
+  ["v3.5.1","Fixed bottom navigation and softened rain effects."],
+  ["v3.5","Reactive weather backgrounds, compact scrolling HUD, action icons."],
+  ["v3.4","Creature Codex, custom world seeds, persistent dungeon maps, expanded forging."],
+  ["v3.3","Living-world events, regional stories, relationships and monster knowledge."],
+  ["v3.2","Active-combat notification and Adventure time/weather bar."],
+  ["v3.1","Prosperity, faction influence and companion affinity integration."],
+  ["v3.0","Companions, cooking, fishing, trophies, mastery, salvaging and more."]
+ ];
+ $("versionLogEntries").innerHTML=versions.map(v=>'<div class="item versionEntry"><div class="row"><b>'+v[0]+'</b><span class="pill">'+(v[0]==="v3.8"?"CURRENT":"OLDER")+'</span></div><div class="small">'+v[1]+'</div></div>').join("");
+ $("versionModal").classList.add("open");
+}
+
 function attrsTotal(type){let n=0;[s.weapon,s.armor].forEach(i=>{if(i&&i.attr.type===type)n+=i.attr.val*(1+i.up*.25)});return n}
 function maxHp(){return Math.floor(s.baseHp+s.upgrade.hp*6+attrsTotal("hp"))}
 function maxMana(){return Math.floor(s.baseMana+s.arcane.capacity*15+(s.weapon&&s.weapon.name&&s.weapon.name.includes("Staff")?10:0))}
@@ -1041,66 +1110,66 @@ function win(){let dead={...s.enemy},preGold=s.gold,preXP=s.xp,preRenown=s.renow
  save();render()}
 function enemyTurn(){tickStatuses();summonTurn(false);companionTurn(false);if(s.enemy&&s.enemy.hp<=0){win();return}if(!s.enemy)return;if(Math.random()<.12+attrsTotal("dodge")+s.bonusDodge){log(s.enemy.name+" misses.",true);return}let hit=Math.max(1,s.enemy.atk-def()-(s.turnDefend?Math.floor(def()*.7):0)+rnd(5));s.turnDefend=false;s.hp-=hit;log(s.enemy.name+" deals "+hit+" damage.",true);if(s.hp<=0){s.hp=maxHp();s.gold=Math.floor(s.gold*.8);s.enemy=null;log("You are defeated and wake in "+areas[1].name+". You lose 20% of your gold.");s.location=1}}
 function rollWorldEvent(){if(area().type==="town"||s.activeWorldEvent||Math.random()>.10)return false;let type=spin(["Wandering Champion","Ancient Beast","Lost Treasure Caravan","Arcane Storm","Monster Nest"]);s.activeWorldEvent={type,area:area().name};if(type==="Lost Treasure Caravan"){let g=35+s.level*6;s.gold+=g;log("Rare event: lost caravan. You recover "+g+" gold.");s.activeWorldEvent=null}else if(type==="Arcane Storm"){let mm=Math.floor(maxMana()*.5);s.mana=Math.min(maxMana(),s.mana+mm);s.materials["Arcane Dust"]=(s.materials["Arcane Dust"]||0)+1;log("Rare event: Arcane Storm restores mana and leaves Arcane Dust.");s.activeWorldEvent=null}else{log("Rare event: "+type+" appears.");enemy();if(s.enemy){s.enemy.elite=true;if(!s.enemy.name.startsWith("Elite "))s.enemy.name="Elite "+s.enemy.name;s.enemy.hp=Math.floor(s.enemy.hp*1.45);s.enemy.max=s.enemy.hp;s.enemy.atk=Math.floor(s.enemy.atk*1.2)}if(s.enemy){s.enemy.name=type+" "+s.enemy.name;s.enemy.elite=true;s.enemy.hp=Math.floor(s.enemy.hp*1.5);s.enemy.max=s.enemy.hp;s.enemy.atk=Math.floor(s.enemy.atk*1.25)}}save();return true}
+function startTrapSkillCheck(){
+ let kind=spin(["timing","reaction","choice"]);
+ let damage=4+Math.floor((area().min||1)*1.2),trap=spin(["Snare Wire","Falling Stones","Poison Dart Plate","Collapsing Ground","Rune Trap","Hidden Spike Mechanism"]);
+ trapGame={kind,damage,trap,ready:false,done:false};
+ if(kind==="timing"){
+   let zoneWidth=Math.max(14,30-Math.floor((area().min||1)/3)),zoneStart=10+rnd(Math.max(5,80-zoneWidth));trapGame.zoneStart=zoneStart;trapGame.zoneWidth=zoneWidth;trapGame.pos=0;trapGame.dir=1;trapGame.last=performance.now();
+   $("skillGameContent").innerHTML='<div class="trapChallengeTitle"><b>⚠ '+trap+'</b><div class="small">Stop the marker inside the safe zone to evade the trap.</div></div><div class="cookTrack"><div class="cookTarget" style="left:'+zoneStart+'%;width:'+zoneWidth+'%"></div><div id="trapNeedle" class="cookNeedle"></div></div><button data-a="trapTimingStop">DODGE NOW</button>';
+   $("skillGameModal").classList.add("open");trapTimer=requestAnimationFrame(trapTimingFrame);
+ }else if(kind==="reaction"){
+   $("skillGameContent").innerHTML='<div class="trapChallengeTitle"><b>⚠ '+trap+'</b><div class="small">Wait for the signal. Tapping early triggers the trap.</div></div><button id="trapReactionBtn" class="trapReactionButton waiting" data-a="trapReaction">WAIT…</button>';
+   $("skillGameModal").classList.add("open");let delay=900+rnd(2200);trapTimer=setTimeout(()=>{if(!trapGame||trapGame.kind!=="reaction")return;trapGame.ready=true;let b=$("trapReactionBtn");if(b){b.textContent="MOVE NOW!";b.classList.remove("waiting");b.classList.add("go")}},delay);
+ }else{
+   let correct=rnd(3),opts=spin([
+    ["Cut the red cord","Cut the blue cord","Pull the iron pin"],
+    ["Leap forward","Drop flat","Jump backward"],
+    ["Press the sun rune","Press the moon rune","Press neither"]
+   ]);trapGame.correct=correct;
+   $("skillGameContent").innerHTML='<div class="trapChallengeTitle"><b>⚠ '+trap+'</b><div class="small">Choose quickly. One response disables or avoids the mechanism.</div></div><div class="trapChoiceGrid">'+opts.map((o,i)=>'<button class="secondary" data-trapchoice="'+i+'">'+o+'</button>').join("")+'</div>';
+   $("skillGameModal").classList.add("open");
+ }
+}
+function trapTimingFrame(now){
+ if(!trapGame||trapGame.kind!=="timing")return;let dt=Math.min(50,now-trapGame.last);trapGame.last=now;trapGame.pos+=trapGame.dir*(.08+Math.min(.06,(area().min||1)*.002))*dt;if(trapGame.pos>=100){trapGame.pos=100;trapGame.dir=-1}else if(trapGame.pos<=0){trapGame.pos=0;trapGame.dir=1}if($("trapNeedle"))$("trapNeedle").style.left=trapGame.pos+"%";trapTimer=requestAnimationFrame(trapTimingFrame);
+}
+function resolveTrapSkill(success){
+ if(!trapGame)return;let g=trapGame;trapGame=null;if(typeof trapTimer==="number"){cancelAnimationFrame(trapTimer);clearTimeout(trapTimer)}trapTimer=null;$("skillGameModal").classList.remove("open");
+ if(success){log("Trap skill check passed: you evade the "+g.trap+".");$("result").textContent="Wheel: HAZARD EVADED";showAdventurePopup("Trap Avoided","Your skill check succeeds. You escape without taking damage.","✓",false)}
+ else{s.hp=Math.max(1,s.hp-g.damage);log("Trap skill check failed: "+g.trap+" hits you for "+g.damage+" damage.");$("result").textContent="Wheel: TRAP";showAdventurePopup("Trap Triggered","The challenge goes badly and you take "+g.damage+" damage.","⚠",false)}
+ save();render();
+}
 function explore(){
- advanceTime(1);maybeShiftWeather();tickLivingWorld();gainRegionMastery(1);tryWeatherFind();
- s.campCooldown=0;
- let a=area();
+ beginExploreCapture();advanceTime(1);maybeShiftWeather();tickLivingWorld();gainRegionMastery(1);tryWeatherFind();s.campCooldown=0;let a=area();
 
  if(a.type==="town"){
-   let r=spin(["inn","market","rumor"]);
-   $("result").textContent="Town wheel: "+r.toUpperCase();
-   if(r==="inn"){
-     let c=10+s.level*2;
-     if(s.gold>=c){s.gold-=c;s.hp=maxHp();s.mana=maxMana();grantRestedXP(5);log("You rest at the inn for "+c+" gold. HP and mana fully restored. Rested XP gained.");}
-     else log("You find an inn but cannot afford a room.");
-   }else if(r==="market"){
-     s.townPanel="market";
-     log("You wander through the local market.");
-   }else{
-     log(spin(["Rumor: dungeons often hold better gear than the open road.","Rumor: dangerous creatures become more active at night.","Rumor: explorers have found hidden routes between regions."]));
-   }
-   save();render();return;
+   let r=spin(["inn","market","rumor"]);$("result").textContent="Town wheel: "+r.toUpperCase();
+   if(r==="inn"){let c=10+s.level*2;if(s.gold>=c){s.gold-=c;s.hp=maxHp();s.mana=maxMana();grantRestedXP(5);log("You rest at the inn for "+c+" gold. HP and mana fully restored. Rested XP gained.")}else log("You find an inn but cannot afford a room.")}
+   else if(r==="market"){log("You wander into the town market.");}
+   else log(spin(["Rumor: dungeons often hold better gear than the open road.","Rumor: dangerous creatures become more active at night.","Rumor: explorers have found hidden routes between regions."]));
+   save();render();showAdventurePopup("Town Exploration","You spend some time wandering "+a.name+".","🏘",false);return;
  }
 
- if(rollWorldEvent()){save();render();return;}
- if(discoverLandmark()){save();render();return;}
- if(discoverConnectedRegion()){save();render();return;}if(discoverMinorSite()){save();render();return;}if(maybeSpawnWorldBoss()){save();render();return;}
+ if(rollWorldEvent()){save();render();showAdventurePopup(s.enemy?"Rare Encounter":"World Event",s.enemy?"Something dangerous interrupts your exploration.":"A rare event changes the journey.",s.enemy?"⚔":"✦",!!s.enemy);return}
+ if(discoverLandmark()){save();render();showAdventurePopup("Landmark Discovered","A new landmark has been added to your knowledge of the region.","⌖",false);return}
+ if(discoverConnectedRegion()){save();render();showAdventurePopup("New Route Discovered","You uncover a route leading farther into the world.","🧭",false);return}
+ if(discoverMinorSite()){save();render();showAdventurePopup("Minor Site Discovered","You find something that wasn't marked on any ordinary road map.","⌖",false);return}
+ if(maybeSpawnWorldBoss()){save();render();showAdventurePopup("World Boss Encounter","A major threat has found you.","♛",true);return}
 
- let roll=Math.random();
- let dangerBonus=(effectiveRegionDanger()-50)/300;
+ let roll=Math.random(),dangerBonus=(effectiveRegionDanger()-50)/300;
  if(roll<Math.max(.30,Math.min(.62,.42+dangerBonus))){
    enemy();
-   if(s.enemy){
-     $("result").textContent="Wheel: ENCOUNTER";
-     log("A "+s.enemy.name+" appears.",true);
-     let card=document.getElementById("combatCard");
-     if(card)card.scrollIntoView({behavior:"smooth",block:"start"});
-   }
+   if(s.enemy){$("result").textContent="Wheel: ENCOUNTER";log("A "+s.enemy.name+" appears.",true);log("Combat encounter: "+s.enemy.name+" attacks you.");save();render();showAdventurePopup("Combat Encounter","Your exploration is interrupted by an enemy.","⚔",true);return}
  }else if(roll<.66){
-   let m=spin(a.mats),n=1+rnd(3);
-   let map={"Iron Ore":"Iron","Steel Ore":"Steel","Silver Ore":"Silver"};
-   let key=map[m]||m;
-   s.materials[key]=(s.materials[key]||0)+n;
-   if(m.includes("Ore"))s.ore+=n;
-   if(m.includes("Gold"))s.gold+=n*5;
-   $("result").textContent="Wheel: MATERIAL";
-   log("You find "+n+" "+m+".");
+   let m=spin(a.mats),n=1+rnd(3),map={"Iron Ore":"Iron","Steel Ore":"Steel","Silver Ore":"Silver"},key=map[m]||m;s.materials[key]=(s.materials[key]||0)+n;if(m.includes("Ore"))s.ore+=n;if(m.includes("Gold"))s.gold+=n*5;
+   $("result").textContent="Wheel: MATERIAL";log("You find "+n+" "+m+".");save();render();showAdventurePopup("Materials Found","Exploration pays off with useful resources.","⛏",false);return;
  }else if(roll<.82){
-   let it=makeItem(Math.random()<.5?"weapon":"armor");
-   s.inventory.push(it);
-   $("result").textContent="Wheel: TREASURE";
-   log("You discover a "+it.rarity+" "+it.name+" with "+it.attr.name+".");
+   let it=makeItem(Math.random()<.5?"weapon":"armor");s.inventory.push(it);$("result").textContent="Wheel: TREASURE";log("You discover a "+it.rarity+" "+it.name+" with "+it.attr.name+".");save();render();showAdventurePopup("Treasure Found","You uncover equipment while exploring.","🧰",false);return;
  }else{
-   $("result").textContent="Wheel: HAZARD";
-   let d=rollDie(20),dc=9+Math.floor((a.min||1)/5);
-   if(d>=dc)log("Hazard save d20: "+d+" vs DC "+dc+". You avoid it.");
-   else{
-     let h=4+Math.floor((a.min||1)*1.2);
-     s.hp=Math.max(1,s.hp-h);
-     log("Hazard save d20: "+d+" vs DC "+dc+". You take "+h+" damage.");
-   }
+   $("result").textContent="Wheel: HAZARD";log("A hidden trap blocks your path. You must react.");render();startTrapSkillCheck();return;
  }
- save();render();
+ save();render();showAdventurePopup("Exploration","You continue through "+a.name+".","⌖",false);
 }
 function timeLabel(){let h=Math.floor(s.timeOfDay)%24;if(h>=5&&h<8)return"Dawn";if(h>=8&&h<18)return"Day";if(h>=18&&h<21)return"Dusk";return"Night"}
 function advanceTime(hours){s.timeOfDay+=hours;while(s.timeOfDay>=24){s.timeOfDay-=24;s.daysPassed++}}
@@ -2736,7 +2805,7 @@ function renderMiniHud(){
 const buttonIcons={
  attack:"⚔",defend:"🛡",castSpell:"✦",dungeonAttack:"⚔",dungeonDefend:"🛡",dungeonSpell:"✦",
  explore:"⌖",travel:"🧭",dungeon:"⛩",camp:"⛺",harvestRegion:"⛏",searchTreasureMap:"🗺",cookMeal:"🍲",fish:"🎣",
- openJobs:"📜",openMarket:"🪙",closeMarketModal:"✕",cancelFishing:"✕",cookStir:"🍳",cancelCooking:"✕",openGambling:"🎲",openPotionHouse:"⚗",openTavern:"🍺",openRumors:"🗣",
+ openJobs:"📜",openMarket:"🪙",closeMarketModal:"✕",openVersionLog:"ⓘ",closeVersionLog:"✕",closeAdventurePopup:"✓",adventureGoCombat:"⚔",trapTimingStop:"↯",trapReaction:"↯",cancelFishing:"✕",cookStir:"🍳",cancelCooking:"✕",openGambling:"🎲",openPotionHouse:"⚗",openTavern:"🍺",openRumors:"🗣",
  dungeonExplore:"🚪",dungeonSkill:"✹",dungeonPotion:"✚",dungeonClassSkill:"◆",
  useQuickPotion:"⚗",useQuickPotionDungeon:"⚗",toggleQuickPotionPicker:"▾",toggleQuickPotionPickerDungeon:"▾",
  worldMapCenter:"◎",worldMapZoomIn:"＋",worldMapZoomOut:"−",worldMapToggleLabels:"◫",worldMapReroll:"⟳",
@@ -2881,6 +2950,7 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.study){studyTome(b.dataset.study);return}
  if(b.dataset.castspell){castKnownSpell(b.dataset.castspell,false);return}
  if(b.dataset.castdungeon){castKnownSpell(b.dataset.castdungeon,true);return}
+ if(b.dataset.trapchoice){resolveTrapSkill(Number(b.dataset.trapchoice)===trapGame?.correct);return}
  if(b.dataset.markettab){s.marketTab=b.dataset.markettab;save();renderMarketPopup();return}
  if(b.dataset.buyfood){buyFood(b.dataset.buyfood,b.dataset.foodcost);return}
  if(b.dataset.sellfood){sellFood(b.dataset.sellfood,b.dataset.foodcost);return}
@@ -2924,6 +2994,12 @@ document.addEventListener("click",e=>{let b=e.target.closest("button");if(!b)ret
  if(b.dataset.dir){moveDungeon(b.dataset.dir);return}
  if(b.dataset.equip){equip(b.dataset.equip);return}if(b.dataset.upitem){upgradeItem(b.dataset.upitem);return}if(b.dataset.stat){let k=b.dataset.stat,c=30+s.upgrade[k]*30;if(s.gold>=c){s.gold-=c;s.upgrade[k]++;s.hp=Math.min(maxHp(),s.hp+(k==="hp"?10:0));save();render()}return}
  switch(b.dataset.a){
+ case"openVersionLog":showVersionLog();break;
+ case"closeVersionLog":$("versionModal").classList.remove("open");break;
+ case"closeAdventurePopup":$("adventureModal").classList.remove("open");break;
+ case"adventureGoCombat":$("adventureModal").classList.remove("open");jumpToActiveCombat();break;
+ case"trapTimingStop":{let g=trapGame;if(g&&g.kind==="timing")resolveTrapSkill(g.pos>=g.zoneStart&&g.pos<=g.zoneStart+g.zoneWidth)}break;
+ case"trapReaction":{let g=trapGame;if(g&&g.kind==="reaction")resolveTrapSkill(!!g.ready)}break;
  case"closeMarketModal":$("marketModal").classList.remove("open");break;
  case"cancelFishing":cancelFishingGame();break;
  case"cookStir":cookingStir();break;
