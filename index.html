@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#11131a">
-<title>Wayfarer: Wheel & Dice RPG v4.6</title>
+<title>Wayfarer: Wheel & Dice RPG v4.6.2</title>
 <style>
 :root{--bg:#0d0f14;--p:#181b24;--p2:#212632;--tx:#f4f1e8;--mu:#a9adba;--g:#e4b85d;--r:#cf5b61;--b:#668fc7;--gr:#63b97d}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{margin:0;background:var(--bg);color:var(--tx);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text",system-ui,sans-serif;min-height:100%}body{padding:max(env(safe-area-inset-top),10px) 12px max(env(safe-area-inset-bottom),12px)}
@@ -575,6 +575,29 @@ body.beginner-expanded .secondaryCluster{
   font-size:8px;color:#b9c9d6
 }
 .learningCrumb.done{background:#1b2a22;border-color:#3f644b;color:#c6dfcc}
+
+/* ===== v4.6.1 iOS Standalone Tutorial Fix ===== */
+.firstGuideCard{
+  padding-bottom:calc(12px + env(safe-area-inset-bottom))!important;
+  overscroll-behavior:contain;
+  -webkit-overflow-scrolling:touch;
+}
+.firstGuideFooter{
+  position:sticky;
+  bottom:calc(-15px - env(safe-area-inset-bottom));
+  margin:10px -15px calc(-15px - env(safe-area-inset-bottom));
+  padding:9px 15px calc(10px + env(safe-area-inset-bottom));
+  background:linear-gradient(180deg,rgba(23,28,37,.35),#171c25 30%);
+  z-index:4;
+}
+#startJourneyBtn{
+  width:100%;
+  min-height:48px!important;
+  touch-action:manipulation;
+  -webkit-tap-highlight-color:transparent;
+  position:relative;
+  z-index:5;
+}
 </style></head>
 <body><div id="codexModal" class="codexModal"><div class="codexCard"><div class="row"><b>Creature Codex</b><button class="secondary" data-a="closeCodex">CLOSE</button></div><div class="small">Bestiary identification and combat familiarity are combined here.</div><select id="codexCreature"></select><div id="codexDetails"></div></div></div>
 <div id="actionModal" class="actionModal"><div class="actionModalCard"><b id="actionModalTitle">Result</b><div id="actionModalBody"></div><button data-a="closeActionModal">CONTINUE</button></div></div>
@@ -594,7 +617,7 @@ body.beginner-expanded .secondaryCluster{
  <div class="firstGuideStep"><div class="firstGuideNum">4</div><div><b>Find a dungeon</b><div class="small">Dungeons teach the deeper systems and give stronger rewards.</div></div></div>
 </div>
 <div class="item" style="margin-top:9px"><b>Important:</b><div class="small">You do not need to understand every system immediately. Follow the highlighted recommendation and learn the rest when it becomes relevant.</div></div>
-<button data-a="closeFirstGuide">START JOURNEY</button>
+<div class="firstGuideFooter"><button id="startJourneyBtn" data-a="closeFirstGuide" type="button">START JOURNEY</button></div>
 </div></div>
 
 <div id="helpManualModal" class="helpManualModal"><div class="helpManualCard">
@@ -623,7 +646,7 @@ body.beginner-expanded .secondaryCluster{
 <div class="adventureActionRow" id="adventureModalActions"></div>
 </div></div>
 <div id="versionModal" class="versionModal"><div class="versionModalCard">
-<div class="row"><b>Wayfarer Version Log</b><span class="versionBadge">v4.6</span></div>
+<div class="row"><b>Wayfarer Version Log</b><span class="versionBadge">v4.6.2</span></div>
 <div class="small">The version shown here is built directly into this HTML file, so you can tell exactly which build is currently running.</div>
 <div id="versionLogEntries"></div>
 <button class="secondary" data-a="closeVersionLog">CLOSE</button>
@@ -870,9 +893,9 @@ body.beginner-expanded .secondaryCluster{
 <div class="card panelAccentGold"><div class="row"><b>Moral Compass</b><span class="pill" id="moralityTier">Neutral</span></div><div class="small">Choices shift you between ruthless and altruistic. Morality changes prices, dialogue, criminal access, and how factions judge your actions.</div><div class="moralityLabels"><span>EVIL</span><span>NEUTRAL</span><span>GOOD</span></div><div class="moralityTrack"><div class="moralityMarker" id="moralityMarker" style="left:50%"></div></div><div class="moralityValue" id="moralityValue">0</div></div>
 <div class="card"><b id="questTitle">Journal</b><div id="quests"></div></div>
 <div class="card">
-  <div class="row"><b>Save Data</b><span class="versionBadge">Wayfarer v4.6</span></div>
+  <div class="row"><b>Save Data</b><span class="versionBadge">Wayfarer v4.6.2</span></div>
   <div class="small">This permanently erases this character, inventory, dungeon progress, campaign progress, and all other Wayfarer save data on this device.</div>
-  <div class="versionRow"><button class="red" data-a="resetData">RESET ALL DATA</button><button class="secondary" data-a="openVersionLog">VERSION LOG • v4.6</button></div>
+  <div class="versionRow"><button class="red" data-a="resetData">RESET ALL DATA</button><button class="secondary" data-a="openVersionLog">VERSION LOG • v4.6.2</button></div>
 </div>
 </section>
 
@@ -1234,7 +1257,7 @@ function clearDungeonEncounter(){let preDungeonXP=s.xp;xpOrbBurst(s.dungeon&&s.d
   if(s.equippedSoulCrystal){let target=deadPack.find(x=>x.boss)||deadPack.slice().sort((a,b)=>(b.lv||0)-(a.lv||0))[0];if(target)captureSoul(target,true);}
   s.dungeon.encounter=null;if(currentDungeonRoom())currentDungeonRoom().cleared=true;
   s.dungeon.clearedRooms++;
-  if(wasBoss){
+  if(wasBoss){markTutorialMilestone("clearedDungeon");
     
     s.dungeon.bossDefeated=true;
     const reward=makeItem(Math.random()<.5?"weapon":"armor",8+s.dungeon.targetRooms);
@@ -1403,7 +1426,7 @@ function showAdventurePopup(title,subtitle,icon="⌖",combat=false){
 }
 function showVersionLog(){
  let versions=[
-  ["v4.6","First-entry Journey Guide popup, full Help Manual, contextual tips, first-time feature callouts, clearer unlock explanations, and learning breadcrumbs."],["v4.5.2","Restored all Adventure controls and render targets, repaired forge/spell initialization, kept regional telemetry inside World Status, and strengthened scroll-to-top behavior."],["v4.4","More aggressive beginner simplification, smaller quest popup, recommended-action highlighting, progressive feature reveal, contextual button help, first-run guidance, and tab scroll-to-top fix."],["v4.3","Beginner Journey Guide, smaller bottom navigation, secondary systems moved into More popups, cleaner visual hierarchy."],["v4.2","Sticky HUD location, condensed Character groups, faster timed crime checks, harsher arrest consequences, escape checks and stealth jail escape dungeon."],["v4.1","UI cleanup plus regional memory, trade flow, ecology, law propagation, and rumor network systems."],["v4.0","Moral compass, faction morality reactions, bandit outposts, black market/jobs, house lockpicking and timed burglary, more monsters."],["v3.9","Visual overhaul for every major tab, live tab headers, contextual quick actions, regional ambience strip."],["v3.8","Adventure popup, improved Adventure Log, mandatory trap skill checks, Character version log."],
+  ["v4.6.2","Tutorial progression now uses explicit action milestones for Explore, first combat, town visit, dungeon discovery, and dungeon clear."],["v4.6.1","Fixes iOS home-screen tutorial dismissal using save-backed completion, lifecycle guards, direct touch handling, and safe-area footer."],["v4.6","First-entry Journey Guide popup, full Help Manual, contextual tips, first-time feature callouts, clearer unlock explanations, and learning breadcrumbs."],["v4.5.2","Restored all Adventure controls and render targets, repaired forge/spell initialization, kept regional telemetry inside World Status, and strengthened scroll-to-top behavior."],["v4.4","More aggressive beginner simplification, smaller quest popup, recommended-action highlighting, progressive feature reveal, contextual button help, first-run guidance, and tab scroll-to-top fix."],["v4.3","Beginner Journey Guide, smaller bottom navigation, secondary systems moved into More popups, cleaner visual hierarchy."],["v4.2","Sticky HUD location, condensed Character groups, faster timed crime checks, harsher arrest consequences, escape checks and stealth jail escape dungeon."],["v4.1","UI cleanup plus regional memory, trade flow, ecology, law propagation, and rumor network systems."],["v4.0","Moral compass, faction morality reactions, bandit outposts, black market/jobs, house lockpicking and timed burglary, more monsters."],["v3.9","Visual overhaul for every major tab, live tab headers, contextual quick actions, regional ambience strip."],["v3.8","Adventure popup, improved Adventure Log, mandatory trap skill checks, Character version log."],
   ["v3.7","Fishing/cooking skill checks, three-tab Market popup, more weapons/elements/monsters."],
   ["v3.6","NPC conversations, XP-orb kill animation, boss reward popup."],
   ["v3.5.1","Fixed bottom navigation and softened rain effects."],
@@ -1414,7 +1437,7 @@ function showVersionLog(){
   ["v3.1","Prosperity, faction influence and companion affinity integration."],
   ["v3.0","Companions, cooking, fishing, trophies, mastery, salvaging and more."]
  ];
- $("versionLogEntries").innerHTML=versions.map(v=>'<div class="item versionEntry"><div class="row"><b>'+v[0]+'</b><span class="pill">'+(v[0]==="v4.6"?"CURRENT":"OLDER")+'</span></div><div class="small">'+v[1]+'</div></div>').join("");
+ $("versionLogEntries").innerHTML=versions.map(v=>'<div class="item versionEntry"><div class="row"><b>'+v[0]+'</b><span class="pill">'+(v[0]==="v4.6.2"?"CURRENT":"OLDER")+'</span></div><div class="small">'+v[1]+'</div></div>').join("");
  $("versionModal").classList.add("open");
 }
 
@@ -1445,7 +1468,7 @@ function enemy(){
 }
 function levelUp(){while(s.xp>=s.xpNeed){s.xp-=s.xpNeed;s.level++;s.xpNeed=Math.floor(s.xpNeed*1.28);s.baseHp+=3;s.hp=maxHp();s.mana=maxMana();log("Level up! You are now level "+s.level+". HP and mana restored.")}}
 function loot(mult=1){mult*=masteryRewardMult();let g=Math.floor((8+s.level*3)*mult*(1+attrsTotal("gold"))),xp=Math.floor((12+s.level*3)*mult*(1+attrsTotal("xp")+s.bonusXP)),restBonus=consumeRestedXP(xp);xp+=restBonus;s.gold+=g;s.xp+=xp;if(restBonus)log("Rested XP bonus: +"+restBonus+" XP.");if(Math.random()<.35){s.ore+=1+rnd(2);log("You recover forging ore.")}if(Math.random()<.16){let it=makeItem(Math.random()<.55?"weapon":"armor",2);s.inventory.push(it);log("Loot wheel: "+it.rarity+" "+it.name+" ["+it.attr.name+"].")}log("Reward: "+g+" gold, "+xp+" XP.");levelUp()}
-function win(){let dead={...s.enemy},preGold=s.gold,preXP=s.xp,preRenown=s.renown;recordEcologyKill(dead.name);xpOrbBurst(dead.boss||dead.worldBossId||dead.finalBoss?26:14);gainMonsterKnowledge(dead.name,dead.elite?2:1);majorVictoryConsequence(dead);awardTrophy(dead);gainRegionMastery(dead.elite?3:1);updateBounties(dead.name);modifyRegionDanger(area().name,-2);if(dead.worldBossId){let wb=s.worldBosses.find(x=>x.id===dead.worldBossId);if(wb){wb.defeated=true;s.gold+=100+wb.level*10;s.renown+=3;spreadProsperity(area().name,8);addRegionInfluence(area().name,"Wardens",3);gainCompanionAffinity(4,"defeating a world boss together");log("World Boss defeated! Renown +3. Trade improves and Warden influence grows.")}}let roadDestination=dead.roadAmbush?dead.pendingDestination:null;s.kills++;s.questProgress["kills_"+area().name]=Number(s.questProgress["kills_"+area().name]||0)+1;
+function win(){let dead={...s.enemy},preGold=s.gold,preXP=s.xp,preRenown=s.renown;markTutorialMilestone("firstCombat");recordEcologyKill(dead.name);xpOrbBurst(dead.boss||dead.worldBossId||dead.finalBoss?26:14);gainMonsterKnowledge(dead.name,dead.elite?2:1);majorVictoryConsequence(dead);awardTrophy(dead);gainRegionMastery(dead.elite?3:1);updateBounties(dead.name);modifyRegionDanger(area().name,-2);if(dead.worldBossId){let wb=s.worldBosses.find(x=>x.id===dead.worldBossId);if(wb){wb.defeated=true;s.gold+=100+wb.level*10;s.renown+=3;spreadProsperity(area().name,8);addRegionInfluence(area().name,"Wardens",3);gainCompanionAffinity(4,"defeating a world boss together");log("World Boss defeated! Renown +3. Trade improves and Warden influence grows.")}}let roadDestination=dead.roadAmbush?dead.pendingDestination:null;s.kills++;s.questProgress["kills_"+area().name]=Number(s.questProgress["kills_"+area().name]||0)+1;
  if(s.mode==="campaign"){if(dead.finalBoss){s.finalBossDefeated=true;log("Demon Lord Malachar is defeated. Valedorn survives.");}}
  captureSoul(dead,false);if(dead.elite&&/(Wandering Champion|Ancient Beast|Monster Nest)/.test(dead.name)){s.gold+=25+s.level*4;s.renown++;s.activeWorldEvent=null;log("Elite hunt complete. Bonus gold and Renown +1.")}loot((s.enemy.elite?1.8:1)*(dead.lootMult||1));s.enemy=null;
  if(roadDestination!==null&&areas[roadDestination]){
@@ -1491,6 +1514,7 @@ function resolveTrapSkill(success){
  save();render();
 }
 function explore(){
+ markTutorialMilestone("explored");
  beginExploreCapture();advanceTime(1);maybeShiftWeather();tickLivingWorld();gainRegionMastery(1);tryWeatherFind();s.campCooldown=0;let a=area();
 
  if(a.type==="town"){
@@ -1697,7 +1721,7 @@ function hashWorldSeed(v){v=String(v||"482731").trim();if(/^\d+$/.test(v))return
 function applyCharacterCreation(mode){
  const race=races[creatorState.race],cl=classes[creatorState.className],bg=backstories.find(x=>x.id===creatorState.backstory);
  const roll=rollDie(100),wealth=wealthForRoll(roll),name=($("charName").value||"Wayfarer").trim().slice(0,20)||"Wayfarer";
- s=base();s.started=true;s.mode=mode;s.name=name;s.worldMapSeed=hashWorldSeed($("worldSeedInput")?$("worldSeedInput").value:"482731");s.race=creatorState.race;s.className=creatorState.className;s.backstory=bg.id;s.wealthRoll=roll;s.wealthClass=wealth.name;
+ s=base();s.started=true;s.mode=mode;s.name=name;if(!s.flags)s.flags={};s.flags.firstGuideComplete=false;s.flags.tutorialMilestones={};firstGuideDismissedThisSession=false;s.worldMapSeed=hashWorldSeed($("worldSeedInput")?$("worldSeedInput").value:"482731");s.race=creatorState.race;s.className=creatorState.className;s.backstory=bg.id;s.wealthRoll=roll;s.wealthClass=wealth.name;
  s.gold=wealth.gold+(bg.gold||0);s.ore=wealth.ore+(bg.ore||0);
  s.atk+=race.atk||0;s.atk+=cl.atk||0;s.atk+=bg.atk||0;
  s.def+=race.def||0;s.def+=cl.def||0;s.def+=bg.def||0;
@@ -1713,7 +1737,7 @@ function applyCharacterCreation(mode){
  log("Backstory: "+bg.name+". You begin in "+bg.start+".");
  log("Wealth roll d100: "+roll+" → "+wealth.name+". Starting gold: "+s.gold+".");
  log(mode==="campaign"?"Valedorn's border forts are failing. Your story begins here.":"No prophecy controls you. The world is open.");
-;hardScrollTop();;setTimeout(openFirstGuideIfNeeded,180);}
+;hardScrollTop();;scheduleFirstGuide(220);}
 function renderCreator(){
  if(s.started)return;
  const raceBox=$("raceChoices"),classBox=$("classChoices"),bgBox=$("backstoryChoices");
@@ -3514,35 +3538,49 @@ function morePanelTemplates(){
  };
 }
 function openMorePanel(key){let t=morePanelTemplates()[key];if(!t)return;$("morePanelTitle").textContent=t.title;$("morePanelSubtitle").textContent=t.sub;$("morePanelBody").innerHTML=t.html;$("morePanelModal").classList.add("open")}
+function tutorialMilestones(){
+ if(!s.flags)s.flags={};
+ if(!s.flags.tutorialMilestones)s.flags.tutorialMilestones={};
+ return s.flags.tutorialMilestones;
+}
+function markTutorialMilestone(key){
+ let m=tutorialMilestones();
+ if(m[key])return false;
+ m[key]=true;
+ try{save()}catch(e){}
+ return true;
+}
+function tutorialMilestoneDone(key){return !!tutorialMilestones()[key]}
+function tutorialStage(){
+ let m=tutorialMilestones();
+ if(!m.explored)return 0;
+ if(!m.firstCombat)return 1;
+ if(!m.visitedTown)return 2;
+ if(!m.foundDungeon)return 3;
+ if(!m.clearedDungeon)return 4;
+ return 5;
+}
 function beginnerGuideState(){
- if(s.level<=1&&(s.discoveredLocations||[]).length<=1)return{step:"Explore your current area",why:"Exploring teaches encounters, materials, traps, and discoveries.",pct:8,actions:["Tap EXPLORE","Handle your first encounter"]};
- if(s.inventory.length<2)return{step:"Find better gear",why:"Equipment is the easiest early power increase.",pct:18,actions:["Explore for treasure","Check a town Market"]};
- if(masteryData(area().name).level<2)return{step:"Learn your region",why:"Region Mastery improves local rewards.",pct:28,actions:["Explore","Harvest","Fight local monsters"]};
- if(!s.dungeon.active&&(s.stats?.dungeonsCleared||0)<1)return{step:"Find your first dungeon",why:"Dungeons give better XP, gear, tomes, crystals, and bosses.",pct:40,actions:["SEARCH FOR DUNGEON","Enter when found"]};
- if((s.stats?.dungeonsCleared||0)<1)return{step:"Clear your first dungeon",why:"This teaches mapping, backtracking, multi-enemy combat, and bosses.",pct:52,actions:["Explore dungeon rooms","Reach the boss"]};
- if(s.mode==="campaign"&&(s.story?.chapter||0)<2)return{step:"Follow the campaign",why:"Your main goal is helping Valedorn defeat the Demon Lord.",pct:65,actions:["Talk to NPCs","Complete story quests"]};
- if(s.level<5)return{step:"Build your character",why:"Improve gear, skills, spells, and crafting now that you know the basics.",pct:75,actions:["Upgrade stats","Forge or learn spells"]};
- return{step:"Choose your own path",why:"You know the core systems now.",pct:100,actions:["Explore freely","Set your own goal"]};
+ let st=tutorialStage();
+ if(st===0)return{step:"Explore your current area",why:"Tap Explore once. Whatever happens counts: combat, materials, treasure, traps, or discoveries.",pct:8,actions:["Tap EXPLORE","Any Explore result advances this step"]};
+ if(st===1)return{step:"Win your first fight",why:"Your next lesson is combat. Explore until you encounter an enemy, then defeat it.",pct:24,actions:["Explore for an encounter","Defeat one enemy"]};
+ if(st===2)return{step:"Visit a town",why:"Towns are where you heal, trade, talk to NPCs, work jobs, and prepare.",pct:40,actions:["Travel to a town","Look around its services"]};
+ if(st===3)return{step:"Find your first dungeon",why:"Dungeons introduce deeper progression, room maps, stronger loot, tomes, crystals, and bosses.",pct:58,actions:["Use SEARCH FOR DUNGEON","Enter the dungeon when found"]};
+ if(st===4)return{step:"Clear your first dungeon",why:"Reach and defeat the dungeon boss to finish the core tutorial.",pct:78,actions:["Explore dungeon rooms","Defeat the dungeon boss"]};
+ return{step:"Core tutorial complete",why:"You know the main loop now. The rest of Wayfarer can be learned as it becomes relevant.",pct:100,actions:["Explore freely","Follow Campaign or your own goal"]};
 }
 function renderJourneyGuide(){if(!$("journeyGuide"))return;let g=beginnerGuideState();$("guideStep").textContent=g.step;$("guideWhy").textContent=g.why;$("guideProgressBar").style.width=g.pct+"%";$("guideMiniGrid").innerHTML=g.actions.map(x=>'<div class="item"><div class="small">'+x+'</div></div>').join("")}
 function showGuideModal(){let g=beginnerGuideState();$("guideModalBody").innerHTML='<div class="item"><b>Current objective</b><div class="small">'+g.step+'</div></div><div class="item"><b>Why this matters</b><div class="small">'+g.why+'</div></div><div class="item"><b>Simple early path</b><div class="small">Explore → win fights → equip better gear → visit a town → find a dungeon → clear it. Ignore advanced systems until you want them.</div></div>';$("guideModal").classList.add("open")}
 
 // ===== v4.4 Beginner Flow =====
-function beginnerPhase(){
- if(s.level<=1&&(s.discoveredLocations||[]).length<=1)return 0;
- if(s.inventory.length<2)return 1;
- if(masteryData(area().name).level<2)return 2;
- if((s.stats?.dungeonsCleared||0)<1)return 3;
- if(s.level<5)return 4;
- return 5;
-}
+function beginnerPhase(){return tutorialStage()}
 function recommendedActionForPhase(){
  let p=beginnerPhase();
  if(p===0)return"explore";
- if(p===1)return area().type==="town"?"openMarket":"explore";
- if(p===2)return"explore";
+ if(p===1)return activeCombatInfo()?"jumpToCombat":"explore";
+ if(p===2)return"travel";
  if(p===3)return s.dungeon.active?"dungeonExplore":"dungeon";
- if(p===4)return s.mode==="campaign"?"openRumors":"explore";
+ if(p===4)return s.dungeon.active?"dungeonExplore":"dungeon";
  return null;
 }
 function renderRecommendedAction(){
@@ -3693,16 +3731,60 @@ function renderHelpManual(filter=""){
  body.innerHTML=html||'<div class="item"><b>No matching feature found.</b><div class="small">Try a broader search.</div></div>';
 }
 function openHelpManual(){renderHelpManual();if($("helpSearch"))$("helpSearch").value="";$("helpManualModal").classList.add("open")}
+let firstGuideDismissedThisSession=false;
+let firstGuideOpenTimer=null;
+
+function migrateLegacyFirstGuideState(){
+ if(!s||!s.started)return;
+ if(!s.flags)s.flags={};
+ if(s.flags.firstGuideComplete)return;
+ try{
+   if(localStorage.getItem("wayfarer_first_guide_"+(s.name||"character"))){
+     s.flags.firstGuideComplete=true;
+     save();
+   }
+ }catch(e){}
+}
+function firstGuideSaveComplete(){
+ return !!(s&&s.flags&&s.flags.firstGuideComplete);
+}
 function shouldShowFirstGuide(){
- let key="wayfarer_first_guide_"+(s.name||"character");
- return s.started&&!localStorage.getItem(key);
+ return !!(s&&s.started&&!firstGuideDismissedThisSession&&!firstGuideSaveComplete());
 }
 function openFirstGuideIfNeeded(){
+ if(firstGuideOpenTimer){clearTimeout(firstGuideOpenTimer);firstGuideOpenTimer=null}
  if(!shouldShowFirstGuide())return;
- let g=beginnerGuideState();$("firstGuideObjective").textContent=g.step;$("firstGuideReason").textContent=g.why;$("firstGuideModal").classList.add("open");
+ const modal=$("firstGuideModal");
+ if(!modal||modal.classList.contains("open"))return;
+ let g=beginnerGuideState();
+ $("firstGuideObjective").textContent=g.step;
+ $("firstGuideReason").textContent=g.why;
+ modal.classList.add("open");
+ // iOS home-screen apps occasionally restore a modal at its previous internal
+ // scroll position. Always put the tutorial itself at the top.
+ const card=modal.querySelector(".firstGuideCard");
+ if(card)card.scrollTop=0;
+}
+function scheduleFirstGuide(delay=180){
+ if(firstGuideOpenTimer)clearTimeout(firstGuideOpenTimer);
+ firstGuideOpenTimer=setTimeout(()=>{
+   firstGuideOpenTimer=null;
+   openFirstGuideIfNeeded();
+ },delay);
 }
 function closeFirstGuide(){
- let key="wayfarer_first_guide_"+(s.name||"character");localStorage.setItem(key,"1");$("firstGuideModal").classList.remove("open");
+ // Set the in-memory guard FIRST. This prevents delayed iOS PWA lifecycle
+ // callbacks from reopening the guide before persistence finishes.
+ firstGuideDismissedThisSession=true;
+ if(firstGuideOpenTimer){clearTimeout(firstGuideOpenTimer);firstGuideOpenTimer=null}
+ const modal=$("firstGuideModal");
+ if(modal)modal.classList.remove("open");
+ if(!s.flags)s.flags={};
+ s.flags.firstGuideComplete=true;
+ try{save()}catch(e){}
+ // Keep the legacy marker too so existing browser-tab installs migrate cleanly.
+ try{localStorage.setItem("wayfarer_first_guide_"+(s.name||"character"),"1")}catch(e){}
+ hardScrollTop();
 }
 
 // Passive onboarding 1: context-sensitive tip
@@ -3758,22 +3840,22 @@ function renderUnlockNotes(){
 
 // Passive onboarding 4: learning breadcrumbs
 function learningTrailItems(){
- let arr=[
-  ["Explore",s.level>1||(s.discoveredLocations||[]).length>1],
-  ["Combat",(s.stats?.kills||0)>0],
-  ["Gear",s.inventory.length>1],
-  ["Town",!!s.flags?.visitedTown],
-  ["Dungeon",(s.stats?.dungeonsCleared||0)>0||s.dungeon.active],
-  ["Crafting",(s.stats?.crafted||0)>0],
+ let m=tutorialMilestones();
+ return[
+  ["Explore",!!m.explored],
+  ["Combat",!!m.firstCombat],
+  ["Town",!!m.visitedTown],
+  ["Dungeon Found",!!m.foundDungeon],
+  ["Dungeon Cleared",!!m.clearedDungeon],
+  ["Gear",s.inventory.length>2],
   ["Magic",s.knownSpells.length>1||s.spellwork.level>1]
  ];
- return arr;
 }
 function renderLearningTrail(){
  let box=$("learningTrail");if(!box)return;
  box.innerHTML=learningTrailItems().map(([n,d])=>'<span class="learningCrumb '+(d?'done':'')+'">'+(d?'✓ ':'')+n+'</span>').join("");
 }
-function render(){if(s.started&&area().type==="town"){if(!s.flags)s.flags={};s.flags.visitedTown=true}
+function render(){if(s.started&&s.dungeon&&s.dungeon.active)markTutorialMilestone("foundDungeon");if(s.started&&area().type==="town"){if(!s.flags)s.flags={};s.flags.visitedTown=true;markTutorialMilestone("visitedTown")}
  s.mana=Math.min(maxMana(),Math.max(0,s.mana));
  $("setup").classList.toggle("hidden",s.started);$("game").classList.toggle("hidden",!s.started);$("tabs").classList.toggle("hidden",!s.started);if(!s.started){renderCreator();return;}
  $("level").textContent=s.level;$("gold").textContent=s.gold;$("power").textContent=power();$("hpText").textContent=Math.floor(s.hp)+" / "+maxHp();$("hpBar").style.width=Math.max(0,s.hp/maxHp()*100)+"%";$("manaText").textContent=Math.floor(s.mana)+" / "+maxMana();$("manaBar").style.width=Math.max(0,Math.min(100,s.mana/maxMana()*100))+"%";$("xpText").textContent=s.xp+" / "+s.xpNeed;$("xpBar").style.width=s.xp/s.xpNeed*100+"%";$("location").textContent="Location: "+area().name+" • Ore: "+s.ore;$("modeText").textContent="Mode: "+(s.mode==="free"?"Free Roam":"Campaign");$("areaTitle").textContent=area().name;$("areaDesc").textContent=area().desc;
@@ -4005,5 +4087,27 @@ window.addEventListener("scroll",()=>{if(typeof renderMiniHud==="function")rende
 
 
 
-window.addEventListener("load",()=>{if(typeof s!=="undefined"&&s&&s.started)setTimeout(openFirstGuideIfNeeded,450)});
+window.addEventListener("load",()=>{if(typeof s!=="undefined"&&s&&s.started)migrateLegacyFirstGuideState();scheduleFirstGuide(520)});
+
+(function installFirstGuideDirectHandler(){
+ const bind=()=>{
+   const btn=document.getElementById("startJourneyBtn");
+   if(!btn||btn.dataset.directBound)return;
+   btn.dataset.directBound="1";
+   let handled=false;
+   const finish=(ev)=>{
+     if(handled)return;
+     handled=true;
+     if(ev){ev.preventDefault();ev.stopPropagation()}
+     closeFirstGuide();
+     setTimeout(()=>{handled=false},350);
+   };
+   // pointerup is the most reliable path in current iOS standalone mode.
+   btn.addEventListener("pointerup",finish,{passive:false});
+   btn.addEventListener("touchend",finish,{passive:false});
+   btn.addEventListener("click",finish,false);
+ };
+ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",bind,{once:true});
+ else bind();
+})();
 </script></body></html>
